@@ -1,0 +1,9 @@
+pub mod animal_piece;
+pub mod cat_piece;
+pub mod dog_piece;
+pub mod elephant_piece;
+pub mod giraffe_piece;
+pub mod horse_piece;
+pub mod panda_piece;
+pub mod penguin_piece;
+pub mod rat_piece;
