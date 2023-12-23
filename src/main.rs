@@ -1,15 +1,23 @@
+use std::f64::consts::PI;
+
 use bevy::{prelude::*, render::color};
+use bevy_rapier2d::{
+    dynamics::{Ccd, GravityScale, RigidBody, Sleeping, Velocity},
+    geometry::{Collider, Restitution},
+    plugin::{NoUserData, RapierPhysicsPlugin},
+    render::RapierDebugRenderPlugin,
+};
 use resource::material::Materials;
 mod coordinate;
 mod piece;
 mod resource;
 use rand::prelude::*;
 
-const UNIT_WIDTH: f32 = 40.0;
-const UNIT_HEIGHT: f32 = 40.0;
+const UNIT_WIDTH: f32 = 5.0;
+const UNIT_HEIGHT: f32 = 5.0;
 
-const X_LENGTH: f32 = 10.0;
-const Y_LENGTH: f32 = 18.0;
+const X_LENGTH: f32 = 100.0;
+const Y_LENGTH: f32 = 130.0;
 
 const SCREEN_WIDTH: f32 = UNIT_WIDTH * X_LENGTH;
 const SCREEN_HEIGHT: f32 = UNIT_HEIGHT * Y_LENGTH;
@@ -35,6 +43,10 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Update, position_transform)
         .add_systems(Update, spawn_piece)
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierDebugRenderPlugin::default())
+        .add_systems(Startup, setup_physics)
+        .add_systems(Update, print_ball_altitude)
         .run();
 }
 
@@ -94,4 +106,50 @@ fn spawn_piece(mut commands: Commands, materials: Res<Materials>) {
             ..Default::default()
         })
         .insert(coordinate::position::Position { x: 0, y: 0 });
+}
+
+fn setup_physics(mut commands: Commands) {
+    /* Create the ground. */
+    commands.spawn(Collider::compound(vec![
+        (
+            Vec2 {
+                x: -100.0,
+                y: 100.0,
+            },
+            0.0,
+            Collider::cuboid(10.0, 100.0),
+        ),
+        (Vec2 { x: 0.0, y: 0.0 }, 0.0, Collider::cuboid(100.0, 10.0)),
+        (
+            Vec2 { x: 100.0, y: 100.0 },
+            0.0,
+            Collider::cuboid(10.0, 100.0),
+        ),
+    ]));
+    //.insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)));
+
+    commands
+        .spawn(Collider::ball(UNIT_HEIGHT * 2.0))
+        .insert(RigidBody::Fixed)
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 200.0, 0.0)))
+        .insert(Velocity {
+            linvel: Vec2::new(1.0, 2.0),
+            angvel: 0.2,
+        })
+        .insert(GravityScale(0.5))
+        .insert(Sleeping::disabled())
+        .insert(Ccd::enabled());
+
+    /* Create the bouncing ball. */
+    commands
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::ball(UNIT_HEIGHT * 2.0))
+        .insert(Restitution::coefficient(0.7))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)));
+}
+
+fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {
+    for transform in positions.iter() {
+        println!("Ball altitude: {}", transform.translation.y);
+    }
 }
