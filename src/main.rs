@@ -7,6 +7,10 @@ use bevy_rapier2d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+use piece::{
+    animal_piece::animal_piece::{AnimalPieceComponent, PieceType},
+    piece_factory::{Factory, PieceFactory},
+};
 use resource::material::Materials;
 mod coordinate;
 mod piece;
@@ -41,8 +45,8 @@ fn main() {
         }))
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_systems(Startup, setup)
-        .add_systems(Update, position_transform)
-        .add_systems(Update, spawn_piece)
+        // .add_systems(Update, position_transform)
+        .add_systems(Startup, spawn_piece)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_systems(Startup, setup_physics)
@@ -93,19 +97,21 @@ fn position_transform(
         });
 }
 
-fn spawn_piece(mut commands: Commands, materials: Res<Materials>) {
+fn spawn_piece(mut commands: Commands) {
     let mut rng = rand::thread_rng();
-    let mut color_index: usize = rng.gen();
-    color_index %= materials.colors.len();
+    let rnd: usize = rng.gen();
+    let piece_type = PieceType::new(&rnd);
+    let piece = AnimalPieceComponent {
+        animal_piece: PieceFactory::create_piece(&piece_type),
+    };
+
+    /* Create the bouncing ball. */
     commands
-        .spawn(SpriteBundle {
-            sprite: Sprite {
-                color: materials.colors[color_index].color.clone(),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .insert(coordinate::position::Position { x: 0, y: 0 });
+        .spawn(RigidBody::Dynamic)
+        .insert(Collider::ball(piece.animal_piece.get_size().to_f32() * 2.0))
+        .insert(Restitution::coefficient(0.7))
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 350.0, 0.0)))
+        .insert(piece);
 }
 
 fn setup_physics(mut commands: Commands) {
@@ -128,24 +134,17 @@ fn setup_physics(mut commands: Commands) {
     ]));
     //.insert(TransformBundle::from(Transform::from_xyz(0.0, -100.0, 0.0)));
 
-    commands
-        .spawn(Collider::ball(UNIT_HEIGHT * 2.0))
-        .insert(RigidBody::Fixed)
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 200.0, 0.0)))
-        .insert(Velocity {
-            linvel: Vec2::new(1.0, 2.0),
-            angvel: 0.2,
-        })
-        .insert(GravityScale(0.5))
-        .insert(Sleeping::disabled())
-        .insert(Ccd::enabled());
-
-    /* Create the bouncing ball. */
-    commands
-        .spawn(RigidBody::Dynamic)
-        .insert(Collider::ball(UNIT_HEIGHT * 2.0))
-        .insert(Restitution::coefficient(0.7))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 400.0, 0.0)));
+    // commands
+    //     .spawn(Collider::ball(UNIT_HEIGHT * 2.0))
+    //     .insert(RigidBody::Fixed)
+    //     .insert(TransformBundle::from(Transform::from_xyz(0.0, 200.0, 0.0)))
+    //     .insert(Velocity {
+    //         linvel: Vec2::new(1.0, 2.0),
+    //         angvel: 0.2,
+    //     })
+    //     .insert(GravityScale(0.5))
+    //     .insert(Sleeping::disabled())
+    //     .insert(Ccd::enabled());
 }
 
 fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {

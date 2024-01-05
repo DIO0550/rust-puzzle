@@ -1,7 +1,18 @@
+use std::usize;
+
+use bevy::ecs::component::Component;
+
 pub struct PieceSize(u32);
+impl PieceSize {
+    pub fn to_f32(&self) -> f32 {
+        self.0 as f32
+    }
+}
+
+#[derive(Debug, Copy, Clone)]
 pub enum PieceType {
     // ネズミ
-    Rat,
+    Rat = 0,
     // ネコ
     Cat,
     // 犬
@@ -18,7 +29,22 @@ pub enum PieceType {
     Elephant,
 }
 
+const SPWANABLE_PIECES: &[&PieceType] = &[
+    &PieceType::Rat,
+    &PieceType::Cat,
+    &PieceType::Dog,
+    &PieceType::Penguin,
+];
+
 impl PieceType {
+    pub fn new(rnd: &usize) -> Self {
+        let piece_index = rnd % SPWANABLE_PIECES.len();
+        match SPWANABLE_PIECES.get(piece_index) {
+            None => PieceType::Rat,
+            Some(v) => **v,
+        }
+    }
+
     fn turn(&self) -> Option<PieceType> {
         match self {
             PieceType::Rat => Some(PieceType::Cat),
@@ -33,7 +59,7 @@ impl PieceType {
     }
 }
 
-pub trait AnimalPiece {
+pub trait AnimalPiece: Send + Sync + 'static {
     fn can_evolve(&self) -> bool;
     fn evolve(&self);
     fn get_size(&self) -> &PieceSize;
@@ -52,4 +78,9 @@ impl Piece {
             piece_type: piece_type,
         }
     }
+}
+
+#[derive(Component)]
+pub struct AnimalPieceComponent {
+    pub animal_piece: Box<dyn AnimalPiece>,
 }

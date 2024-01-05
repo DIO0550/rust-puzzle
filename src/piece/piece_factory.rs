@@ -14,7 +14,8 @@ pub trait Factory {
     fn create_piece(piece_type: &PieceType) -> Box<dyn AnimalPiece>;
 }
 
-pub trait PieceFactory: Factory {
+pub struct PieceFactory {}
+impl Factory for PieceFactory {
     fn create_piece(piece_type: &PieceType) -> Box<dyn AnimalPiece> {
         match piece_type {
             PieceType::Rat => Box::new(RatPiece::new()),
