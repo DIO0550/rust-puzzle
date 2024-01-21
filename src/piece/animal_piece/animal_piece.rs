@@ -81,6 +81,14 @@ impl Piece {
 }
 
 #[derive(Component)]
+pub struct Grab(bool);
+impl Grab {
+    pub fn new(value: bool) -> Grab {
+        Grab(value)
+    }
+}
+
+#[derive(Component)]
 pub struct AnimalPieceComponent {
     pub animal_piece: Box<dyn AnimalPiece>,
 }
