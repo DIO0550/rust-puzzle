@@ -38,7 +38,7 @@ const SPWANABLE_PIECES: &[&PieceType] = &[
 
 impl PieceType {
     pub fn new(rnd: &usize) -> Self {
-        let piece_index = rnd % SPWANABLE_PIECES.len();
+        let piece_index = rnd % SPWANABLE_PIECES.len() + 1;
         match SPWANABLE_PIECES.get(piece_index) {
             None => PieceType::Rat,
             Some(v) => **v,

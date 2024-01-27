@@ -1,6 +1,8 @@
 use std::f64::consts::PI;
 
-use bevy::{prelude::*, render::color, transform};
+use bevy::{
+    ecs::system::Insert, prelude::*, render::color, sprite::MaterialMesh2dBundle, transform,
+};
 use bevy_rapier2d::{
     dynamics::{Ccd, GravityScale, RigidBody, Sleeping, Velocity},
     geometry::{Collider, Restitution},
@@ -8,7 +10,10 @@ use bevy_rapier2d::{
     render::RapierDebugRenderPlugin,
 };
 use piece::{
-    animal_piece::animal_piece::{AnimalPieceComponent, Grab, PieceType},
+    animal_piece::{
+        self,
+        animal_piece::{AnimalPiece, AnimalPieceComponent, Grab, PieceType},
+    },
     piece_factory::{Factory, PieceFactory},
 };
 mod coordinate;
@@ -16,17 +21,20 @@ mod piece;
 mod resource;
 use rand::prelude::*;
 
-const UNIT_WIDTH: f32 = 5.0;
+const UNIT_WIDTH: f32 = 3.0;
 const UNIT_HEIGHT: f32 = 5.0;
 
-const X_LENGTH: f32 = 100.0;
-const Y_LENGTH: f32 = 130.0;
+const X_LENGTH: f32 = 300.0;
+const Y_LENGTH: f32 = 150.0;
+const SCREEN_WIDTH: f32 = 1200.0;
+const SCREEN_HEIGHT: f32 = 900.0;
 
-const SCREEN_WIDTH: f32 = UNIT_WIDTH * X_LENGTH;
-const SCREEN_HEIGHT: f32 = UNIT_HEIGHT * Y_LENGTH;
+const BOX_SIZE_HEIHT: f32 = SCREEN_HEIGHT / 3.0;
+const BOX_SIZE_WIDTH: f32 = SCREEN_WIDTH / 4.0;
+const BOX_THICKNESS: f32 = 5.0;
+const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 10.0;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-const CUE_SIZE: Vec2 = Vec2::new(50.0, 50.0);
 
 const PIECE_SPEED: f32 = 500.0;
 
@@ -102,40 +110,78 @@ fn setup(mut commands: Commands) {
 //         });
 // }
 
-fn spawn_piece(mut commands: Commands) {
+fn spawn_piece(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
     let mut rng = rand::thread_rng();
     let rnd: usize = rng.gen();
     let piece_type = PieceType::new(&rnd);
     let piece = AnimalPieceComponent {
         animal_piece: PieceFactory::create_piece(&piece_type),
     };
+    let size = piece.animal_piece.get_size().to_f32();
 
-    /* Create the bouncing ball. */
+    let color: Color = match piece_type {
+        PieceType::Cat => Color::YELLOW,
+        PieceType::Dog => Color::RED,
+        PieceType::Elephant => Color::GREEN,
+        PieceType::Giraffe => Color::AQUAMARINE,
+        PieceType::Horse => Color::BEIGE,
+        PieceType::Panda => Color::BISQUE,
+        PieceType::Penguin => Color::BLACK,
+        PieceType::Rat => Color::BLUE,
+    };
+
     commands
-        .spawn(RigidBody::Fixed)
-        .insert(Collider::ball(piece.animal_piece.get_size().to_f32() * 2.0))
-        .insert(Restitution::coefficient(0.7))
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 200.0, 0.0)))
-        .insert(Grab::new(true))
-        .insert(piece);
+        .spawn(Grab::new(true))
+        .insert(piece)
+        .insert(MaterialMesh2dBundle {
+            mesh: meshes
+                .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
+                .into(),
+            material: materials.add(ColorMaterial::from(color)),
+            // transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
+            ..default()
+        })
+        .insert(TransformBundle::from(Transform::from_xyz(
+            0.0,
+            BOX_SIZE_HEIHT * 2.0 / 3.0,
+            0.0,
+        )));
 }
 
 fn setup_physics(mut commands: Commands) {
     /* Create the ground. */
+
     commands.spawn(Collider::compound(vec![
+        // 左
         (
             Vec2 {
-                x: -100.0,
-                y: 100.0,
+                x: -BOX_SIZE_WIDTH,
+                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
             },
             0.0,
-            Collider::cuboid(10.0, 100.0),
+            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
         ),
-        (Vec2 { x: 0.0, y: 0.0 }, 0.0, Collider::cuboid(100.0, 10.0)),
+        // 真ん中
         (
-            Vec2 { x: 100.0, y: 100.0 },
+            Vec2 {
+                x: 0.0,
+                y: -BOX_SIZE_HEIHT * 3.0 / 2.0 + BOX_MARGIN_BOTTOM,
+            },
             0.0,
-            Collider::cuboid(10.0, 100.0),
+            Collider::cuboid(BOX_SIZE_WIDTH + BOX_THICKNESS, BOX_THICKNESS),
+        ),
+        // 下
+        (
+            Vec2 {
+                x: BOX_SIZE_WIDTH,
+                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+            },
+            0.0,
+            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
         ),
     ]));
 }
@@ -170,14 +216,22 @@ fn move_piece(
 
 fn release_piece(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(Entity, &mut RigidBody), With<Grab>>,
+    mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
 ) {
-    let (entity, mut rigit_body) = query.single_mut();
+    let (entity, piece) = query.single_mut();
     if keyboard_input.just_released(KeyCode::Space) {
-        rigit_body.set_if_neq(RigidBody::Dynamic);
         commands.entity(entity).remove::<Grab>();
+        commands
+            .entity(entity)
+            .insert(RigidBody::Dynamic)
+            .insert(Collider::ball(
+                piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
+            ))
+            .insert(Restitution::coefficient(0.7));
 
-        spawn_piece(commands)
+        spawn_piece(commands, meshes, materials);
     }
 }
