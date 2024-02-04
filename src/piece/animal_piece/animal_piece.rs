@@ -9,7 +9,7 @@ impl PieceSize {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PieceType {
     // ネズミ
     Rat = 0,
@@ -38,14 +38,14 @@ const SPWANABLE_PIECES: &[&PieceType] = &[
 
 impl PieceType {
     pub fn new(rnd: &usize) -> Self {
-        let piece_index = rnd % SPWANABLE_PIECES.len() + 1;
+        let piece_index = rnd % (SPWANABLE_PIECES.len() + 1);
         match SPWANABLE_PIECES.get(piece_index) {
             None => PieceType::Rat,
             Some(v) => **v,
         }
     }
 
-    fn turn(&self) -> Option<PieceType> {
+    pub fn turn(&self) -> Option<PieceType> {
         match self {
             PieceType::Rat => Some(PieceType::Cat),
             PieceType::Cat => Some(PieceType::Dog),

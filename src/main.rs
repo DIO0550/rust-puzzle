@@ -1,11 +1,16 @@
 use std::f64::consts::PI;
 
 use bevy::{
-    ecs::system::Insert, prelude::*, render::color, sprite::MaterialMesh2dBundle, transform,
+    ecs::{entity, query, system::Insert},
+    prelude::*,
+    render::color,
+    sprite::MaterialMesh2dBundle,
+    transform,
 };
 use bevy_rapier2d::{
     dynamics::{Ccd, GravityScale, RigidBody, Sleeping, Velocity},
-    geometry::{Collider, Restitution},
+    geometry::{ActiveEvents, Collider, Restitution},
+    pipeline::{CollisionEvent, ContactForceEvent},
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
@@ -60,10 +65,10 @@ fn main() {
         .add_systems(Startup, setup_physics)
         .add_systems(
             FixedUpdate,
-            (print_ball_altitude, move_piece).chain(),
+            (move_piece).chain(),
             // (hold_out_piece),
         )
-        .add_systems(Update, release_piece)
+        .add_systems(Update, (release_piece, collision_events))
         .run();
 }
 
@@ -92,23 +97,6 @@ fn setup(mut commands: Commands) {
         ],
     });
 }
-
-// fn position_transform(
-//     mut position_query: Query<(&coordinate::position::Position, &mut Transform, &mut Sprite)>,
-// ) {
-//     let origin_x = UNIT_WIDTH as i32 / 2 - SCREEN_WIDTH as i32 / 2;
-//     let origin_y = UNIT_HEIGHT as i32 / 2 - SCREEN_HEIGHT as i32 / 2;
-//     position_query
-//         .iter_mut()
-//         .for_each(|(pos, mut transform, mut sprite)| {
-//             transform.translation = Vec3::new(
-//                 (origin_x + pos.x as i32 * UNIT_WIDTH as i32) as f32,
-//                 (origin_y + pos.y as i32 * UNIT_HEIGHT as i32) as f32,
-//                 0.0,
-//             );
-//             sprite.custom_size = Some(Vec2::new(UNIT_WIDTH as f32, UNIT_HEIGHT as f32))
-//         });
-// }
 
 fn spawn_piece(
     mut commands: Commands,
@@ -186,12 +174,6 @@ fn setup_physics(mut commands: Commands) {
     ]));
 }
 
-fn print_ball_altitude(positions: Query<&Transform, With<RigidBody>>) {
-    for transform in positions.iter() {
-        // println!("Ball altitude: {}", transform.translation.y);
-    }
-}
-
 fn move_piece(
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
@@ -214,6 +196,76 @@ fn move_piece(
     transform.translation.x = new_paddle_position;
 }
 
+fn collision_events(
+    mut commands: Commands,
+    mut collision_events: EventReader<CollisionEvent>,
+    query: Query<(&AnimalPieceComponent, &Transform)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for collision_event in collision_events.read() {
+        let entities = match collision_event {
+            CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
+            CollisionEvent::Stopped(entity1, entity2, _) => (entity1, entity2),
+        };
+
+        let Ok((entity1, transform1)) = query.get(*entities.0) else {
+            return;
+        };
+
+        let Ok((entity2, transform2)) = query.get(*entities.1) else {
+            return;
+        };
+
+        if entity1.animal_piece.get_piece_type() != entity2.animal_piece.get_piece_type() {
+            return;
+        }
+
+        commands.entity(*entities.0).despawn();
+        commands.entity(*entities.1).despawn();
+
+        let Some(evo_type) = entity1.animal_piece.get_piece_type().turn() else {
+            return;
+        };
+        let piece = AnimalPieceComponent {
+            animal_piece: PieceFactory::create_piece(&evo_type),
+        };
+        let size = piece.animal_piece.get_size().to_f32();
+
+        let color: Color = match evo_type {
+            PieceType::Cat => Color::YELLOW,
+            PieceType::Dog => Color::RED,
+            PieceType::Elephant => Color::GREEN,
+            PieceType::Giraffe => Color::AQUAMARINE,
+            PieceType::Horse => Color::BEIGE,
+            PieceType::Panda => Color::BISQUE,
+            PieceType::Penguin => Color::BLACK,
+            PieceType::Rat => Color::BLUE,
+        };
+
+        let positionX = (transform1.translation.x + transform2.translation.x) / 2.0;
+        let positionY = (transform1.translation.y + transform2.translation.y) / 2.0;
+
+        commands
+            .spawn(piece)
+            .insert(MaterialMesh2dBundle {
+                mesh: meshes
+                    .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
+                    .into(),
+                material: materials.add(ColorMaterial::from(color)),
+                // transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
+                ..default()
+            })
+            .insert(TransformBundle::from(Transform::from_xyz(
+                positionX, positionY, 0.0,
+            )))
+            .insert(RigidBody::Dynamic)
+            .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
+            .insert(Restitution::coefficient(0.7))
+            .insert(ActiveEvents::COLLISION_EVENTS);
+    }
+}
+
 fn release_piece(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -230,7 +282,8 @@ fn release_piece(
             .insert(Collider::ball(
                 piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
             ))
-            .insert(Restitution::coefficient(0.7));
+            .insert(Restitution::coefficient(0.7))
+            .insert(ActiveEvents::COLLISION_EVENTS);
 
         spawn_piece(commands, meshes, materials);
     }
