@@ -1,30 +1,20 @@
-use std::f64::consts::PI;
-
-use bevy::{
-    ecs::{entity, query, system::Insert},
-    prelude::*,
-    render::color,
-    sprite::MaterialMesh2dBundle,
-    transform,
-};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
-    dynamics::{Ccd, GravityScale, RigidBody, Sleeping, Velocity},
+    dynamics::RigidBody,
     geometry::{ActiveEvents, Collider, Restitution},
-    pipeline::{CollisionEvent, ContactForceEvent},
+    pipeline::CollisionEvent,
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
 use piece::{
-    animal_piece::{
-        self,
-        animal_piece::{AnimalPiece, AnimalPieceComponent, Grab, PieceType},
-    },
+    animal_piece::animal_piece::{AnimalPiece, AnimalPieceComponent, Grab, PieceType},
     piece_factory::{Factory, PieceFactory},
 };
-mod coordinate;
+use rand::prelude::*;
+use resource::grab_postion::{self, GrabPostion};
+
 mod piece;
 mod resource;
-use rand::prelude::*;
 
 const UNIT_WIDTH: f32 = 3.0;
 const UNIT_HEIGHT: f32 = 5.0;
@@ -56,12 +46,12 @@ fn main() {
             primary_window,
             ..default()
         }))
-        .insert_resource(ClearColor(BACKGROUND_COLOR))
-        .add_systems(Startup, setup)
-        // .add_systems(Update, position_transform)
-        .add_systems(Startup, spawn_piece)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        .insert_resource(ClearColor(BACKGROUND_COLOR))
+        .insert_resource(GrabPostion { x: 0.0 })
+        .add_systems(Startup, setup)
+        .add_systems(Startup, spawn_piece)
         .add_systems(Startup, setup_physics)
         .add_systems(
             FixedUpdate,
@@ -74,18 +64,6 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-
-    // commands
-    //     .spawn(SpriteBundle {
-    //         sprite: Sprite {
-    //             color: CUE_COLOR,
-    //             custom_size: Some(CUE_SIZE),
-    //             ..default()
-    //         },
-    //         ..default()
-    //     })
-    //     .insert(coordinate::position::Position { x: 1, y: 5 });
-
     commands.insert_resource(resource::material::Materials {
         colors: vec![
             Color::rgb_u8(64, 230, 100).into(),
@@ -98,20 +76,8 @@ fn setup(mut commands: Commands) {
     });
 }
 
-fn spawn_piece(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let mut rng = rand::thread_rng();
-    let rnd: usize = rng.gen();
-    let piece_type = PieceType::new(&rnd);
-    let piece = AnimalPieceComponent {
-        animal_piece: PieceFactory::create_piece(&piece_type),
-    };
-    let size = piece.animal_piece.get_size().to_f32();
-
-    let color: Color = match piece_type {
+fn piece_color(piece_type: &PieceType) -> Color {
+    let color = match piece_type {
         PieceType::Cat => Color::YELLOW,
         PieceType::Dog => Color::RED,
         PieceType::Elephant => Color::GREEN,
@@ -122,9 +88,28 @@ fn spawn_piece(
         PieceType::Rat => Color::BLUE,
     };
 
+    return color;
+}
+
+fn spawn_piece(
+    mut commands: Commands,
+    resource: Res<GrabPostion>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    let mut rng = rand::thread_rng();
+    let rnd: usize = rng.gen();
+    let piece_type = PieceType::new(&rnd);
+    let piece = AnimalPieceComponent {
+        animal_piece: PieceFactory::create_piece(&piece_type),
+    };
+    let size = piece.animal_piece.get_size().to_f32();
+    let color: Color = piece_color(&piece_type);
+
     commands
-        .spawn(Grab::new(true))
+        .spawn(Grab)
         .insert(piece)
+        // TODO: 後でピースの画像に直す
         .insert(MaterialMesh2dBundle {
             mesh: meshes
                 .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
@@ -134,7 +119,7 @@ fn spawn_piece(
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(
-            0.0,
+            resource.x,
             BOX_SIZE_HEIHT * 2.0 / 3.0,
             0.0,
         )));
@@ -175,6 +160,7 @@ fn setup_physics(mut commands: Commands) {
 }
 
 fn move_piece(
+    mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
     time: Res<Time>,
@@ -192,8 +178,10 @@ fn move_piece(
 
     let new_paddle_position =
         transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
-
     transform.translation.x = new_paddle_position;
+    commands.insert_resource(GrabPostion {
+        x: new_paddle_position,
+    })
 }
 
 fn collision_events(
@@ -232,19 +220,10 @@ fn collision_events(
         };
         let size = piece.animal_piece.get_size().to_f32();
 
-        let color: Color = match evo_type {
-            PieceType::Cat => Color::YELLOW,
-            PieceType::Dog => Color::RED,
-            PieceType::Elephant => Color::GREEN,
-            PieceType::Giraffe => Color::AQUAMARINE,
-            PieceType::Horse => Color::BEIGE,
-            PieceType::Panda => Color::BISQUE,
-            PieceType::Penguin => Color::BLACK,
-            PieceType::Rat => Color::BLUE,
-        };
+        let color: Color = piece_color(&evo_type);
 
-        let positionX = (transform1.translation.x + transform2.translation.x) / 2.0;
-        let positionY = (transform1.translation.y + transform2.translation.y) / 2.0;
+        let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
+        let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
         commands
             .spawn(piece)
@@ -257,7 +236,7 @@ fn collision_events(
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(
-                positionX, positionY, 0.0,
+                position_x, position_y, 0.0,
             )))
             .insert(RigidBody::Dynamic)
             .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
@@ -268,10 +247,11 @@ fn collision_events(
 
 fn release_piece(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<ColorMaterial>>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
+    grab_postion: Res<GrabPostion>,
 ) {
     let (entity, piece) = query.single_mut();
     if keyboard_input.just_released(KeyCode::Space) {
@@ -285,6 +265,6 @@ fn release_piece(
             .insert(Restitution::coefficient(0.7))
             .insert(ActiveEvents::COLLISION_EVENTS);
 
-        spawn_piece(commands, meshes, materials);
+        spawn_piece(commands, grab_postion, meshes, materials);
     }
 }

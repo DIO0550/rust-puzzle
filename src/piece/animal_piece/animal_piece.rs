@@ -81,12 +81,7 @@ impl Piece {
 }
 
 #[derive(Component)]
-pub struct Grab(bool);
-impl Grab {
-    pub fn new(value: bool) -> Grab {
-        Grab(value)
-    }
-}
+pub struct Grab;
 
 #[derive(Component)]
 pub struct AnimalPieceComponent {
