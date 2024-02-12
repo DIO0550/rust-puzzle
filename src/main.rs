@@ -1,13 +1,13 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
-    dynamics::RigidBody,
-    geometry::{ActiveEvents, Collider, Restitution},
+    dynamics::{AdditionalMassProperties, GravityScale, RigidBody},
+    geometry::{ActiveEvents, Collider, ColliderMassProperties, Restitution},
     pipeline::CollisionEvent,
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
 use piece::{
-    animal_piece::animal_piece::{AnimalPiece, AnimalPieceComponent, Grab, PieceType},
+    animal_piece::animal_piece::{AnimalPiece, AnimalPieceComponent, Falling, Grab, PieceType},
     piece_factory::{Factory, PieceFactory},
 };
 use rand::prelude::*;
@@ -16,7 +16,7 @@ use resource::grab_postion::{self, GrabPostion};
 mod piece;
 mod resource;
 
-const UNIT_WIDTH: f32 = 3.0;
+const UNIT_WIDTH: f32 = 4.5;
 const UNIT_HEIGHT: f32 = 5.0;
 
 const X_LENGTH: f32 = 300.0;
@@ -53,11 +53,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Startup, spawn_piece)
         .add_systems(Startup, setup_physics)
-        .add_systems(
-            FixedUpdate,
-            (move_piece).chain(),
-            // (hold_out_piece),
-        )
+        .add_systems(FixedUpdate, (move_piece).chain())
         .add_systems(Update, (release_piece, collision_events))
         .run();
 }
@@ -165,7 +161,10 @@ fn move_piece(
     mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
     time: Res<Time>,
 ) {
-    let mut transform = query.single_mut();
+    let Ok(mut transform) = query.get_single_mut() else {
+        return;
+    };
+
     let mut direction = 0.0;
 
     if keyboard_input.pressed(KeyCode::Left) {
@@ -184,12 +183,17 @@ fn move_piece(
     })
 }
 
+/**
+ * 衝突イベント
+ */
 fn collision_events(
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
-    query: Query<(&AnimalPieceComponent, &Transform)>,
+    piece_query: Query<(&AnimalPieceComponent, &Transform)>,
+    falling_query: Query<&Falling>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    grab_postion: Res<GrabPostion>,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -197,15 +201,36 @@ fn collision_events(
             CollisionEvent::Stopped(entity1, entity2, _) => (entity1, entity2),
         };
 
-        let Ok((entity1, transform1)) = query.get(*entities.0) else {
+        if falling_query.get(*entities.0).is_ok() {
+            commands.entity(*entities.0).remove::<Falling>();
+            spawn_piece(commands, grab_postion, meshes, materials);
+            println!("falling_query entity 0");
             return;
         };
 
-        let Ok((entity2, transform2)) = query.get(*entities.1) else {
+        if falling_query.get(*entities.1).is_ok() {
+            commands.entity(*entities.1).remove::<Falling>();
+            spawn_piece(commands, grab_postion, meshes, materials);
+            println!("falling_query entity 1");
+            return;
+        };
+
+        let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
+            println!("not animal piece entity 0");
+
+            return;
+        };
+
+        let Ok((entity2, transform2)) = piece_query.get(*entities.1) else {
+            println!("not animal piece entity 1");
             return;
         };
 
         if entity1.animal_piece.get_piece_type() != entity2.animal_piece.get_piece_type() {
+            println!("not same type!");
+            println!("entity1 : {:?}", entity1.animal_piece.get_piece_type());
+            println!("entity2 : {:?}", entity2.animal_piece.get_piece_type());
+
             return;
         }
 
@@ -232,7 +257,6 @@ fn collision_events(
                     .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
                     .into(),
                 material: materials.add(ColorMaterial::from(color)),
-                // transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(
@@ -240,20 +264,23 @@ fn collision_events(
             )))
             .insert(RigidBody::Dynamic)
             .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
-            .insert(Restitution::coefficient(0.7))
+            .insert(Restitution::coefficient(0.3))
+            .insert(ColliderMassProperties::Density(5.0))
+            .insert(ColliderMassProperties::Mass(50.0))
+            .insert(GravityScale(10.0))
             .insert(ActiveEvents::COLLISION_EVENTS);
     }
 }
 
 fn release_piece(
     mut commands: Commands,
-    meshes: ResMut<Assets<Mesh>>,
-    materials: ResMut<Assets<ColorMaterial>>,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
-    grab_postion: Res<GrabPostion>,
 ) {
-    let (entity, piece) = query.single_mut();
+    let Ok((entity, piece)) = query.get_single_mut() else {
+        return;
+    };
+
     if keyboard_input.just_released(KeyCode::Space) {
         commands.entity(entity).remove::<Grab>();
         commands
@@ -262,9 +289,11 @@ fn release_piece(
             .insert(Collider::ball(
                 piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
             ))
-            .insert(Restitution::coefficient(0.7))
-            .insert(ActiveEvents::COLLISION_EVENTS);
-
-        spawn_piece(commands, grab_postion, meshes, materials);
+            .insert(Restitution::coefficient(0.3))
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(ColliderMassProperties::Density(5.0))
+            .insert(ColliderMassProperties::Mass(50.0))
+            .insert(GravityScale(10.0))
+            .insert(Falling);
     }
 }

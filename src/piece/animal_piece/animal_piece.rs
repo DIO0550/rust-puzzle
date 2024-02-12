@@ -84,6 +84,9 @@ impl Piece {
 pub struct Grab;
 
 #[derive(Component)]
+pub struct Falling;
+
+#[derive(Component)]
 pub struct AnimalPieceComponent {
     pub animal_piece: Box<dyn AnimalPiece>,
 }
