@@ -2,7 +2,7 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{AdditionalMassProperties, GravityScale, RigidBody},
     geometry::{ActiveEvents, Collider, ColliderMassProperties, Restitution},
-    pipeline::CollisionEvent,
+    pipeline::{CollisionEvent, ContactForceEvent},
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
@@ -46,15 +46,15 @@ fn main() {
             primary_window,
             ..default()
         }))
-        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .add_systems(Startup, setup)
-        .add_systems(Startup, spawn_piece)
+        .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (move_piece).chain())
-        .add_systems(Update, (release_piece, collision_events))
+        .add_systems(Update, (release_piece, collision_events, display_events))
         .run();
 }
 
@@ -87,11 +87,20 @@ fn piece_color(piece_type: &PieceType) -> Color {
     return color;
 }
 
-fn spawn_piece(
+fn spawn_piece_system(
     mut commands: Commands,
-    resource: Res<GrabPostion>,
+    mut resource: Res<GrabPostion>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    spawn_piece(&mut commands, &mut resource, &mut meshes, &mut materials)
+}
+
+fn spawn_piece(
+    commands: &mut Commands,
+    resource: &mut Res<GrabPostion>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
 ) {
     let mut rng = rand::thread_rng();
     let rnd: usize = rng.gen();
@@ -111,7 +120,6 @@ fn spawn_piece(
                 .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
                 .into(),
             material: materials.add(ColorMaterial::from(color)),
-            // transform: Transform::from_translation(Vec3::new(-150., 0., 0.)),
             ..default()
         })
         .insert(TransformBundle::from(Transform::from_xyz(
@@ -193,7 +201,7 @@ fn collision_events(
     falling_query: Query<&Falling>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    grab_postion: Res<GrabPostion>,
+    mut grab_postion: Res<GrabPostion>,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -203,16 +211,22 @@ fn collision_events(
 
         if falling_query.get(*entities.0).is_ok() {
             commands.entity(*entities.0).remove::<Falling>();
-            spawn_piece(commands, grab_postion, meshes, materials);
-            println!("falling_query entity 0");
-            return;
+            spawn_piece(
+                &mut commands,
+                &mut grab_postion,
+                &mut meshes,
+                &mut materials,
+            );
         };
 
         if falling_query.get(*entities.1).is_ok() {
             commands.entity(*entities.1).remove::<Falling>();
-            spawn_piece(commands, grab_postion, meshes, materials);
-            println!("falling_query entity 1");
-            return;
+            spawn_piece(
+                &mut commands,
+                &mut grab_postion,
+                &mut meshes,
+                &mut materials,
+            );
         };
 
         let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
@@ -264,8 +278,6 @@ fn collision_events(
             )))
             .insert(RigidBody::Dynamic)
             .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
-            .insert(Restitution::coefficient(0.3))
-            .insert(ColliderMassProperties::Density(5.0))
             .insert(ColliderMassProperties::Mass(50.0))
             .insert(GravityScale(10.0))
             .insert(ActiveEvents::COLLISION_EVENTS);
@@ -289,9 +301,7 @@ fn release_piece(
             .insert(Collider::ball(
                 piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
             ))
-            .insert(Restitution::coefficient(0.3))
             .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ColliderMassProperties::Density(5.0))
             .insert(ColliderMassProperties::Mass(50.0))
             .insert(GravityScale(10.0))
             .insert(Falling);
