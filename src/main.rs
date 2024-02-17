@@ -54,7 +54,7 @@ fn main() {
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (move_piece).chain())
-        .add_systems(Update, (release_piece, collision_events, display_events))
+        .add_systems(Update, (release_piece, collision_events))
         .run();
 }
 
