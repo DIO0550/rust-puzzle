@@ -1,13 +1,14 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
-    dynamics::{AdditionalMassProperties, GravityScale, RigidBody},
-    geometry::{ActiveEvents, Collider, ColliderMassProperties, Restitution},
-    pipeline::{CollisionEvent, ContactForceEvent},
+    dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
+    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties},
+    pipeline::CollisionEvent,
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
+
 use piece::{
-    animal_piece::animal_piece::{AnimalPiece, AnimalPieceComponent, Falling, Grab, PieceType},
+    animal_piece::animal_piece::{AnimalPieceComponent, Falling, Grab, PieceType},
     piece_factory::{Factory, PieceFactory},
 };
 use rand::prelude::*;
@@ -24,14 +25,17 @@ const Y_LENGTH: f32 = 150.0;
 const SCREEN_WIDTH: f32 = 1200.0;
 const SCREEN_HEIGHT: f32 = 900.0;
 
-const BOX_SIZE_HEIHT: f32 = SCREEN_HEIGHT / 3.0;
-const BOX_SIZE_WIDTH: f32 = SCREEN_WIDTH / 4.0;
+const BOX_SIZE_HEIHT: f32 = 200.0; //SCREEN_HEIGHT / 3.0;
+const BOX_SIZE_WIDTH: f32 = 200.0; //SCREEN_WIDTH / 4.0;
 const BOX_THICKNESS: f32 = 5.0;
 const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 10.0;
 
 const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 const PIECE_SPEED: f32 = 500.0;
+
+#[derive(Component)]
+struct ScoreText;
 
 fn main() {
     let window = Window {
@@ -54,22 +58,56 @@ fn main() {
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (move_piece).chain())
-        .add_systems(Update, (release_piece, collision_events))
+        .add_systems(
+            Update,
+            (release_piece, collision_events, update_scoreboard).chain(),
+        )
         .run();
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands.insert_resource(resource::material::Materials {
-        colors: vec![
-            Color::rgb_u8(64, 230, 100).into(),
-            Color::rgb_u8(220, 64, 90).into(),
-            Color::rgb_u8(70, 150, 210).into(),
-            Color::rgb_u8(220, 230, 70).into(),
-            Color::rgb_u8(35, 220, 241).into(),
-            Color::rgb_u8(240, 140, 70).into(),
-        ],
-    });
+    commands
+        .spawn((NodeBundle {
+            style: Style {
+                position_type: PositionType::Absolute,
+                left: Val::Px(50.),
+                top: Val::Px(50.),
+
+                ..default()
+            },
+            ..default()
+        },))
+        .with_children(|parent| {
+            parent.spawn((
+                ScoreText,
+                TextBundle::from_sections([
+                    TextSection::new(
+                        "Score",
+                        TextStyle {
+                            font: asset_server.load("Roboto-Regular.ttf"),
+                            font_size: 50.,
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    ),
+                    TextSection::new(
+                        "",
+                        TextStyle {
+                            font: asset_server.load("Roboto-Regular.ttf"),
+                            font_size: 50.,
+                            color: Color::BLACK,
+                            ..default()
+                        },
+                    ),
+                ]),
+            ));
+        });
+}
+
+fn update_scoreboard(time: Res<Time>, mut query: Query<&mut Text, With<ScoreText>>) {
+    let mut text = query.single_mut();
+    text.sections[0].value = time.delta_seconds().to_string();
 }
 
 fn piece_color(piece_type: &PieceType) -> Color {
@@ -116,12 +154,11 @@ fn spawn_piece(
         .insert(piece)
         // TODO: 後でピースの画像に直す
         .insert(MaterialMesh2dBundle {
-            mesh: meshes
-                .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
-                .into(),
+            mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
             material: materials.add(ColorMaterial::from(color)),
             ..default()
         })
+        .insert(ActiveCollisionTypes::all())
         .insert(TransformBundle::from(Transform::from_xyz(
             resource.x,
             BOX_SIZE_HEIHT * 2.0 / 3.0,
@@ -165,7 +202,7 @@ fn setup_physics(mut commands: Commands) {
 
 fn move_piece(
     mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
     time: Res<Time>,
 ) {
@@ -175,11 +212,11 @@ fn move_piece(
 
     let mut direction = 0.0;
 
-    if keyboard_input.pressed(KeyCode::Left) {
+    if keyboard_input.pressed(KeyCode::ArrowLeft) {
         direction -= 1.0;
     }
 
-    if keyboard_input.pressed(KeyCode::Right) {
+    if keyboard_input.pressed(KeyCode::ArrowRight) {
         direction += 1.0;
     }
 
@@ -230,13 +267,13 @@ fn collision_events(
         };
 
         let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
-            println!("not animal piece entity 0");
+            // println!("not animal piece entity 0");
 
             return;
         };
 
         let Ok((entity2, transform2)) = piece_query.get(*entities.1) else {
-            println!("not animal piece entity 1");
+            // println!("not animal piece entity 1");
             return;
         };
 
@@ -267,9 +304,7 @@ fn collision_events(
         commands
             .spawn(piece)
             .insert(MaterialMesh2dBundle {
-                mesh: meshes
-                    .add(shape::Circle::new(size * 2.0 * UNIT_WIDTH).into())
-                    .into(),
+                mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
                 material: materials.add(ColorMaterial::from(color)),
                 ..default()
             })
@@ -280,16 +315,22 @@ fn collision_events(
             .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
             .insert(ColliderMassProperties::Mass(50.0))
             .insert(GravityScale(10.0))
-            .insert(ActiveEvents::COLLISION_EVENTS);
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(Velocity {
+                linvel: Vec2::new(0.0, 0.0),
+                angvel: 0.0,
+            })
+            .insert(Sleeping::disabled());
     }
 }
 
 fn release_piece(
     mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
+        // println!("no single mut");
         return;
     };
 
@@ -304,6 +345,7 @@ fn release_piece(
             .insert(ActiveEvents::COLLISION_EVENTS)
             .insert(ColliderMassProperties::Mass(50.0))
             .insert(GravityScale(10.0))
+            .insert(Sleeping::disabled())
             .insert(Falling);
     }
 }

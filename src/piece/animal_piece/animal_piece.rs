@@ -30,15 +30,15 @@ pub enum PieceType {
 }
 
 const SPWANABLE_PIECES: &[&PieceType] = &[
-    &PieceType::Rat,
+    // &PieceType::Rat,
     &PieceType::Cat,
-    &PieceType::Dog,
-    &PieceType::Penguin,
+    // &PieceType::Dog,
+    // &PieceType::Penguin,
 ];
 
 impl PieceType {
     pub fn new(rnd: &usize) -> Self {
-        let piece_index = rnd % (SPWANABLE_PIECES.len() + 1);
+        let piece_index = rnd % (SPWANABLE_PIECES.len());
         match SPWANABLE_PIECES.get(piece_index) {
             None => PieceType::Rat,
             Some(v) => **v,
