@@ -1,4 +1,4 @@
-use super::animal_piece::{AnimalPiece, Piece, PieceType};
+use super::animal_piece::{AnimalPiece, Piece, PieceScore, PieceType};
 use bevy::prelude::*;
 
 #[derive(Component)]
@@ -8,7 +8,7 @@ pub struct PandaPiece {
 impl PandaPiece {
     pub(crate) fn new() -> Self {
         Self {
-            piece: Piece::new(12, PieceType::Panda),
+            piece: Piece::new(12, PieceType::Panda, 12),
         }
     }
 }
@@ -28,5 +28,9 @@ impl AnimalPiece for PandaPiece {
 
     fn get_piece_type(&self) -> &PieceType {
         return &self.piece.piece_type;
+    }
+
+    fn get_score(&self) -> &PieceScore {
+        return &self.piece.score;
     }
 }

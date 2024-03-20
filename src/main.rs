@@ -12,7 +12,7 @@ use piece::{
     piece_factory::{Factory, PieceFactory},
 };
 use rand::prelude::*;
-use resource::grab_postion::{self, GrabPostion};
+use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
 
 mod piece;
 mod resource;
@@ -54,6 +54,7 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
+        .insert_resource(PuzzleScore(0))
         .add_systems(Startup, setup)
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
@@ -83,7 +84,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
                 ScoreText,
                 TextBundle::from_sections([
                     TextSection::new(
-                        "Score",
+                        "Score : ",
                         TextStyle {
                             font: asset_server.load("Roboto-Regular.ttf"),
                             font_size: 50.,
@@ -105,9 +106,12 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         });
 }
 
-fn update_scoreboard(time: Res<Time>, mut query: Query<&mut Text, With<ScoreText>>) {
+fn update_scoreboard(
+    puzzle_score_res: Res<PuzzleScore>,
+    mut query: Query<&mut Text, With<ScoreText>>,
+) {
     let mut text = query.single_mut();
-    text.sections[0].value = time.delta_seconds().to_string();
+    text.sections[1].value = puzzle_score_res.0.to_string();
 }
 
 fn piece_color(piece_type: &PieceType) -> Color {
@@ -239,6 +243,7 @@ fn collision_events(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut grab_postion: Res<GrabPostion>,
+    puzzle_score_res: Res<PuzzleScore>,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -291,6 +296,9 @@ fn collision_events(
         let Some(evo_type) = entity1.animal_piece.get_piece_type().turn() else {
             return;
         };
+        let new_score = puzzle_score_res.0 + entity1.animal_piece.get_score().to_u32();
+        commands.insert_resource(PuzzleScore(new_score));
+
         let piece = AnimalPieceComponent {
             animal_piece: PieceFactory::create_piece(&evo_type),
         };

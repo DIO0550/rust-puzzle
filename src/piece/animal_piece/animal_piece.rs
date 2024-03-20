@@ -29,6 +29,13 @@ pub enum PieceType {
     Elephant,
 }
 
+pub struct PieceScore(u32);
+impl PieceScore {
+    pub fn to_u32(&self) -> u32 {
+        self.0 as u32
+    }
+}
+
 const SPWANABLE_PIECES: &[&PieceType] = &[
     // &PieceType::Rat,
     &PieceType::Cat,
@@ -64,18 +71,21 @@ pub trait AnimalPiece: Send + Sync + 'static {
     fn evolve(&self);
     fn get_size(&self) -> &PieceSize;
     fn get_piece_type(&self) -> &PieceType;
+    fn get_score(&self) -> &PieceScore;
 }
 
 pub struct Piece {
     pub(super) size: PieceSize,
     pub(super) piece_type: PieceType,
+    pub(super) score: PieceScore,
 }
 
 impl Piece {
-    pub fn new(size: u32, piece_type: PieceType) -> Self {
+    pub fn new(size: u32, piece_type: PieceType, score: u32) -> Self {
         Piece {
             size: PieceSize(size),
             piece_type: piece_type,
+            score: PieceScore(score),
         }
     }
 }
