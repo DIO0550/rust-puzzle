@@ -1,4 +1,4 @@
-use super::animal_piece::{
+use crate::piece::component::animal_piece::{
     animal_piece::{AnimalPiece, PieceType},
     cat_piece::CatPiece,
     dog_piece::DogPiece,
@@ -9,7 +9,6 @@ use super::animal_piece::{
     penguin_piece::PenguinPiece,
     rat_piece::RatPiece,
 };
-
 pub trait Factory {
     fn create_piece(piece_type: &PieceType) -> Box<dyn AnimalPiece>;
 }

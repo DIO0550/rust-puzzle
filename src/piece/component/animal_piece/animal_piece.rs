@@ -2,6 +2,8 @@ use std::usize;
 
 use bevy::ecs::component::Component;
 
+use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
+
 pub struct PieceSize(u32);
 impl PieceSize {
     pub fn to_f32(&self) -> f32 {
@@ -68,7 +70,13 @@ impl PieceType {
 
 pub trait AnimalPiece: Send + Sync + 'static {
     fn can_evolve(&self) -> bool;
-    fn evolve(&self);
+    fn evolve(&self) -> Option<Box<dyn AnimalPiece>> {
+        let Some(piece_type) = self.get_piece_type().turn() else {
+            return None;
+        };
+
+        return Some(PieceFactory::create_piece(&piece_type));
+    }
     fn get_size(&self) -> &PieceSize;
     fn get_piece_type(&self) -> &PieceType;
     fn get_score(&self) -> &PieceScore;
@@ -89,12 +97,6 @@ impl Piece {
         }
     }
 }
-
-#[derive(Component)]
-pub struct Grab;
-
-#[derive(Component)]
-pub struct Falling;
 
 #[derive(Component)]
 pub struct AnimalPieceComponent {

@@ -2,24 +2,21 @@ use super::animal_piece::{AnimalPiece, Piece, PieceScore, PieceType};
 use bevy::prelude::*;
 
 #[derive(Component)]
-pub struct PandaPiece {
+pub struct CatPiece {
     piece: Piece,
 }
-impl PandaPiece {
+
+impl CatPiece {
     pub(crate) fn new() -> Self {
         Self {
-            piece: Piece::new(12, PieceType::Panda, 12),
+            piece: Piece::new(4, PieceType::Cat, 4),
         }
     }
 }
 
-impl AnimalPiece for PandaPiece {
+impl AnimalPiece for CatPiece {
     fn can_evolve(&self) -> bool {
         return true;
-    }
-
-    fn evolve(&self) {
-        todo!()
     }
 
     fn get_size(&self) -> &super::animal_piece::PieceSize {

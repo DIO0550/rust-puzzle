@@ -1,2 +1,1 @@
-pub mod animal_piece;
-pub mod piece_factory;
+pub mod component;

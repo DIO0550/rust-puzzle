@@ -7,21 +7,26 @@ use bevy_rapier2d::{
     render::RapierDebugRenderPlugin,
 };
 
-use piece::{
-    animal_piece::animal_piece::{AnimalPieceComponent, Falling, Grab, PieceType},
-    piece_factory::{Factory, PieceFactory},
+use piece::component::{
+    animal_piece::animal_piece::{AnimalPieceComponent, PieceType},
+    factory::piece_factory::{Factory, PieceFactory},
+    falling::Falling,
+    grab::Grab,
 };
 use rand::prelude::*;
 use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
 
+use score::system::score_system::{setup_score, update_score};
+
 mod piece;
 mod resource;
+mod score;
 
 const UNIT_WIDTH: f32 = 4.5;
-const UNIT_HEIGHT: f32 = 5.0;
+// const UNIT_HEIGHT: f32 = 5.0;
 
-const X_LENGTH: f32 = 300.0;
-const Y_LENGTH: f32 = 150.0;
+// const X_LENGTH: f32 = 300.0;
+// const Y_LENGTH: f32 = 150.0;
 const SCREEN_WIDTH: f32 = 1200.0;
 const SCREEN_HEIGHT: f32 = 900.0;
 
@@ -33,9 +38,6 @@ const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 10.0;
 const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
 const PIECE_SPEED: f32 = 500.0;
-
-#[derive(Component)]
-struct ScoreText;
 
 fn main() {
     let window = Window {
@@ -55,63 +57,19 @@ fn main() {
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .insert_resource(PuzzleScore(0))
+        // TODO::scoreのresouce追加
         .add_systems(Startup, setup)
+        .add_systems(Startup, setup_score)
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (move_piece).chain())
-        .add_systems(
-            Update,
-            (release_piece, collision_events, update_scoreboard).chain(),
-        )
+        // .add_systems(Update, update_score)
+        .add_systems(Update, (release_piece, collision_events).chain())
         .run();
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
-    commands
-        .spawn((NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(50.),
-                top: Val::Px(50.),
-
-                ..default()
-            },
-            ..default()
-        },))
-        .with_children(|parent| {
-            parent.spawn((
-                ScoreText,
-                TextBundle::from_sections([
-                    TextSection::new(
-                        "Score : ",
-                        TextStyle {
-                            font: asset_server.load("Roboto-Regular.ttf"),
-                            font_size: 50.,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    ),
-                    TextSection::new(
-                        "",
-                        TextStyle {
-                            font: asset_server.load("Roboto-Regular.ttf"),
-                            font_size: 50.,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    ),
-                ]),
-            ));
-        });
-}
-
-fn update_scoreboard(
-    puzzle_score_res: Res<PuzzleScore>,
-    mut query: Query<&mut Text, With<ScoreText>>,
-) {
-    let mut text = query.single_mut();
-    text.sections[1].value = puzzle_score_res.0.to_string();
 }
 
 fn piece_color(piece_type: &PieceType) -> Color {
@@ -293,18 +251,18 @@ fn collision_events(
         commands.entity(*entities.0).despawn();
         commands.entity(*entities.1).despawn();
 
-        let Some(evo_type) = entity1.animal_piece.get_piece_type().turn() else {
+        let Some(animal_piece) = entity1.animal_piece.evolve() else {
             return;
         };
         let new_score = puzzle_score_res.0 + entity1.animal_piece.get_score().to_u32();
         commands.insert_resource(PuzzleScore(new_score));
 
         let piece = AnimalPieceComponent {
-            animal_piece: PieceFactory::create_piece(&evo_type),
+            animal_piece: animal_piece,
         };
         let size = piece.animal_piece.get_size().to_f32();
 
-        let color: Color = piece_color(&evo_type);
+        let color: Color = piece_color(piece.animal_piece.get_piece_type());
 
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
