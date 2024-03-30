@@ -21,6 +21,7 @@ use score::system::score_system::{setup_score, update_score};
 mod piece;
 mod resource;
 mod score;
+mod ui;
 
 const UNIT_WIDTH: f32 = 4.5;
 // const UNIT_HEIGHT: f32 = 5.0;
@@ -68,7 +69,7 @@ fn main() {
         .run();
 }
 
-fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 

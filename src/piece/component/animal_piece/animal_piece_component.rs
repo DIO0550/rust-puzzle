@@ -1,3 +1,4 @@
+use super::animal_piece::AnimalPiece;
 use bevy::ecs::component::Component;
 
 #[derive(Component)]

@@ -1,5 +1,8 @@
-use crate::score::{component::score_text::ScoreText, resource::score::Score};
-use bevy::prelude::*;
+use crate::{
+    score::{component::score_text::ScoreText, resource::score::Score},
+    ui::util::font::{FontName, FontResource, FontResourceTrait},
+};
+use ::bevy::prelude::*;
 
 pub fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
@@ -20,7 +23,10 @@ pub fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
                     TextSection::new(
                         "Score : ",
                         TextStyle {
-                            font: asset_server.load("Roboto-Regular.ttf"),
+                            font: FontResource::get_font_resouce(
+                                &asset_server,
+                                &FontName::HachiMaruPopReg,
+                            ),
                             font_size: 50.,
                             color: Color::BLACK,
                             ..default()
