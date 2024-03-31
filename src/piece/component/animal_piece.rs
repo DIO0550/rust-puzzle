@@ -1,5 +1,5 @@
 pub mod animal_piece;
-mod animal_piece_component;
+pub mod animal_piece_component;
 pub mod cat_piece;
 pub mod dog_piece;
 pub mod elephant_piece;

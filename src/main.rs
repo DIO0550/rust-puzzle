@@ -12,7 +12,7 @@ use bevy_rapier2d::{
 };
 
 use piece::component::{
-    animal_piece::animal_piece::{AnimalPieceComponent, PieceType},
+    animal_piece::{animal_piece::PieceType, animal_piece_component::AnimalPieceComponent},
     factory::piece_factory::{Factory, PieceFactory},
     falling::Falling,
     grab::Grab,

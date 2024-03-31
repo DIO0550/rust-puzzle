@@ -1,7 +1,5 @@
 use std::usize;
 
-use bevy::ecs::component::Component;
-
 use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
 
 pub struct PieceSize(u32);
