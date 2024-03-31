@@ -1,1 +1,1 @@
-pub mod ScorePlugin;
+pub mod score_plugin;

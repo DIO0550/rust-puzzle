@@ -1,3 +1,7 @@
+use asset::{
+    asset::AssetTrait,
+    image::image::{PieceImageAsset, PieceImageName},
+};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
@@ -14,14 +18,13 @@ use piece::component::{
     grab::Grab,
 };
 use rand::prelude::*;
-use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
+use resource::{grab_postion::GrabPostion, material, puzzle_score::PuzzleScore};
+use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
-use score::system::score_system::{setup_score, update_score};
-
+mod asset;
 mod piece;
 mod resource;
 mod score;
-mod ui;
 
 const UNIT_WIDTH: f32 = 4.5;
 // const UNIT_HEIGHT: f32 = 5.0;
@@ -55,16 +58,14 @@ fn main() {
         }))
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
+        .add_plugins(ScorePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .insert_resource(PuzzleScore(0))
-        // TODO::scoreのresouce追加
         .add_systems(Startup, setup)
-        .add_systems(Startup, setup_score)
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
         .add_systems(FixedUpdate, (move_piece).chain())
-        // .add_systems(Update, update_score)
         .add_systems(Update, (release_piece, collision_events).chain())
         .run();
 }
@@ -93,8 +94,15 @@ fn spawn_piece_system(
     mut resource: Res<GrabPostion>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
 ) {
-    spawn_piece(&mut commands, &mut resource, &mut meshes, &mut materials)
+    spawn_piece(
+        &mut commands,
+        &mut resource,
+        &mut meshes,
+        &mut materials,
+        &asset_server,
+    )
 }
 
 fn spawn_piece(
@@ -102,6 +110,7 @@ fn spawn_piece(
     resource: &mut Res<GrabPostion>,
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
+    asset_server: &Res<AssetServer>,
 ) {
     let mut rng = rand::thread_rng();
     let rnd: usize = rng.gen();
@@ -112,13 +121,15 @@ fn spawn_piece(
     let size = piece.animal_piece.get_size().to_f32();
     let color: Color = piece_color(&piece_type);
 
+    let image = PieceImageAsset::asset(asset_server, &PieceImageName::Cat);
+
     commands
         .spawn(Grab)
         .insert(piece)
         // TODO: 後でピースの画像に直す
         .insert(MaterialMesh2dBundle {
             mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-            material: materials.add(ColorMaterial::from(color)),
+            material: materials.add(image), //materials.add(ColorMaterial::from(color)),
             ..default()
         })
         .insert(ActiveCollisionTypes::all())
@@ -202,7 +213,8 @@ fn collision_events(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut grab_postion: Res<GrabPostion>,
-    puzzle_score_res: Res<PuzzleScore>,
+    score_res: Res<Score>,
+    asset_server: Res<AssetServer>,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -217,6 +229,7 @@ fn collision_events(
                 &mut grab_postion,
                 &mut meshes,
                 &mut materials,
+                &asset_server,
             );
         };
 
@@ -227,6 +240,7 @@ fn collision_events(
                 &mut grab_postion,
                 &mut meshes,
                 &mut materials,
+                &asset_server,
             );
         };
 
@@ -255,8 +269,8 @@ fn collision_events(
         let Some(animal_piece) = entity1.animal_piece.evolve() else {
             return;
         };
-        let new_score = puzzle_score_res.0 + entity1.animal_piece.get_score().to_u32();
-        commands.insert_resource(PuzzleScore(new_score));
+        let new_score = score_res.0 + entity1.animal_piece.get_score().to_u32();
+        commands.insert_resource(Score(new_score));
 
         let piece = AnimalPieceComponent {
             animal_piece: animal_piece,
