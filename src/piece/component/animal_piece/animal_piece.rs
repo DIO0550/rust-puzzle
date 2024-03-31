@@ -97,8 +97,3 @@ impl Piece {
         }
     }
 }
-
-#[derive(Component)]
-pub struct AnimalPieceComponent {
-    pub animal_piece: Box<dyn AnimalPiece>,
-}
