@@ -43,13 +43,33 @@ const SPWANABLE_PIECES: &[&PieceType] = &[
     // &PieceType::Penguin,
 ];
 
+impl From<usize> for PieceType {
+    fn from(value: usize) -> Self {
+        match value {
+            value if value == PieceType::Rat as usize => PieceType::Rat,
+            value if value == PieceType::Cat as usize => PieceType::Cat,
+            value if value == PieceType::Dog as usize => PieceType::Dog,
+            value if value == PieceType::Penguin as usize => PieceType::Penguin,
+            value if value == PieceType::Horse as usize => PieceType::Horse,
+            value if value == PieceType::Panda as usize => PieceType::Panda,
+            value if value == PieceType::Giraffe as usize => PieceType::Giraffe,
+            value if value == PieceType::Elephant as usize => PieceType::Elephant,
+            _ => PieceType::Rat,
+        }
+    }
+}
+
 impl PieceType {
-    pub fn new(rnd: &usize) -> Self {
-        let piece_index = rnd % (SPWANABLE_PIECES.len());
+    pub fn new(piece_index: &usize) -> Self {
+        let piece_index = piece_index % (SPWANABLE_PIECES.len());
         match SPWANABLE_PIECES.get(piece_index) {
             None => PieceType::Rat,
             Some(v) => **v,
         }
+    }
+
+    pub fn to_usize(&self) -> usize {
+        *self as usize
     }
 
     pub fn turn(&self) -> Option<PieceType> {

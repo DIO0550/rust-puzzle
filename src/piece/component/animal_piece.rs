@@ -7,4 +7,5 @@ pub mod giraffe_piece;
 pub mod horse_piece;
 pub mod panda_piece;
 pub mod penguin_piece;
+pub mod piece_image;
 pub mod rat_piece;

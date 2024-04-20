@@ -11,37 +11,25 @@ use bevy_rapier2d::{
     render::RapierDebugRenderPlugin,
 };
 
-use piece::component::{
-    animal_piece::{animal_piece::PieceType, animal_piece_component::AnimalPieceComponent},
-    factory::piece_factory::{Factory, PieceFactory},
-    falling::Falling,
-    grab::Grab,
+use consts::consts::*;
+use piece::{
+    component::{
+        animal_piece::{animal_piece::PieceType, animal_piece_component::AnimalPieceComponent},
+        factory::piece_factory::{Factory, PieceFactory},
+        falling::Falling,
+        grab::Grab,
+    },
+    system::piece_system::spawn_piece,
 };
 use rand::prelude::*;
 use resource::{grab_postion::GrabPostion, material, puzzle_score::PuzzleScore};
 use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
 mod asset;
+mod consts;
 mod piece;
 mod resource;
 mod score;
-
-const UNIT_WIDTH: f32 = 4.5;
-// const UNIT_HEIGHT: f32 = 5.0;
-
-// const X_LENGTH: f32 = 300.0;
-// const Y_LENGTH: f32 = 150.0;
-const SCREEN_WIDTH: f32 = 1200.0;
-const SCREEN_HEIGHT: f32 = 900.0;
-
-const BOX_SIZE_HEIHT: f32 = 200.0; //SCREEN_HEIGHT / 3.0;
-const BOX_SIZE_WIDTH: f32 = 200.0; //SCREEN_WIDTH / 4.0;
-const BOX_THICKNESS: f32 = 5.0;
-const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 10.0;
-
-const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-
-const PIECE_SPEED: f32 = 500.0;
 
 fn main() {
     let window = Window {
@@ -103,41 +91,6 @@ fn spawn_piece_system(
         &mut materials,
         &asset_server,
     )
-}
-
-fn spawn_piece(
-    commands: &mut Commands,
-    resource: &mut Res<GrabPostion>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
-    asset_server: &Res<AssetServer>,
-) {
-    let mut rng = rand::thread_rng();
-    let rnd: usize = rng.gen();
-    let piece_type = PieceType::new(&rnd);
-    let piece = AnimalPieceComponent {
-        animal_piece: PieceFactory::create_piece(&piece_type),
-    };
-    let size = piece.animal_piece.get_size().to_f32();
-    let color: Color = piece_color(&piece_type);
-
-    let image = PieceImageAsset::asset(asset_server, &PieceImageName::Cat);
-
-    commands
-        .spawn(Grab)
-        .insert(piece)
-        // TODO: 後でピースの画像に直す
-        .insert(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-            material: materials.add(image), //materials.add(ColorMaterial::from(color)),
-            ..default()
-        })
-        .insert(ActiveCollisionTypes::all())
-        .insert(TransformBundle::from(Transform::from_xyz(
-            resource.x,
-            BOX_SIZE_HEIHT * 2.0 / 3.0,
-            0.0,
-        )));
 }
 
 fn setup_physics(mut commands: Commands) {
