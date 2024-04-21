@@ -1,25 +1,32 @@
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
-    geometry::{ActiveEvents, Collider, ColliderMassProperties},
+    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
     pipeline::CollisionEvent,
-    plugin::{NoUserData, RapierPhysicsPlugin},
+    plugin::{NoUserData, RapierContext, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
 
 use consts::consts::*;
+use game::component::game_over_sensor::GameOverSeonsor;
+// use game::{
+//     component::game_over_sensor::GameOverSeonsor,
+//     system::game_over_system::*,
+// };
 use piece::{
     component::{
         animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
         falling::Falling,
+        grab::Grab,
     },
-    system::piece_system::{move_piece, release_piece, spawn_piece},
+    system::piece_system::move_piece,
 };
 use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
 use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
 mod asset;
 mod consts;
+mod game;
 mod piece;
 mod resource;
 mod score;
@@ -46,13 +53,44 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
+        // .add_systems(FixedUpdate, game_over_sensor_intersection_events)
         .add_systems(FixedUpdate, (move_piece).chain())
-        .add_systems(Update, (release_piece, collision_events).chain())
+        .add_systems(Update, (release_piece, collision_events))
         .run();
 }
 
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
+}
+
+/**
+ * ピース生成
+ */
+fn spawn_piece(
+    commands: &mut Commands,
+    resource: &mut Res<GrabPostion>,
+    meshes: &mut ResMut<Assets<Mesh>>,
+    materials: &mut ResMut<Assets<ColorMaterial>>,
+    asset_server: &Res<AssetServer>,
+) {
+    let piece = AnimalPieceComponent::spawn();
+    let size = piece.animal_piece.get_size().to_f32();
+    let image = PieceImage::from_piece_type(asset_server, &piece.animal_piece.get_piece_type());
+
+    commands
+        .spawn(Grab)
+        .insert(piece)
+        .insert(MaterialMesh2dBundle {
+            mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
+            material: materials.add(image),
+            ..default()
+        })
+        .insert(ActiveCollisionTypes::all())
+        .insert(TransformBundle::from(Transform::from_xyz(
+            resource.x,
+            BOX_SIZE_HEIHT * 2.0 / 3.0,
+            0.0,
+        )));
 }
 
 fn spawn_piece_system(
@@ -71,9 +109,33 @@ fn spawn_piece_system(
     )
 }
 
-fn setup_physics(mut commands: Commands) {
-    /* Create the ground. */
+pub fn release_piece(
+    mut commands: Commands,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
+    mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
+) {
+    let Ok((entity, piece)) = query.get_single_mut() else {
+        return;
+    };
 
+    if keyboard_input.just_released(KeyCode::Space) {
+        commands.entity(entity).remove::<Grab>();
+        commands
+            .entity(entity)
+            .insert(RigidBody::Dynamic)
+            .insert(Collider::ball(
+                piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
+            ))
+            .insert(ActiveEvents::COLLISION_EVENTS)
+            .insert(ColliderMassProperties::Mass(50.0))
+            .insert(GravityScale(10.0))
+            .insert(Sleeping::disabled())
+            .insert(Falling);
+    }
+}
+
+fn setup_physics(mut commands: Commands) {
+    // 入れ物生成
     commands.spawn(Collider::compound(vec![
         // 左
         (
@@ -103,6 +165,20 @@ fn setup_physics(mut commands: Commands) {
             Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
         ),
     ]));
+
+    // ゲームオーバー用のセンサー生成
+    commands
+        .spawn(Collider::cuboid(
+            BOX_SIZE_WIDTH + BOX_THICKNESS,
+            BOX_THICKNESS,
+        ))
+        .insert(TransformBundle::from(Transform::from_xyz(
+            0.0,
+            BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+            0.0,
+        )))
+        .insert(GameOverSeonsor)
+        .insert(Sensor);
 }
 
 /**
@@ -119,13 +195,16 @@ fn collision_events(
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
 ) {
+    // println!("start collision_events");
     for collision_event in collision_events.read() {
+        println!("collision_event");
         let entities = match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
             CollisionEvent::Stopped(entity1, entity2, _) => (entity1, entity2),
         };
 
         if falling_query.get(*entities.0).is_ok() {
+            println!("remove falling");
             commands.entity(*entities.0).remove::<Falling>();
             spawn_piece(
                 &mut commands,
@@ -137,6 +216,7 @@ fn collision_events(
         };
 
         if falling_query.get(*entities.1).is_ok() {
+            println!("remove falling");
             commands.entity(*entities.1).remove::<Falling>();
             spawn_piece(
                 &mut commands,

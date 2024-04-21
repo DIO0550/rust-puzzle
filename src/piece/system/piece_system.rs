@@ -14,8 +14,8 @@ use bevy::{
     transform::{components::Transform, TransformBundle},
 };
 use bevy_rapier2d::{
-    dynamics::{GravityScale, RigidBody, Sleeping},
-    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties},
+    dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
+    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
 };
 
 use crate::{
@@ -45,10 +45,9 @@ pub fn spawn_piece(
     commands
         .spawn(Grab)
         .insert(piece)
-        // TODO: 後でピースの画像に直す
         .insert(MaterialMesh2dBundle {
             mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-            material: materials.add(image), //materials.add(ColorMaterial::from(color)),
+            material: materials.add(image),
             ..default()
         })
         .insert(ActiveCollisionTypes::all())
@@ -99,7 +98,6 @@ pub fn release_piece(
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
-        // println!("no single mut");
         return;
     };
 
