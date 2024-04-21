@@ -28,4 +28,14 @@ impl AnimalPieceComponent {
 
         return piece;
     }
+
+    pub fn evolve(&self) -> Option<Self> {
+        let Some(piece) = self.animal_piece.evolve() else {
+            return None;
+        };
+
+        return Some(AnimalPieceComponent {
+            animal_piece: piece,
+        });
+    }
 }

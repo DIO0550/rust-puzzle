@@ -1,11 +1,7 @@
-use asset::{
-    asset::AssetTrait,
-    image::image::{PieceImageAsset, PieceImageName},
-};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
-    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties},
+    geometry::{ActiveEvents, Collider, ColliderMassProperties},
     pipeline::CollisionEvent,
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
@@ -14,15 +10,12 @@ use bevy_rapier2d::{
 use consts::consts::*;
 use piece::{
     component::{
-        animal_piece::{animal_piece::PieceType, animal_piece_component::AnimalPieceComponent},
-        factory::piece_factory::{Factory, PieceFactory},
+        animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
         falling::Falling,
-        grab::Grab,
     },
-    system::piece_system::spawn_piece,
+    system::piece_system::{move_piece, release_piece, spawn_piece},
 };
-use rand::prelude::*;
-use resource::{grab_postion::GrabPostion, material, puzzle_score::PuzzleScore};
+use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
 use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
 mod asset;
@@ -60,21 +53,6 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-}
-
-fn piece_color(piece_type: &PieceType) -> Color {
-    let color = match piece_type {
-        PieceType::Cat => Color::YELLOW,
-        PieceType::Dog => Color::RED,
-        PieceType::Elephant => Color::GREEN,
-        PieceType::Giraffe => Color::AQUAMARINE,
-        PieceType::Horse => Color::BEIGE,
-        PieceType::Panda => Color::BISQUE,
-        PieceType::Penguin => Color::BLACK,
-        PieceType::Rat => Color::BLUE,
-    };
-
-    return color;
 }
 
 fn spawn_piece_system(
@@ -125,34 +103,6 @@ fn setup_physics(mut commands: Commands) {
             Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
         ),
     ]));
-}
-
-fn move_piece(
-    mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
-    time: Res<Time>,
-) {
-    let Ok(mut transform) = query.get_single_mut() else {
-        return;
-    };
-
-    let mut direction = 0.0;
-
-    if keyboard_input.pressed(KeyCode::ArrowLeft) {
-        direction -= 1.0;
-    }
-
-    if keyboard_input.pressed(KeyCode::ArrowRight) {
-        direction += 1.0;
-    }
-
-    let new_paddle_position =
-        transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
-    transform.translation.x = new_paddle_position;
-    commands.insert_resource(GrabPostion {
-        x: new_paddle_position,
-    })
 }
 
 /**
@@ -219,19 +169,14 @@ fn collision_events(
         commands.entity(*entities.0).despawn();
         commands.entity(*entities.1).despawn();
 
-        let Some(animal_piece) = entity1.animal_piece.evolve() else {
+        let Some(piece) = entity1.evolve() else {
             return;
         };
         let new_score = score_res.0 + entity1.animal_piece.get_score().to_u32();
         commands.insert_resource(Score(new_score));
 
-        let piece = AnimalPieceComponent {
-            animal_piece: animal_piece,
-        };
         let size = piece.animal_piece.get_size().to_f32();
-
-        let color: Color = piece_color(piece.animal_piece.get_piece_type());
-
+        let image = PieceImage::from_piece_type(&asset_server, piece.animal_piece.get_piece_type());
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
@@ -239,7 +184,7 @@ fn collision_events(
             .spawn(piece)
             .insert(MaterialMesh2dBundle {
                 mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-                material: materials.add(ColorMaterial::from(color)),
+                material: materials.add(image),
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(
@@ -255,31 +200,5 @@ fn collision_events(
                 angvel: 0.0,
             })
             .insert(Sleeping::disabled());
-    }
-}
-
-fn release_piece(
-    mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
-) {
-    let Ok((entity, piece)) = query.get_single_mut() else {
-        // println!("no single mut");
-        return;
-    };
-
-    if keyboard_input.just_released(KeyCode::Space) {
-        commands.entity(entity).remove::<Grab>();
-        commands
-            .entity(entity)
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(
-                piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
-            ))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ColliderMassProperties::Mass(50.0))
-            .insert(GravityScale(10.0))
-            .insert(Sleeping::disabled())
-            .insert(Falling);
     }
 }

@@ -36,38 +36,23 @@ impl PieceScore {
     }
 }
 
-const SPWANABLE_PIECES: &[&PieceType] = &[
-    // &PieceType::Rat,
-    &PieceType::Cat,
-    // &PieceType::Dog,
-    // &PieceType::Penguin,
-];
-
 impl From<usize> for PieceType {
     fn from(value: usize) -> Self {
         match value {
-            value if value == PieceType::Rat as usize => PieceType::Rat,
-            value if value == PieceType::Cat as usize => PieceType::Cat,
-            value if value == PieceType::Dog as usize => PieceType::Dog,
-            value if value == PieceType::Penguin as usize => PieceType::Penguin,
-            value if value == PieceType::Horse as usize => PieceType::Horse,
-            value if value == PieceType::Panda as usize => PieceType::Panda,
-            value if value == PieceType::Giraffe as usize => PieceType::Giraffe,
-            value if value == PieceType::Elephant as usize => PieceType::Elephant,
+            value if value == PieceType::Rat.to_usize() => PieceType::Rat,
+            value if value == PieceType::Cat.to_usize() => PieceType::Cat,
+            value if value == PieceType::Dog.to_usize() => PieceType::Dog,
+            value if value == PieceType::Penguin.to_usize() => PieceType::Penguin,
+            value if value == PieceType::Horse.to_usize() => PieceType::Horse,
+            value if value == PieceType::Panda.to_usize() => PieceType::Panda,
+            value if value == PieceType::Giraffe.to_usize() => PieceType::Giraffe,
+            value if value == PieceType::Elephant.to_usize() => PieceType::Elephant,
             _ => PieceType::Rat,
         }
     }
 }
 
 impl PieceType {
-    pub fn new(piece_index: &usize) -> Self {
-        let piece_index = piece_index % (SPWANABLE_PIECES.len());
-        match SPWANABLE_PIECES.get(piece_index) {
-            None => PieceType::Rat,
-            Some(v) => **v,
-        }
-    }
-
     pub fn to_usize(&self) -> usize {
         *self as usize
     }
