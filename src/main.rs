@@ -2,13 +2,13 @@ use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
-    pipeline::CollisionEvent,
-    plugin::{NoUserData, RapierContext, RapierPhysicsPlugin},
+    pipeline::{CollisionEvent, ContactForceEvent},
+    plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
 };
 
 use consts::consts::*;
-use game::component::game_over_sensor::GameOverSeonsor;
+// use game::component::game_over_sensor::GameOverSeonsor;
 // use game::{
 //     component::game_over_sensor::GameOverSeonsor,
 //     system::game_over_system::*,
@@ -26,7 +26,7 @@ use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
 mod asset;
 mod consts;
-mod game;
+// mod game;
 mod piece;
 mod resource;
 mod score;
@@ -85,6 +85,7 @@ fn spawn_piece(
             material: materials.add(image),
             ..default()
         })
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(ActiveCollisionTypes::all())
         .insert(TransformBundle::from(Transform::from_xyz(
             resource.x,
@@ -136,35 +137,37 @@ pub fn release_piece(
 
 fn setup_physics(mut commands: Commands) {
     // 入れ物生成
-    commands.spawn(Collider::compound(vec![
-        // 左
-        (
-            Vec2 {
-                x: -BOX_SIZE_WIDTH,
-                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
-            },
-            0.0,
-            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
-        ),
-        // 真ん中
-        (
-            Vec2 {
-                x: 0.0,
-                y: -BOX_SIZE_HEIHT * 3.0 / 2.0 + BOX_MARGIN_BOTTOM,
-            },
-            0.0,
-            Collider::cuboid(BOX_SIZE_WIDTH + BOX_THICKNESS, BOX_THICKNESS),
-        ),
-        // 下
-        (
-            Vec2 {
-                x: BOX_SIZE_WIDTH,
-                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
-            },
-            0.0,
-            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
-        ),
-    ]));
+    commands
+        .spawn(Collider::compound(vec![
+            // 左
+            (
+                Vec2 {
+                    x: -BOX_SIZE_WIDTH,
+                    y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+                },
+                0.0,
+                Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
+            ),
+            // 真ん中
+            (
+                Vec2 {
+                    x: 0.0,
+                    y: -BOX_SIZE_HEIHT * 3.0 / 2.0 + BOX_MARGIN_BOTTOM,
+                },
+                0.0,
+                Collider::cuboid(BOX_SIZE_WIDTH + BOX_THICKNESS, BOX_THICKNESS),
+            ),
+            // 下
+            (
+                Vec2 {
+                    x: BOX_SIZE_WIDTH,
+                    y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+                },
+                0.0,
+                Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
+            ),
+        ]))
+        .insert(ActiveEvents::COLLISION_EVENTS);
 
     // ゲームオーバー用のセンサー生成
     commands
@@ -177,8 +180,22 @@ fn setup_physics(mut commands: Commands) {
             BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
             0.0,
         )))
-        .insert(GameOverSeonsor)
+        // .insert(GameOverSeonsor)
         .insert(Sensor);
+
+    let piece = AnimalPieceComponent::spawn();
+    commands
+        .spawn(piece)
+        .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)))
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::ball(4.0 * 2.0 * UNIT_WIDTH))
+        .insert(ColliderMassProperties::Mass(50.0))
+        .insert(GravityScale(10.0))
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(Velocity {
+            linvel: Vec2::new(0.0, 0.0),
+            angvel: 0.0,
+        });
 }
 
 /**
@@ -195,7 +212,6 @@ fn collision_events(
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
 ) {
-    // println!("start collision_events");
     for collision_event in collision_events.read() {
         println!("collision_event");
         let entities = match collision_event {
