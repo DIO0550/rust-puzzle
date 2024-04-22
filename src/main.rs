@@ -1,4 +1,4 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*, render::mesh::shape::Circle, sprite::MaterialMesh2dBundle};
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
@@ -81,8 +81,10 @@ fn spawn_piece(
         .spawn(Grab)
         .insert(piece)
         .insert(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-            material: materials.add(image),
+            mesh: bevy::sprite::Mesh2dHandle(
+                meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
+            ),
+            material: materials.add(image.into()),
             ..default()
         })
         .insert(ActiveEvents::COLLISION_EVENTS)
@@ -112,7 +114,7 @@ fn spawn_piece_system(
 
 pub fn release_piece(
     mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
@@ -279,8 +281,10 @@ fn collision_events(
         commands
             .spawn(piece)
             .insert(MaterialMesh2dBundle {
-                mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-                material: materials.add(image),
+                mesh: bevy::sprite::Mesh2dHandle(
+                    meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
+                ),
+                material: materials.add(image.into()),
                 ..default()
             })
             .insert(TransformBundle::from(Transform::from_xyz(

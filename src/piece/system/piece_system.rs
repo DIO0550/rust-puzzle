@@ -5,10 +5,9 @@ use bevy::{
         query::With,
         system::{Commands, Query, Res, ResMut},
     },
-    input::{keyboard::KeyCode, ButtonInput},
-    math::primitives::Circle,
+    input::{keyboard::KeyCode, Input},
     prelude::default,
-    render::mesh::Mesh,
+    render::mesh::{shape::Circle, Mesh},
     sprite::{ColorMaterial, MaterialMesh2dBundle},
     time::Time,
     transform::{components::Transform, TransformBundle},
@@ -46,8 +45,10 @@ pub fn spawn_piece(
         .spawn(Grab)
         .insert(piece)
         .insert(MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH)).into(),
-            material: materials.add(image),
+            mesh: bevy::sprite::Mesh2dHandle(
+                meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
+            ),
+            material: materials.add(image.into()),
             ..default()
         })
         .insert(ActiveCollisionTypes::all())
@@ -63,7 +64,7 @@ pub fn spawn_piece(
  */
 pub fn move_piece(
     mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
     time: Res<Time>,
 ) {
@@ -73,11 +74,11 @@ pub fn move_piece(
 
     let mut direction = 0.0;
 
-    if keyboard_input.pressed(KeyCode::ArrowLeft) {
+    if keyboard_input.pressed(KeyCode::Left) {
         direction -= 1.0;
     }
 
-    if keyboard_input.pressed(KeyCode::ArrowRight) {
+    if keyboard_input.pressed(KeyCode::Right) {
         direction += 1.0;
     }
 
@@ -94,7 +95,7 @@ pub fn move_piece(
  */
 pub fn release_piece(
     mut commands: Commands,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
