@@ -8,25 +8,20 @@ use bevy_rapier2d::{
 };
 
 use consts::consts::*;
-// use game::component::game_over_sensor::GameOverSeonsor;
-// use game::{
-//     component::game_over_sensor::GameOverSeonsor,
-//     system::game_over_system::*,
-// };
+use game::{component::game_over_sensor::GameOverSeonsor, system::game_over_system::*};
 use piece::{
     component::{
         animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
         falling::Falling,
-        grab::Grab,
     },
-    system::piece_system::move_piece,
+    system::piece_system::{move_piece, release_piece, spawn_piece},
 };
 use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
 use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
 
 mod asset;
 mod consts;
-// mod game;
+mod game;
 mod piece;
 mod resource;
 mod score;
@@ -53,7 +48,7 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Startup, spawn_piece_system)
         .add_systems(Startup, setup_physics)
-        // .add_systems(FixedUpdate, game_over_sensor_intersection_events)
+        .add_systems(FixedUpdate, game_over_sensor_intersection_events)
         .add_systems(FixedUpdate, (move_piece).chain())
         .add_systems(Update, (release_piece, collision_events))
         .run();
@@ -61,39 +56,6 @@ fn main() {
 
 fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
-}
-
-/**
- * ピース生成
- */
-fn spawn_piece(
-    commands: &mut Commands,
-    resource: &mut Res<GrabPostion>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
-    asset_server: &Res<AssetServer>,
-) {
-    let piece = AnimalPieceComponent::spawn();
-    let size = piece.animal_piece.get_size().to_f32();
-    let image = PieceImage::from_piece_type(asset_server, &piece.animal_piece.get_piece_type());
-
-    commands
-        .spawn(Grab)
-        .insert(piece)
-        .insert(MaterialMesh2dBundle {
-            mesh: bevy::sprite::Mesh2dHandle(
-                meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
-            ),
-            material: materials.add(image.into()),
-            ..default()
-        })
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ActiveCollisionTypes::all())
-        .insert(TransformBundle::from(Transform::from_xyz(
-            resource.x,
-            BOX_SIZE_HEIHT * 2.0 / 3.0,
-            0.0,
-        )));
 }
 
 fn spawn_piece_system(
@@ -110,31 +72,6 @@ fn spawn_piece_system(
         &mut materials,
         &asset_server,
     )
-}
-
-pub fn release_piece(
-    mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
-) {
-    let Ok((entity, piece)) = query.get_single_mut() else {
-        return;
-    };
-
-    if keyboard_input.just_released(KeyCode::Space) {
-        commands.entity(entity).remove::<Grab>();
-        commands
-            .entity(entity)
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(
-                piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
-            ))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ColliderMassProperties::Mass(50.0))
-            .insert(GravityScale(10.0))
-            .insert(Sleeping::disabled())
-            .insert(Falling);
-    }
 }
 
 fn setup_physics(mut commands: Commands) {
@@ -182,22 +119,8 @@ fn setup_physics(mut commands: Commands) {
             BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
             0.0,
         )))
-        // .insert(GameOverSeonsor)
+        .insert(GameOverSeonsor)
         .insert(Sensor);
-
-    let piece = AnimalPieceComponent::spawn();
-    commands
-        .spawn(piece)
-        .insert(TransformBundle::from(Transform::from_xyz(0.0, 0.0, 0.0)))
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(4.0 * 2.0 * UNIT_WIDTH))
-        .insert(ColliderMassProperties::Mass(50.0))
-        .insert(GravityScale(10.0))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(Velocity {
-            linvel: Vec2::new(0.0, 0.0),
-            angvel: 0.0,
-        });
 }
 
 /**
@@ -208,6 +131,7 @@ fn collision_events(
     mut collision_events: EventReader<CollisionEvent>,
     piece_query: Query<(&AnimalPieceComponent, &Transform)>,
     falling_query: Query<&Falling>,
+    sensor_query: Query<&Sensor>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     mut grab_postion: Res<GrabPostion>,
@@ -215,14 +139,20 @@ fn collision_events(
     asset_server: Res<AssetServer>,
 ) {
     for collision_event in collision_events.read() {
-        println!("collision_event");
+        // println!("collision_event");
         let entities = match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
             CollisionEvent::Stopped(entity1, entity2, _) => (entity1, entity2),
         };
 
+        if sensor_query.get(*entities.0).is_ok() || sensor_query.get(*entities.1).is_ok() {
+            println!("sensor");
+
+            continue;
+        }
+
         if falling_query.get(*entities.0).is_ok() {
-            println!("remove falling");
+            // println!("remove falling");
             commands.entity(*entities.0).remove::<Falling>();
             spawn_piece(
                 &mut commands,
@@ -234,7 +164,7 @@ fn collision_events(
         };
 
         if falling_query.get(*entities.1).is_ok() {
-            println!("remove falling");
+            // println!("remove falling");
             commands.entity(*entities.1).remove::<Falling>();
             spawn_piece(
                 &mut commands,
@@ -246,29 +176,29 @@ fn collision_events(
         };
 
         let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
-            // println!("not animal piece entity 0");
+            println!("not animal piece entity 0");
 
-            return;
+            continue;
         };
 
         let Ok((entity2, transform2)) = piece_query.get(*entities.1) else {
             // println!("not animal piece entity 1");
-            return;
+            continue;
         };
 
         if entity1.animal_piece.get_piece_type() != entity2.animal_piece.get_piece_type() {
-            println!("not same type!");
-            println!("entity1 : {:?}", entity1.animal_piece.get_piece_type());
-            println!("entity2 : {:?}", entity2.animal_piece.get_piece_type());
+            // println!("not same type!");
+            // println!("entity1 : {:?}", entity1.animal_piece.get_piece_type());
+            // println!("entity2 : {:?}", entity2.animal_piece.get_piece_type());
 
-            return;
+            continue;
         }
 
         commands.entity(*entities.0).despawn();
         commands.entity(*entities.1).despawn();
 
         let Some(piece) = entity1.evolve() else {
-            return;
+            continue;
         };
         let new_score = score_res.0 + entity1.animal_piece.get_score().to_u32();
         commands.insert_resource(Score(new_score));
