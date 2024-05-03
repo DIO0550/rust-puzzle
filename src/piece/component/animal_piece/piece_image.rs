@@ -18,7 +18,7 @@ impl PieceImage {
         asset_server: &Res<AssetServer>,
         piece_type: &PieceType,
     ) -> Handle<Image> {
-        let color = match piece_type {
+        let image = match piece_type {
             PieceType::Cat => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
             PieceType::Dog => PieceImageAsset::asset(asset_server, &PieceImageName::Dog),
             // 画像準備できたら修正
@@ -34,6 +34,6 @@ impl PieceImage {
             PieceType::Rat => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
         };
 
-        return color;
+        return image;
     }
 }

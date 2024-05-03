@@ -153,6 +153,7 @@ pub fn piece_collision_events(
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
 ) {
+    let mut should_spawn_new_peice = false;
     for collision_event in collision_events.read() {
         let entities = match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
@@ -168,25 +169,15 @@ pub fn piece_collision_events(
         if falling_query.get(*entities.0).is_ok() {
             // println!("remove falling");
             commands.entity(*entities.0).remove::<Falling>();
-            spawn_piece(
-                &mut commands,
-                &mut grab_postion,
-                &mut meshes,
-                &mut materials,
-                &asset_server,
-            );
+
+            should_spawn_new_peice = true;
         };
 
         if falling_query.get(*entities.1).is_ok() {
             // println!("remove falling");
             commands.entity(*entities.1).remove::<Falling>();
-            spawn_piece(
-                &mut commands,
-                &mut grab_postion,
-                &mut meshes,
-                &mut materials,
-                &asset_server,
-            );
+
+            should_spawn_new_peice = true;
         };
 
         let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
@@ -244,5 +235,15 @@ pub fn piece_collision_events(
                 angvel: 0.0,
             })
             .insert(Sleeping::disabled());
+    }
+
+    if should_spawn_new_peice {
+        spawn_piece(
+            &mut commands,
+            &mut grab_postion,
+            &mut meshes,
+            &mut materials,
+            &asset_server,
+        );
     }
 }
