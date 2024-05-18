@@ -1,6 +1,6 @@
 use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
 
-use super::animal_piece::{AnimalPiece, PieceType};
+use super::{animal_piece::AnimalPiece, piece_type::PieceType};
 use bevy::ecs::component::Component;
 use rand::distributions::{Distribution, Uniform};
 
@@ -15,6 +15,16 @@ const SPWANABLE_PIECES: &[&PieceType] = &[
     &PieceType::Dog,
     &PieceType::Penguin,
 ];
+
+impl From<PieceType> for AnimalPieceComponent {
+    fn from(value: PieceType) -> Self {
+        let piece = AnimalPieceComponent {
+            animal_piece: PieceFactory::create_piece(&value),
+        };
+
+        return piece;
+    }
+}
 
 impl AnimalPieceComponent {
     pub fn spawn() -> Self {

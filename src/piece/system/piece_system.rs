@@ -22,10 +22,13 @@ use bevy_rapier2d::{
 
 use crate::{
     consts::consts::*,
-    piece::component::{
-        animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
-        falling::Falling,
-        grab::Grab,
+    piece::{
+        component::{
+            animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
+            falling::Falling,
+            grab::Grab,
+        },
+        resource::next_piece::NextPiece,
     },
     resource::grab_postion::GrabPostion,
     score::resource::score::Score,
@@ -40,10 +43,13 @@ pub fn spawn_piece(
     meshes: &mut ResMut<Assets<Mesh>>,
     materials: &mut ResMut<Assets<ColorMaterial>>,
     asset_server: &Res<AssetServer>,
+    next_piece_res: &Res<NextPiece>,
 ) {
-    let piece = AnimalPieceComponent::spawn();
+    let piece = AnimalPieceComponent::from(next_piece_res.0);
     let size = piece.animal_piece.get_size().to_f32();
     let image = PieceImage::from_piece_type(asset_server, &piece.animal_piece.get_piece_type());
+
+    commands.insert_resource(NextPiece::new());
 
     commands
         .spawn(Grab)
@@ -69,6 +75,7 @@ pub fn spawn_piece_system(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
+    next_piece_res: Res<NextPiece>,
 ) {
     spawn_piece(
         &mut commands,
@@ -76,6 +83,7 @@ pub fn spawn_piece_system(
         &mut meshes,
         &mut materials,
         &asset_server,
+        &next_piece_res,
     )
 }
 
@@ -152,6 +160,7 @@ pub fn piece_collision_events(
     mut grab_postion: Res<GrabPostion>,
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
+    next_piece_res: Res<NextPiece>,
 ) {
     let mut should_spawn_new_peice = false;
     for collision_event in collision_events.read() {
@@ -244,6 +253,7 @@ pub fn piece_collision_events(
             &mut meshes,
             &mut materials,
             &asset_server,
+            &next_piece_res,
         );
     }
 }

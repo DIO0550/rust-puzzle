@@ -1,12 +1,7 @@
 use crate::piece::component::animal_piece::{
-    animal_piece::{AnimalPiece, PieceType},
-    cat_piece::CatPiece,
-    dog_piece::DogPiece,
-    elephant_piece::ElephantPiece,
-    giraffe_piece::GiraffePiece,
-    horse_piece::HorsePiece,
-    panda_piece::PandaPiece,
-    penguin_piece::PenguinPiece,
+    animal_piece::AnimalPiece, cat_piece::CatPiece, dog_piece::DogPiece,
+    elephant_piece::ElephantPiece, giraffe_piece::GiraffePiece, horse_piece::HorsePiece,
+    panda_piece::PandaPiece, penguin_piece::PenguinPiece, piece_type::PieceType,
     rat_piece::RatPiece,
 };
 pub trait Factory {

@@ -1,4 +1,7 @@
-use super::animal_piece::{AnimalPiece, Piece, PieceScore, PieceType};
+use super::{
+    animal_piece::{AnimalPiece, Piece, PieceScore},
+    piece_type::PieceType,
+};
 use bevy::prelude::*;
 
 #[derive(Component)]

@@ -17,8 +17,10 @@ use crate::{
         font::font::{FontAsset, FontName},
         image::image::{PieceImageAsset, PieceImageName},
     },
-    piece::component::animal_piece::piece_image::PieceImage,
+    piece::component::animal_piece::{piece_image::PieceImage, piece_type::PieceType},
 };
+
+use super::piece_ui::{PieceImageUITrait, PieceUI};
 
 fn piece_image_bundle(
     asset_server: &Res<AssetServer>,
@@ -40,6 +42,7 @@ fn piece_image_bundle(
 }
 
 pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let image_size = 50.0;
     commands
         .spawn((NodeBundle {
             style: Style {
@@ -72,9 +75,15 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                     ..default()
                 })
                 .with_children(|parent| {
-                    parent.spawn((piece_image_bundle(&asset_server, &PieceImageName::Cat),));
-                    parent.spawn((piece_image_bundle(&asset_server, &PieceImageName::Dog),));
-                    parent.spawn((piece_image_bundle(&asset_server, &PieceImageName::Penguin),));
+                    parent.spawn(
+                        PieceUI::new(PieceType::Cat).image_bundle(&asset_server, &image_size),
+                    );
+                    parent.spawn(
+                        PieceUI::new(PieceType::Dog).image_bundle(&asset_server, &image_size),
+                    );
+                    parent.spawn(
+                        PieceUI::new(PieceType::Penguin).image_bundle(&asset_server, &image_size),
+                    );
                 });
         });
 }

@@ -9,7 +9,7 @@ use crate::asset::{
     image::image::{PieceImageAsset, PieceImageName},
 };
 
-use super::animal_piece::PieceType;
+use super::piece_type::PieceType;
 
 pub struct PieceImage {}
 
