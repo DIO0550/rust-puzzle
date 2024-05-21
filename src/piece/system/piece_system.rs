@@ -4,7 +4,7 @@ use bevy::{
         entity::Entity,
         event::EventReader,
         query::With,
-        system::{Commands, EntityCommands, Query, Res, ResMut},
+        system::{Commands, Query, Res, ResMut},
     },
     input::{keyboard::KeyCode, Input},
     math::Vec2,
