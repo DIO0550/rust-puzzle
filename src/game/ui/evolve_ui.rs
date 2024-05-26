@@ -70,6 +70,9 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                     parent.spawn(
                         PieceUI::new(PieceType::Panda).image_bundle(&asset_server, &image_size),
                     );
+                    parent.spawn(
+                        PieceUI::new(PieceType::Horse).image_bundle(&asset_server, &image_size),
+                    );
                 });
         });
 }

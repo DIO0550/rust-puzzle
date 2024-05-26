@@ -1,4 +1,3 @@
-use std::usize;
 
 use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
 

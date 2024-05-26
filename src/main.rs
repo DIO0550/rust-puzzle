@@ -10,6 +10,7 @@ use bevy_rapier2d::{
 use consts::consts::*;
 use game::{
     component::game_over_sensor::GameOverSeonsor,
+    plugin::game_over_plugin::GameOverPlugin,
     system::{game_over_system::*, game_state::GameState},
     ui::evolve_ui::evolve_describe,
 };
@@ -49,6 +50,7 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ScorePlugin)
         .add_plugins(PiecePlugin)
+        .add_plugins(GameOverPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .insert_resource(PuzzleScore(0))
