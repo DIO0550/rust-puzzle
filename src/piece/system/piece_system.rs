@@ -3,7 +3,8 @@ use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
-        query::With,
+        query::{Or, With},
+        schedule::{NextState, State},
         system::{Commands, Query, Res, ResMut},
     },
     input::{keyboard::KeyCode, Input},
@@ -18,10 +19,12 @@ use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
     geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
     pipeline::CollisionEvent,
+    plugin::{RapierConfiguration, RapierContext},
 };
 
 use crate::{
     consts::consts::*,
+    game::{component::game_over_sensor::GameOverSeonsor, system::game_state::GameState},
     piece::{
         component::{
             animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
@@ -30,7 +33,7 @@ use crate::{
         },
         resource::next_piece::NextPiece,
     },
-    resource::grab_postion::GrabPostion,
+    resource::grab_postion::{self, GrabPostion},
     score::resource::score::Score,
 };
 
@@ -38,16 +41,31 @@ use crate::{
  * ピース生成
  */
 pub fn spawn_piece(
-    commands: &mut Commands,
-    resource: &mut Res<GrabPostion>,
-    meshes: &mut ResMut<Assets<Mesh>>,
-    materials: &mut ResMut<Assets<ColorMaterial>>,
-    asset_server: &Res<AssetServer>,
-    next_piece_res: &Res<NextPiece>,
+    mut commands: Commands,
+    mut query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    grab_position_resource: Res<GrabPostion>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+    asset_server: Res<AssetServer>,
+    next_piece_res: Res<NextPiece>,
+    app_state: ResMut<State<GameState>>,
 ) {
+    let Err(_) = query.get_single_mut() else {
+        return;
+    };
+
+    if *app_state.get() != GameState::InGame {
+        print!("Not InGame");
+        return;
+    }
+
+    println!("Spawn");
+
     let piece = AnimalPieceComponent::from(next_piece_res.0);
     let size = piece.animal_piece.get_size().to_f32();
-    let image = PieceImage::from_piece_type(asset_server, &piece.animal_piece.get_piece_type());
+    let image = PieceImage::from_piece_type(&asset_server, &piece.animal_piece.get_piece_type());
+
+    let new_grab_postion = GrabPostion::new(grab_position_resource.x, &*piece.animal_piece);
 
     commands.insert_resource(NextPiece::new());
 
@@ -63,28 +81,12 @@ pub fn spawn_piece(
         })
         .insert(ActiveCollisionTypes::all())
         .insert(TransformBundle::from(Transform::from_xyz(
-            resource.x,
+            new_grab_postion.x,
             BOX_SIZE_HEIHT * 2.0 / 3.0,
             0.0,
         )));
-}
 
-pub fn spawn_piece_system(
-    mut commands: Commands,
-    mut resource: Res<GrabPostion>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
-    next_piece_res: Res<NextPiece>,
-) {
-    spawn_piece(
-        &mut commands,
-        &mut resource,
-        &mut meshes,
-        &mut materials,
-        &asset_server,
-        &next_piece_res,
-    )
+    commands.insert_resource(new_grab_postion);
 }
 
 /**
@@ -93,10 +95,10 @@ pub fn spawn_piece_system(
 pub fn move_piece(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, (With<AnimalPieceComponent>, With<Grab>)>,
+    mut query: Query<(&mut Transform, &AnimalPieceComponent), With<Grab>>,
     time: Res<Time>,
 ) {
-    let Ok(mut transform) = query.get_single_mut() else {
+    let Ok((mut transform, animal_piece_component)) = query.get_single_mut() else {
         return;
     };
 
@@ -112,10 +114,10 @@ pub fn move_piece(
 
     let new_paddle_position =
         transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
-    transform.translation.x = new_paddle_position;
-    commands.insert_resource(GrabPostion {
-        x: new_paddle_position,
-    })
+    let new_grab_position =
+        GrabPostion::new(new_paddle_position, &*animal_piece_component.animal_piece);
+    transform.translation.x = new_grab_position.x;
+    commands.insert_resource(new_grab_position)
 }
 
 /**
@@ -157,12 +159,9 @@ pub fn piece_collision_events(
     sensor_query: Query<&Sensor>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    mut grab_postion: Res<GrabPostion>,
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
-    next_piece_res: Res<NextPiece>,
 ) {
-    let mut should_spawn_new_peice = false;
     for collision_event in collision_events.read() {
         let entities = match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
@@ -176,35 +175,22 @@ pub fn piece_collision_events(
         }
 
         if falling_query.get(*entities.0).is_ok() {
-            // println!("remove falling");
             commands.entity(*entities.0).remove::<Falling>();
-
-            should_spawn_new_peice = true;
         };
 
         if falling_query.get(*entities.1).is_ok() {
-            // println!("remove falling");
             commands.entity(*entities.1).remove::<Falling>();
-
-            should_spawn_new_peice = true;
         };
 
         let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
-            println!("not animal piece entity 0");
-
             continue;
         };
 
         let Ok((entity2, transform2)) = piece_query.get(*entities.1) else {
-            // println!("not animal piece entity 1");
             continue;
         };
 
         if entity1.animal_piece.get_piece_type() != entity2.animal_piece.get_piece_type() {
-            // println!("not same type!");
-            // println!("entity1 : {:?}", entity1.animal_piece.get_piece_type());
-            // println!("entity2 : {:?}", entity2.animal_piece.get_piece_type());
-
             continue;
         }
 
@@ -245,15 +231,34 @@ pub fn piece_collision_events(
             })
             .insert(Sleeping::disabled());
     }
+}
 
-    if should_spawn_new_peice {
-        spawn_piece(
-            &mut commands,
-            &mut grab_postion,
-            &mut meshes,
-            &mut materials,
-            &asset_server,
-            &next_piece_res,
-        );
+/**
+ *  ゲームオーバーセンサーとの交差イベント
+ */
+pub fn game_over_sensor_intersection_events(
+    rapier_context: Res<RapierContext>,
+    mut config: ResMut<RapierConfiguration>,
+    exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    mut query: Query<Entity, (With<GameOverSeonsor>, With<Sensor>)>,
+    mut app_state: ResMut<NextState<GameState>>,
+) {
+    let Ok(entity) = query.get_single_mut() else {
+        println!("non single mut");
+        return;
+    };
+
+    for (collider1, collider2, intersecting) in rapier_context.intersection_pairs_with(entity) {
+        if !intersecting {
+            return;
+        }
+        if exclude_piece_query.get(collider1).is_ok() || exclude_piece_query.get(collider2).is_ok()
+        {
+            return;
+        }
+
+        println!("Game Over");
+        config.physics_pipeline_active = false;
+        app_state.set(GameState::GameOver);
     }
 }

@@ -14,11 +14,18 @@ impl Plugin for PiecePlugin {
         app.insert_resource(NextPiece::new())
             .add_systems(
                 Startup,
-                (spawn_piece_system, setup_display_next_piece).run_if(in_state(GameState::InGame)),
+                (spawn_piece, setup_display_next_piece).run_if(in_state(GameState::InGame)),
             )
             .add_systems(
                 Update,
-                (piece_collision_events, move_piece, release_piece)
+                (
+                    spawn_piece,
+                    move_piece,
+                    release_piece,
+                    piece_collision_events,
+                    game_over_sensor_intersection_events,
+                )
+                    .chain()
                     .run_if(in_state(GameState::InGame)),
             )
             .add_systems(

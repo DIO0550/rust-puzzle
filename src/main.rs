@@ -9,10 +9,8 @@ use bevy_rapier2d::{
 
 use consts::consts::*;
 use game::{
-    component::game_over_sensor::GameOverSeonsor,
-    plugin::game_over_plugin::GameOverPlugin,
-    system::{game_over_system::*, game_state::GameState},
-    ui::evolve_ui::evolve_describe,
+    component::game_over_sensor::GameOverSeonsor, plugin::game_over_plugin::GameOverPlugin,
+    system::game_state::GameState, ui::evolve_ui::evolve_describe,
 };
 use piece::{
     component::{
@@ -57,7 +55,6 @@ fn main() {
         .add_systems(Startup, setup)
         .add_systems(Startup, setup_physics)
         .add_systems(Startup, evolve_describe)
-        .add_systems(FixedUpdate, game_over_sensor_intersection_events)
         .run();
 }
 
