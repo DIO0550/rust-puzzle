@@ -1,4 +1,4 @@
-use crate::game::system::despawn_screen::despawn_screen;
+use crate::game::system::despawn::despawn_component;
 use bevy::{
     app::{App, Plugin},
     ecs::schedule::{OnEnter, OnExit},
@@ -15,7 +15,7 @@ impl Plugin for GameOverPlugin {
         app.add_systems(OnEnter(GameState::GameOver), display_game_over)
             .add_systems(
                 OnExit(GameState::GameOver),
-                despawn_screen::<OnDisplayGameOver>,
+                despawn_component::<OnDisplayGameOver>,
             );
     }
 }

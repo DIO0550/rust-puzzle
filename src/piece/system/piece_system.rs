@@ -5,7 +5,7 @@ use bevy::{
         event::EventReader,
         query::{Or, With},
         schedule::{NextState, State},
-        system::{Commands, Query, Res, ResMut},
+        system::{Commands, Query, Res, ResMut, Spawn},
     },
     input::{keyboard::KeyCode, Input},
     math::Vec2,
@@ -13,7 +13,7 @@ use bevy::{
     render::mesh::{shape::Circle, Mesh},
     sprite::{ColorMaterial, MaterialMesh2dBundle},
     time::Time,
-    transform::{components::Transform, TransformBundle},
+    transform::{commands, components::Transform, TransformBundle},
 };
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
@@ -31,7 +31,7 @@ use crate::{
             falling::Falling,
             grab::Grab,
         },
-        resource::next_piece::NextPiece,
+        resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
     },
     resource::grab_postion::{self, GrabPostion},
     score::resource::score::Score,
@@ -48,6 +48,7 @@ pub fn spawn_piece(
     mut materials: ResMut<Assets<ColorMaterial>>,
     asset_server: Res<AssetServer>,
     next_piece_res: Res<NextPiece>,
+    spawn_piece_state: Res<SpawnPieceState>,
     app_state: ResMut<State<GameState>>,
 ) {
     let Err(_) = query.get_single_mut() else {
@@ -56,6 +57,11 @@ pub fn spawn_piece(
 
     if *app_state.get() != GameState::InGame {
         print!("Not InGame");
+        return;
+    }
+
+    if *spawn_piece_state == SpawnPieceState::Wait {
+        println!("wait");
         return;
     }
 
@@ -87,6 +93,7 @@ pub fn spawn_piece(
         )));
 
     commands.insert_resource(new_grab_postion);
+    commands.insert_resource(SpawnPieceState::Wait)
 }
 
 /**
@@ -169,8 +176,6 @@ pub fn piece_collision_events(
         };
 
         if sensor_query.get(*entities.0).is_ok() || sensor_query.get(*entities.1).is_ok() {
-            println!("sensor");
-
             continue;
         }
 
@@ -237,9 +242,10 @@ pub fn piece_collision_events(
  *  ゲームオーバーセンサーとの交差イベント
  */
 pub fn game_over_sensor_intersection_events(
+    mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut config: ResMut<RapierConfiguration>,
-    exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
     mut query: Query<Entity, (With<GameOverSeonsor>, With<Sensor>)>,
     mut app_state: ResMut<NextState<GameState>>,
 ) {
@@ -250,15 +256,22 @@ pub fn game_over_sensor_intersection_events(
 
     for (collider1, collider2, intersecting) in rapier_context.intersection_pairs_with(entity) {
         if !intersecting {
-            return;
+            continue;
         }
         if exclude_piece_query.get(collider1).is_ok() || exclude_piece_query.get(collider2).is_ok()
         {
-            return;
+            continue;
         }
 
-        println!("Game Over");
         config.physics_pipeline_active = false;
         app_state.set(GameState::GameOver);
+
+        return;
     }
+
+    let Err(_) = exclude_piece_query.get_single_mut() else {
+        return;
+    };
+
+    commands.insert_resource(SpawnPieceState::ShouldSpawn);
 }

@@ -23,8 +23,7 @@ impl PieceImage {
             PieceType::Dog => PieceImageAsset::asset(asset_server, &PieceImageName::Dog),
             // 画像準備できたら修正
             PieceType::Elephant => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
-            // 画像準備できたら修正
-            PieceType::Giraffe => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
+            PieceType::Giraffe => PieceImageAsset::asset(asset_server, &PieceImageName::Giraffe),
             PieceType::Horse => PieceImageAsset::asset(asset_server, &PieceImageName::Horse),
             PieceType::Panda => PieceImageAsset::asset(asset_server, &PieceImageName::Panda),
             PieceType::Penguin => PieceImageAsset::asset(asset_server, &PieceImageName::Penguin),

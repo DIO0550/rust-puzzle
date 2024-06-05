@@ -5,13 +5,18 @@ use bevy::{
 
 use crate::{
     game::system::game_state::GameState,
-    piece::{resource::next_piece::NextPiece, system::piece_system::*, ui::next_piece_ui::*},
+    piece::{
+        resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
+        system::piece_system::*,
+        ui::next_piece_ui::*,
+    },
 };
 
 pub struct PiecePlugin;
 impl Plugin for PiecePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(NextPiece::new())
+            .insert_resource(SpawnPieceState::ShouldSpawn)
             .add_systems(
                 Startup,
                 (spawn_piece, setup_display_next_piece).run_if(in_state(GameState::InGame)),

@@ -1,2 +1,2 @@
-pub mod despawn_screen;
+pub mod despawn;
 pub mod game_state;

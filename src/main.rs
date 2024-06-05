@@ -12,16 +12,9 @@ use game::{
     component::game_over_sensor::GameOverSeonsor, plugin::game_over_plugin::GameOverPlugin,
     system::game_state::GameState, ui::evolve_ui::evolve_describe,
 };
-use piece::{
-    component::{
-        animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
-        falling::Falling,
-    },
-    plugin::piece_plugin::PiecePlugin,
-    system::piece_system::{move_piece, release_piece, spawn_piece},
-};
-use resource::{grab_postion::GrabPostion, puzzle_score::PuzzleScore};
-use score::{plugin::score_plugin::ScorePlugin, resource::score::Score};
+use piece::plugin::piece_plugin::PiecePlugin;
+use resource::grab_postion::GrabPostion;
+use score::plugin::score_plugin::ScorePlugin;
 
 mod asset;
 mod consts;
@@ -51,7 +44,6 @@ fn main() {
         .add_plugins(GameOverPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
-        .insert_resource(PuzzleScore(0))
         .add_systems(Startup, setup)
         .add_systems(Startup, setup_physics)
         .add_systems(Startup, evolve_describe)
