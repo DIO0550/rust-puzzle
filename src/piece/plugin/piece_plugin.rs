@@ -1,11 +1,12 @@
 use bevy::{
     app::*,
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
+    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
 };
 
 use crate::{
-    game::system::game_state::GameState,
+    game::system::{despawn::despawn_component, game_state::GameState},
     piece::{
+        component::animal_piece::animal_piece_component::AnimalPieceComponent,
         resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
         system::piece_system::*,
         ui::next_piece_ui::*,
@@ -17,6 +18,10 @@ impl Plugin for PiecePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(NextPiece::new())
             .insert_resource(SpawnPieceState::ShouldSpawn)
+            .add_systems(
+                OnEnter(GameState::InGame),
+                despawn_component::<AnimalPieceComponent>,
+            )
             .add_systems(
                 Startup,
                 (spawn_piece, setup_display_next_piece).run_if(in_state(GameState::InGame)),

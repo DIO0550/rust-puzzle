@@ -9,9 +9,10 @@ use bevy_rapier2d::{
 
 use consts::consts::*;
 use game::{
-    component::game_over_sensor::GameOverSeonsor, plugin::game_over_plugin::GameOverPlugin,
-    system::game_state::GameState, ui::evolve_ui::evolve_describe,
+    component::game_over_sensor::GameOverSeonsor, system::game_state::GameState,
+    ui::evolve_ui::evolve_describe,
 };
+use game_over::plugin::game_over_plugin::GameOverPlugin;
 use piece::plugin::piece_plugin::PiecePlugin;
 use resource::grab_postion::GrabPostion;
 use score::plugin::score_plugin::ScorePlugin;
@@ -19,6 +20,7 @@ use score::plugin::score_plugin::ScorePlugin;
 mod asset;
 mod consts;
 mod game;
+mod game_over;
 mod piece;
 mod resource;
 mod score;
