@@ -20,8 +20,6 @@ use bevy::{
     },
 };
 
-pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {}
-
 fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     parent
         .spawn(NodeBundle {
@@ -96,7 +94,7 @@ fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
         });
 }
 
-pub fn display_game_over_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>) {
     commands
         .spawn((
             NodeBundle {
