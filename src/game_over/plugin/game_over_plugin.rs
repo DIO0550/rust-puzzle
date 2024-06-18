@@ -5,19 +5,25 @@ use crate::{
     },
     game_over::{
         resource::select_game_over_menu::SelectGameOverMenu,
-        system::game_over_system::reset_select_menu, ui::game_over_ui::display_game_over,
+        system::game_over_system::{change_select_menu, reset_select_menu},
+        ui::game_over_ui::{display_game_over, update_menu},
     },
 };
 use bevy::{
-    app::{App, Plugin},
+    app::{App, Plugin, Update},
     ecs::schedule::{IntoSystemConfigs, OnEnter, OnExit},
+    prelude::in_state,
 };
 
 pub struct GameOverPlugin;
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SelectGameOverMenu::Restart)
-            .add_systems(OnEnter(GameState::InGame), (display_game_over).chain())
+            .add_systems(OnEnter(GameState::GameOver), (display_game_over).chain())
+            .add_systems(
+                Update,
+                (update_menu, change_select_menu).run_if(in_state(GameState::GameOver)),
+            )
             .add_systems(
                 OnExit(GameState::GameOver),
                 (despawn_component::<OnDisplayGameOver>, reset_select_menu),

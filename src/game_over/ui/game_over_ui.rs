@@ -5,12 +5,16 @@ use crate::{
     },
     consts::color_theme::ColorTheme,
     game::component::on_display_over::OnDisplayGameOver,
+    game_over::{
+        component::game_over_menu_item::GameOverMenu,
+        resource::select_game_over_menu::SelectGameOverMenu,
+    },
 };
 use bevy::{
     asset::AssetServer,
     ecs::system::{Commands, Res},
     hierarchy::{BuildChildren, ChildBuilder},
-    prelude::default,
+    prelude::{default, Query, With},
     render::color::Color,
     text::{TextAlignment, TextSection, TextStyle},
     ui::{
@@ -37,24 +41,25 @@ fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 },
                 ..default()
             },
-            // border_color: BorderColor(ColorTheme::SPROUT),
-            // background_color: BackgroundColor(ColorTheme::CHROME_WHITE),
             ..default()
         })
         .with_children(|parent| {
             parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        width: Val::Px(300.0),
-                        height: Val::Px(100.0),
+                .spawn((
+                    NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            width: Val::Px(300.0),
+                            height: Val::Px(100.0),
+                            ..default()
+                        },
+                        background_color: BackgroundColor(ColorTheme::SPROUT),
                         ..default()
                     },
-                    background_color: BackgroundColor(ColorTheme::SPROUT),
-                    ..default()
-                })
+                    GameOverMenu::Restart,
+                ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_sections([TextSection::new(
                         "リスタート",
@@ -68,18 +73,21 @@ fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                 });
 
             parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Column,
-                        justify_content: JustifyContent::Center,
-                        align_items: AlignItems::Center,
-                        width: Val::Px(300.0),
-                        height: Val::Px(100.0),
+                .spawn((
+                    NodeBundle {
+                        style: Style {
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::Center,
+                            align_items: AlignItems::Center,
+                            width: Val::Px(300.0),
+                            height: Val::Px(100.0),
+                            ..default()
+                        },
+                        background_color: BackgroundColor(ColorTheme::SPROUT),
                         ..default()
                     },
-                    background_color: BackgroundColor(ColorTheme::SPROUT),
-                    ..default()
-                })
+                    GameOverMenu::GoTitle,
+                ))
                 .with_children(|parent| {
                     parent.spawn(TextBundle::from_sections([TextSection::new(
                         "タイトルに戻る",
@@ -159,4 +167,27 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                     game_over_menu(parent, &asset_server);
                 });
         });
+}
+
+pub fn update_menu(
+    mut query: Query<(&mut BackgroundColor, &GameOverMenu)>,
+    select_menu_res: Res<SelectGameOverMenu>,
+) {
+    println!("{:?}", *select_menu_res);
+    for (mut style, menu) in query.iter_mut() {
+        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
+            style.0 = Color::BLACK;
+        }
+        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
+            style.0 = ColorTheme::SPROUT
+        }
+
+        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
+            style.0 = Color::BLACK;
+        }
+
+        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
+            style.0 = ColorTheme::SPROUT
+        }
+    }
 }

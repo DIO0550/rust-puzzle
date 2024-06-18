@@ -23,5 +23,7 @@ pub fn change_select_menu(
         new_select_menu = select_menu.next_menu();
     }
 
+    // println!("{:?}", new_select_menu);
+
     commands.insert_resource(new_select_menu);
 }
