@@ -176,12 +176,11 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
 }
 
 pub fn update_menu(
-    mut query: Query<(&mut BackgroundColor, &GameOverMenu)>,
+    mut menu_query: Query<(&mut BackgroundColor, &GameOverMenu)>,
     mut menu_text_query: Query<(&mut Text, &GameOverMenu)>,
     select_menu_res: Res<SelectGameOverMenu>,
 ) {
-    println!("{:?}", *select_menu_res);
-    for (mut style, menu) in query.iter_mut() {
+    for (mut style, menu) in menu_query.iter_mut() {
         if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
             style.0 = ColorTheme::NORWAY;
         }

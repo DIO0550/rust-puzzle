@@ -9,8 +9,8 @@ use bevy_rapier2d::{
 
 use consts::consts::*;
 use game::{
-    component::game_over_sensor::GameOverSeonsor, system::game_state::GameState,
-    ui::evolve_ui::evolve_describe,
+    component::game_over_sensor::GameOverSeonsor, plugin::game_plugin::GamePlugin,
+    system::game_state::GameState, ui::evolve_ui::evolve_describe,
 };
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use piece::plugin::piece_plugin::PiecePlugin;
@@ -43,6 +43,7 @@ fn main() {
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ScorePlugin)
         .add_plugins(PiecePlugin)
+        .add_plugins(GamePlugin)
         .add_plugins(GameOverPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
