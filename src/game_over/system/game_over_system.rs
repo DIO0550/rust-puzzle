@@ -15,11 +15,11 @@ pub fn change_select_menu(
     select_menu: Res<SelectGameOverMenu>,
 ) {
     let mut new_select_menu: SelectGameOverMenu = *select_menu;
-    if keyboard_input.pressed(KeyCode::Up) {
+    if keyboard_input.just_pressed(KeyCode::Up) {
         new_select_menu = select_menu.prev_menu();
     }
 
-    if keyboard_input.pressed(KeyCode::Down) {
+    if keyboard_input.just_pressed(KeyCode::Down) {
         new_select_menu = select_menu.next_menu();
     }
 

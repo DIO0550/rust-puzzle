@@ -16,7 +16,7 @@ use bevy::{
     hierarchy::{BuildChildren, ChildBuilder},
     prelude::{default, Query, With},
     render::color::Color,
-    text::{TextAlignment, TextSection, TextStyle},
+    text::{Text, TextAlignment, TextSection, TextStyle},
     ui::{
         node_bundles::{NodeBundle, TextBundle},
         AlignItems, BackgroundColor, BorderColor, FlexDirection, JustifyContent, PositionType,
@@ -61,15 +61,18 @@ fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     GameOverMenu::Restart,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_sections([TextSection::new(
-                        "リスタート",
-                        TextStyle {
-                            font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                            font_size: 50.,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    )]));
+                    parent.spawn((
+                        TextBundle::from_sections([TextSection::new(
+                            "リスタート",
+                            TextStyle {
+                                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                                font_size: 50.,
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        )]),
+                        GameOverMenu::Restart,
+                    ));
                 });
 
             parent
@@ -89,15 +92,18 @@ fn game_over_menu(parent: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
                     GameOverMenu::GoTitle,
                 ))
                 .with_children(|parent| {
-                    parent.spawn(TextBundle::from_sections([TextSection::new(
-                        "タイトルに戻る",
-                        TextStyle {
-                            font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                            font_size: 50.,
-                            color: Color::BLACK,
-                            ..default()
-                        },
-                    )]));
+                    parent.spawn((
+                        TextBundle::from_sections([TextSection::new(
+                            "タイトルに戻る",
+                            TextStyle {
+                                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                                font_size: 50.,
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        )]),
+                        GameOverMenu::GoTitle,
+                    ));
                 });
         });
 }
@@ -171,23 +177,41 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
 
 pub fn update_menu(
     mut query: Query<(&mut BackgroundColor, &GameOverMenu)>,
+    mut menu_text_query: Query<(&mut Text, &GameOverMenu)>,
     select_menu_res: Res<SelectGameOverMenu>,
 ) {
     println!("{:?}", *select_menu_res);
     for (mut style, menu) in query.iter_mut() {
         if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
-            style.0 = Color::BLACK;
+            style.0 = ColorTheme::NORWAY;
         }
         if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
             style.0 = ColorTheme::SPROUT
         }
 
         if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
-            style.0 = Color::BLACK;
+            style.0 = ColorTheme::NORWAY;
         }
 
         if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
             style.0 = ColorTheme::SPROUT
+        }
+    }
+
+    for (mut menu_text, menu) in menu_text_query.iter_mut() {
+        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
+            menu_text.sections[0].style.color = Color::WHITE;
+        }
+        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
+            menu_text.sections[0].style.color = Color::BLACK;
+        }
+
+        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
+            menu_text.sections[0].style.color = Color::WHITE;
+        }
+
+        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
+            menu_text.sections[0].style.color = Color::BLACK;
         }
     }
 }
