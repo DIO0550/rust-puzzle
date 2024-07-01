@@ -246,6 +246,7 @@ pub fn game_over_sensor_intersection_events(
     rapier_context: Res<RapierContext>,
     mut config: ResMut<RapierConfiguration>,
     mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    mut piece_query: Query<&AnimalPieceComponent>,
     mut query: Query<Entity, (With<GameOverSeonsor>, With<Sensor>)>,
     mut app_state: ResMut<NextState<GameState>>,
 ) {
@@ -260,6 +261,11 @@ pub fn game_over_sensor_intersection_events(
         }
         if exclude_piece_query.get(collider1).is_ok() || exclude_piece_query.get(collider2).is_ok()
         {
+            continue;
+        }
+
+        // Piece以外なら除外
+        if !piece_query.get(collider1).is_ok() && !piece_query.get(collider2).is_ok() {
             continue;
         }
 

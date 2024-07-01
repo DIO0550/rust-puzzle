@@ -42,10 +42,7 @@ pub fn select_menu(
     }
 
     if *select_menu == SelectGameOverMenu::Restart {
+        println!("select_menu");
         app_state.set(GameState::InGame);
     }
-}
-
-pub fn restart(mut commands: Commands) {
-    commands.insert_resource(Score(0));
 }
