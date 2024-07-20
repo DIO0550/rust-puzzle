@@ -1,13 +1,13 @@
 use bevy::{
     asset::AssetServer,
     ecs::system::{Commands, Res},
-    hierarchy::BuildChildren,
+    hierarchy::{BuildChildren, ChildBuilder},
     prelude::default,
     render::color::Color,
     text::{TextSection, TextStyle},
     ui::{
         node_bundles::{NodeBundle, TextBundle},
-        FlexDirection, PositionType, Style, Val,
+        AlignItems, FlexDirection, JustifyContent, PositionType, Style, Val,
     },
 };
 
@@ -20,6 +20,30 @@ use crate::{
 };
 
 use super::piece_ui::{PieceImageUITrait, PieceUI};
+
+fn evolve_title_text(child_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+    child_builder
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((TextBundle::from_sections([TextSection::new(
+                "進化順",
+                TextStyle {
+                    font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                    font_size: 50.,
+                    color: Color::BLACK,
+                    ..default()
+                },
+            )]),));
+        });
+}
 
 pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
     let image_size = 50.0;
@@ -35,15 +59,7 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
             ..default()
         },))
         .with_children(|parent| {
-            parent.spawn((TextBundle::from_sections([TextSection::new(
-                "進化の順番",
-                TextStyle {
-                    font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                    font_size: 50.,
-                    color: Color::BLACK,
-                    ..default()
-                },
-            )]),));
+            evolve_title_text(parent, &asset_server);
         })
         .with_children(|parent| {
             parent

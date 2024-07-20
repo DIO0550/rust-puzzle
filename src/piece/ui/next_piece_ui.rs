@@ -1,7 +1,7 @@
 use bevy::{
     asset::AssetServer,
     ecs::{component::Component, query::With, system::*},
-    hierarchy::BuildChildren,
+    hierarchy::{BuildChildren, ChildBuilder},
     prelude::{default, Query},
     render::color::Color,
     text::*,
@@ -22,14 +22,56 @@ const PIECE_IMAGE_SIZE: f32 = 50.0;
 #[derive(Component)]
 pub struct NextPieceImage;
 
+fn next_piece_icon(
+    child_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    next_piece_res: &Res<NextPiece>,
+) {
+    let piece_image_bundle =
+        PieceUI::new(next_piece_res.0).image_bundle(&asset_server, &PIECE_IMAGE_SIZE);
+
+    child_builder
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Column,
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((piece_image_bundle, NextPieceImage));
+        });
+}
+
+fn next_piece_title(child_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+    child_builder
+        .spawn(NodeBundle {
+            style: Style {
+                flex_direction: FlexDirection::Row,
+                ..default()
+            },
+            ..default()
+        })
+        .with_children(|parent| {
+            parent.spawn((TextBundle::from_sections([TextSection::new(
+                "Next",
+                TextStyle {
+                    font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                    font_size: 50.,
+                    color: Color::BLACK,
+                    ..default()
+                },
+            )]),));
+        });
+}
+
 pub fn setup_display_next_piece(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     next_piece_res: Res<NextPiece>,
 ) {
-    let piece_image_bundle =
-        PieceUI::new(next_piece_res.0).image_bundle(&asset_server, &PIECE_IMAGE_SIZE);
-
     commands
         .spawn((NodeBundle {
             style: Style {
@@ -42,29 +84,9 @@ pub fn setup_display_next_piece(
             ..default()
         },))
         .with_children(|parent| {
-            parent.spawn((TextBundle::from_sections([TextSection::new(
-                "Next",
-                TextStyle {
-                    font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                    font_size: 50.,
-                    color: Color::BLACK,
-                    ..default()
-                },
-            )]),));
+            next_piece_title(parent, &asset_server);
         })
-        .with_children(|parent| {
-            parent
-                .spawn(NodeBundle {
-                    style: Style {
-                        flex_direction: FlexDirection::Row,
-                        ..default()
-                    },
-                    ..default()
-                })
-                .with_children(|parent| {
-                    parent.spawn((piece_image_bundle, NextPieceImage));
-                });
-        });
+        .with_children(|parent| next_piece_icon(parent, &asset_server, &next_piece_res));
 }
 
 pub fn update_display_next_piece(
