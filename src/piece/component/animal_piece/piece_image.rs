@@ -21,8 +21,7 @@ impl PieceImage {
         let image = match piece_type {
             PieceType::Cat => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
             PieceType::Dog => PieceImageAsset::asset(asset_server, &PieceImageName::Dog),
-            // 画像準備できたら修正
-            PieceType::Elephant => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
+            PieceType::Elephant => PieceImageAsset::asset(asset_server, &PieceImageName::Elephant),
             PieceType::Giraffe => PieceImageAsset::asset(asset_server, &PieceImageName::Giraffe),
             PieceType::Horse => PieceImageAsset::asset(asset_server, &PieceImageName::Horse),
             PieceType::Panda => PieceImageAsset::asset(asset_server, &PieceImageName::Panda),

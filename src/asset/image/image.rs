@@ -8,6 +8,7 @@ pub enum PieceImageName {
     Horse,
     Penguin,
     Panda,
+    Elephant,
 }
 
 impl AssetNameTrait for PieceImageName {
@@ -20,6 +21,7 @@ impl AssetNameTrait for PieceImageName {
             Self::Horse => "img/Horse.png".to_string(),
             Self::Penguin => "img/Penguin.png".to_string(),
             Self::Panda => "img/Panda.png".to_string(),
+            Self::Elephant => "img/Elephant.png".to_string(),
         }
     }
 }

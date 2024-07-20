@@ -1,1 +1,1 @@
-pub mod score_text;
+pub mod current_score_text;

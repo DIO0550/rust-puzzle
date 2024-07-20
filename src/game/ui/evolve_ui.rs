@@ -68,10 +68,16 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                         PieceUI::new(PieceType::Penguin).image_bundle(&asset_server, &image_size),
                     );
                     parent.spawn(
+                        PieceUI::new(PieceType::Horse).image_bundle(&asset_server, &image_size),
+                    );
+                    parent.spawn(
                         PieceUI::new(PieceType::Panda).image_bundle(&asset_server, &image_size),
                     );
                     parent.spawn(
-                        PieceUI::new(PieceType::Horse).image_bundle(&asset_server, &image_size),
+                        PieceUI::new(PieceType::Giraffe).image_bundle(&asset_server, &image_size),
+                    );
+                    parent.spawn(
+                        PieceUI::new(PieceType::Elephant).image_bundle(&asset_server, &image_size),
                     );
                 });
         });
