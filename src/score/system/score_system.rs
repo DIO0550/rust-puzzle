@@ -2,7 +2,9 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
+        image::image::ImageName,
     },
+    game::ui::image_ui::{ImageUI, ImageUITrait},
     score::{component::current_score_text::CurrentScoreText, resource::score::Score},
 };
 use ::bevy::prelude::*;
@@ -14,6 +16,12 @@ fn current_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<As
     children_builder
         .spawn(NodeBundle {
             style: Style {
+                margin: UiRect {
+                    left: Val::Px(0.0),
+                    right: Val::Px(0.0),
+                    top: Val::Px(10.0),
+                    bottom: Val::Px(0.0),
+                },
                 flex_direction: FlexDirection::Row,
                 justify_content: JustifyContent::Center,
                 align_items: AlignItems::Center,
@@ -29,7 +37,7 @@ fn current_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<As
                     TextStyle {
                         font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                         font_size: 50.,
-                        color: Color::BLACK,
+                        color: Color::WHITE,
                         ..default()
                     },
                 )]),
@@ -43,7 +51,15 @@ fn current_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<As
 fn score_title_text(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     children_builder
         .spawn(NodeBundle {
-            style: Style { ..default() },
+            style: Style {
+                margin: UiRect {
+                    left: Val::Px(0.0),
+                    right: Val::Px(0.0),
+                    top: Val::Px(75.0),
+                    bottom: Val::Px(0.0),
+                },
+                ..default()
+            },
             ..default()
         })
         .with_children(|parent| {
@@ -52,7 +68,7 @@ fn score_title_text(children_builder: &mut ChildBuilder, asset_server: &Res<Asse
                 TextStyle {
                     font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                     font_size: 50.,
-                    color: Color::BLACK,
+                    color: Color::WHITE,
                     ..default()
                 },
             )]),));
@@ -60,18 +76,22 @@ fn score_title_text(children_builder: &mut ChildBuilder, asset_server: &Res<Asse
 }
 
 pub fn setup_score(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let image_size = 250.0;
+    let mut piece_image_bundle =
+        ImageUI::image_bundle(ImageName::CatHand, &asset_server, &image_size);
+    piece_image_bundle.style = Style {
+        position_type: PositionType::Absolute,
+        left: Val::Px(50.),
+        top: Val::Px(50.),
+        height: Val::Px(image_size),
+        width: Val::Px(image_size),
+        flex_direction: FlexDirection::Column,
+        align_items: AlignItems::Center,
+        ..piece_image_bundle.style
+    };
+    // ImageUi::new(next_piece_res.0).image_bundle(&asset_server, &PIECE_IMAGE_SIZE);
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                left: Val::Px(50.),
-                top: Val::Px(50.),
-                flex_direction: FlexDirection::Column,
-
-                ..default()
-            },
-            ..default()
-        },))
+        .spawn(piece_image_bundle)
         .with_children(|parent| {
             score_title_text(parent, &asset_server);
         })

@@ -12,12 +12,16 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
+        image::image::ImageName,
     },
-    game::ui::piece_ui::{PieceImageUITrait, PieceUI},
+    game::ui::{
+        image_ui::{ImageUI, ImageUITrait},
+        piece_ui::{PieceImageUITrait, PieceUI},
+    },
     piece::{component::animal_piece::piece_image::PieceImage, resource::next_piece::NextPiece},
 };
 
-const PIECE_IMAGE_SIZE: f32 = 50.0;
+const PIECE_IMAGE_SIZE: f32 = 100.0;
 
 #[derive(Component)]
 pub struct NextPieceImage;
@@ -50,6 +54,12 @@ fn next_piece_title(child_builder: &mut ChildBuilder, asset_server: &Res<AssetSe
         .spawn(NodeBundle {
             style: Style {
                 flex_direction: FlexDirection::Row,
+                margin: UiRect {
+                    left: Val::Px(0.0),
+                    right: Val::Px(0.0),
+                    top: Val::Px(50.0),
+                    bottom: Val::Px(0.0),
+                },
                 ..default()
             },
             ..default()
@@ -72,17 +82,22 @@ pub fn setup_display_next_piece(
     asset_server: Res<AssetServer>,
     next_piece_res: Res<NextPiece>,
 ) {
+    let image_size = 250.0;
+    let mut piece_image_bundle =
+        ImageUI::image_bundle(ImageName::CatSilhouette, &asset_server, &image_size);
+
+    piece_image_bundle.style = Style {
+        position_type: PositionType::Absolute,
+        right: Val::Px(50.),
+        top: Val::Px(50.),
+        height: Val::Px(image_size),
+        width: Val::Px(image_size),
+        flex_direction: FlexDirection::Column,
+        align_items: AlignItems::Center,
+        ..piece_image_bundle.style
+    };
     commands
-        .spawn((NodeBundle {
-            style: Style {
-                position_type: PositionType::Absolute,
-                right: Val::Px(50.),
-                top: Val::Px(50.),
-                flex_direction: FlexDirection::Column,
-                ..default()
-            },
-            ..default()
-        },))
+        .spawn(piece_image_bundle)
         .with_children(|parent| {
             next_piece_title(parent, &asset_server);
         })

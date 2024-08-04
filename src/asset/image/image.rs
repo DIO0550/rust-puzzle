@@ -28,3 +28,18 @@ impl AssetNameTrait for PieceImageName {
 
 pub struct PieceImageAsset {}
 impl AssetTrait<PieceImageName> for PieceImageAsset {}
+
+pub enum ImageName {
+    CatHand,
+    CatSilhouette,
+}
+impl AssetNameTrait for ImageName {
+    fn asset_path(&self) -> String {
+        match self {
+            Self::CatHand => "img/cat-hand.png".to_string(),
+            Self::CatSilhouette => "img/cat-silhouette.png".to_string(),
+        }
+    }
+}
+pub struct ImageAsset {}
+impl AssetTrait<ImageName> for ImageAsset {}
