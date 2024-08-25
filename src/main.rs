@@ -13,14 +13,17 @@ use game::{
     system::game_state::GameState, ui::evolve_ui::evolve_describe,
 };
 use game_over::plugin::game_over_plugin::GameOverPlugin;
+use high_score::plugin::high_score_plugin::HighScorePlugin;
 use piece::plugin::piece_plugin::PiecePlugin;
 use resource::grab_postion::GrabPostion;
 use score::plugin::score_plugin::ScorePlugin;
 
 mod asset;
 mod consts;
+mod file;
 mod game;
 mod game_over;
+mod high_score;
 mod piece;
 mod resource;
 mod score;
@@ -45,6 +48,7 @@ fn main() {
         .add_plugins(PiecePlugin)
         .add_plugins(GamePlugin)
         .add_plugins(GameOverPlugin)
+        .add_plugins(HighScorePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .add_systems(Startup, setup)

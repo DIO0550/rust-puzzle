@@ -5,9 +5,8 @@ use bevy::{
 };
 
 use crate::{
-    game::system::{despawn::despawn_component, game_state::GameState},
+    game::system::game_state::GameState,
     game_over::resource::select_game_over_menu::SelectGameOverMenu,
-    score::resource::score::Score,
 };
 
 pub fn reset_select_menu(mut commands: Commands) {
