@@ -9,6 +9,7 @@ use crate::{
 };
 
 const HIGH_SCORE_FILE_NAME: &str = "high_score.json";
+const HIGH_SCORE_DATE_FORMAT: &str = "%Y年%m月%d日";
 
 pub fn save_high_score(
     _: Commands,
@@ -18,7 +19,7 @@ pub fn save_high_score(
     let score = puzzle_score_res.0;
     let new_high_score: HighScore = HighScore {
         score: score,
-        date: Utc::now().to_string(),
+        date: Utc::now().format(HIGH_SCORE_DATE_FORMAT).to_string(),
     };
 
     let high_scores = high_scores_res.as_mut();
@@ -33,14 +34,24 @@ pub fn save_high_score(
 
 pub fn load_high_score(mut commnads: Commands) {
     let load_value = FileReader::load_data(&HIGH_SCORE_FILE_NAME);
-    let Some(mut high_scores_value) = load_value else {
+
+    let Some(mut data_value) = load_value else {
         commnads.insert_resource(HighScores(vec![]));
 
         return;
     };
 
-    let high_scores: HighScores =
-        from_value(high_scores_value.get_mut("high_scores").unwrap().take()).unwrap();
+    let Some(high_scores_value) = data_value.get_mut("high_scores") else {
+        commnads.insert_resource(HighScores(vec![]));
+
+        return;
+    };
+
+    let Ok(high_scores) = from_value::<HighScores>(high_scores_value.take()) else {
+        commnads.insert_resource(HighScores(vec![]));
+
+        return;
+    };
 
     commnads.insert_resource(high_scores);
 }

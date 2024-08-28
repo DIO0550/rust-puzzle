@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{
     game::system::game_state::GameState,
     high_score::{
@@ -11,10 +9,9 @@ use crate::{
     },
 };
 use bevy::{
-    app::{App, Plugin, PreUpdate, Update},
+    app::{App, Plugin, Update},
     ecs::schedule::{IntoSystemConfigs, OnEnter},
-    prelude::{in_state, run_once},
-    time::common_conditions::on_timer,
+    prelude::{in_state, resource_changed, run_once},
 };
 
 pub struct HighScorePlugin;
@@ -27,11 +24,7 @@ impl Plugin for HighScorePlugin {
                 Update,
                 (setup_high_score_text)
                     .run_if(in_state(GameState::InGame))
-                    .run_if(run_once()),
+                    .run_if(resource_changed::<HighScores>()),
             );
-        // .add_systems(
-        //     Update,
-        //     setup_high_score_text.run_if(in_state(GameState::InGame)),
-        // );
     }
 }

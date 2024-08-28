@@ -12,12 +12,49 @@ use crate::{
 };
 use ::bevy::prelude::*;
 
+fn high_score_text_score(
+    children_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    score: &str,
+) {
+    children_builder.spawn((
+        HighScoreTextScore,
+        TextBundle::from_sections([TextSection::new(
+            score,
+            TextStyle {
+                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                font_size: 25.,
+                color: Color::BLACK,
+                ..default()
+            },
+        )]),
+    ));
+}
+
+fn high_score_text_date(
+    children_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    date: &str,
+) {
+    children_builder.spawn((
+        HighScoreTextDate,
+        TextBundle::from_sections([TextSection::new(
+            date,
+            TextStyle {
+                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                font_size: 25.,
+                color: Color::BLACK,
+                ..default()
+            },
+        )]),
+    ));
+}
+
 fn high_score_text(
     children_builder: &mut ChildBuilder,
     asset_server: &Res<AssetServer>,
     high_score: &HighScore,
 ) {
-    println!("{}", high_score.score);
     children_builder
         .spawn(NodeBundle {
             style: Style {
@@ -35,31 +72,8 @@ fn high_score_text(
             ..default()
         })
         .with_children(|parent| {
-            parent.spawn((
-                HighScoreTextScore,
-                TextBundle::from_sections([TextSection::new(
-                    &high_score.score.to_string(),
-                    TextStyle {
-                        font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                        font_size: 25.,
-                        color: Color::BLACK,
-                        ..default()
-                    },
-                )]),
-            ));
-
-            parent.spawn((
-                HighScoreTextDate,
-                TextBundle::from_sections([TextSection::new(
-                    &high_score.date,
-                    TextStyle {
-                        font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                        font_size: 25.,
-                        color: Color::BLACK,
-                        ..default()
-                    },
-                )]),
-            ));
+            high_score_text_score(parent, asset_server, &high_score.score.to_string());
+            high_score_text_date(parent, asset_server, &high_score.date);
         });
 }
 

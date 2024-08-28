@@ -19,9 +19,13 @@ impl FileReaderTrait for FileReader {
 
         match read_result {
             Ok(json_str) => {
-                return Some(from_str(&json_str).unwrap());
+                let Ok(result) = from_str(&json_str) else {
+                    return None;
+                };
+
+                return Some(result);
             }
-            Err(err) => return None,
+            Err(_) => return None,
         }
     }
 }
