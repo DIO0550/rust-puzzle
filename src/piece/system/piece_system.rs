@@ -5,7 +5,7 @@ use bevy::{
         event::EventReader,
         query::{Or, With},
         schedule::{NextState, State},
-        system::{Commands, Query, Res, ResMut, Spawn},
+        system::{Commands, Query, Res, ResMut},
     },
     input::{keyboard::KeyCode, Input},
     math::Vec2,
@@ -13,7 +13,7 @@ use bevy::{
     render::mesh::{shape::Circle, Mesh},
     sprite::{ColorMaterial, MaterialMesh2dBundle},
     time::Time,
-    transform::{commands, components::Transform, TransformBundle},
+    transform::{components::Transform, TransformBundle},
 };
 use bevy_rapier2d::{
     dynamics::{GravityScale, RigidBody, Sleeping, Velocity},

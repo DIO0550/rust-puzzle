@@ -11,7 +11,7 @@ use crate::{
 use bevy::{
     app::{App, Plugin, Update},
     ecs::schedule::{IntoSystemConfigs, OnEnter},
-    prelude::{in_state, resource_changed, run_once},
+    prelude::{in_state, resource_changed},
 };
 
 pub struct HighScorePlugin;

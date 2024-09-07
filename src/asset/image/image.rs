@@ -32,12 +32,14 @@ impl AssetTrait<PieceImageName> for PieceImageAsset {}
 pub enum ImageName {
     CatHand,
     CatSilhouette,
+    CatMug,
 }
 impl AssetNameTrait for ImageName {
     fn asset_path(&self) -> String {
         match self {
             Self::CatHand => "img/cat-hand.png".to_string(),
             Self::CatSilhouette => "img/cat-silhouette.png".to_string(),
+            Self::CatMug => "img/cat-mug.png".to_string(),
         }
     }
 }

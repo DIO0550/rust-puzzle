@@ -18,7 +18,12 @@ pub fn change_select_menu(
     keyboard_input: Res<Input<KeyCode>>,
     select_menu: Res<SelectGameOverMenu>,
 ) {
+    if keyboard_input.pressed(KeyCode::Space) {
+        return;
+    }
+
     let mut new_select_menu: SelectGameOverMenu = *select_menu;
+
     if keyboard_input.just_pressed(KeyCode::Up) {
         new_select_menu = select_menu.prev_menu();
     }
@@ -36,7 +41,7 @@ pub fn select_menu(
     select_menu: Res<SelectGameOverMenu>,
     mut app_state: ResMut<NextState<GameState>>,
 ) {
-    if !keyboard_input.just_pressed(KeyCode::Space) {
+    if !keyboard_input.just_released(KeyCode::Space) {
         return;
     }
 
