@@ -33,6 +33,7 @@ pub enum ImageName {
     CatHand,
     CatSilhouette,
     CatMug,
+    HighScoreFrame,
 }
 impl AssetNameTrait for ImageName {
     fn asset_path(&self) -> String {
@@ -40,6 +41,7 @@ impl AssetNameTrait for ImageName {
             Self::CatHand => "img/cat-hand.png".to_string(),
             Self::CatSilhouette => "img/cat-silhouette.png".to_string(),
             Self::CatMug => "img/cat-mug.png".to_string(),
+            Self::HighScoreFrame => "img/high-score-frame.png".to_string(),
         }
     }
 }

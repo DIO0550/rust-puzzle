@@ -57,7 +57,7 @@ fn next_piece_title(child_builder: &mut ChildBuilder, asset_server: &Res<AssetSe
                 margin: UiRect {
                     left: Val::Px(0.0),
                     right: Val::Px(0.0),
-                    top: Val::Px(50.0),
+                    top: Val::Px(65.0),
                     bottom: Val::Px(0.0),
                 },
                 ..default()
@@ -70,7 +70,7 @@ fn next_piece_title(child_builder: &mut ChildBuilder, asset_server: &Res<AssetSe
                 TextStyle {
                     font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                     font_size: 50.,
-                    color: Color::BLACK,
+                    color: Color::WHITE,
                     ..default()
                 },
             )]),));
@@ -89,7 +89,7 @@ pub fn setup_display_next_piece(
     piece_image_bundle.style = Style {
         position_type: PositionType::Absolute,
         right: Val::Px(50.),
-        top: Val::Px(50.),
+        top: Val::Px(65.),
         height: Val::Px(image_size),
         width: Val::Px(image_size),
         flex_direction: FlexDirection::Column,

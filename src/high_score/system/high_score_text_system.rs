@@ -4,7 +4,7 @@ use crate::{
         font::font::{FontAsset, FontName},
         image::image::ImageName,
     },
-    game::ui::image_ui::{ImageUI, ImageUITrait},
+    game::ui::image_ui::{ImageSize, ImageUI, ImageUITrait},
     high_score::{
         component::high_score_text::{HighScoreTextDate, HighScoreTextScore},
         resource::{high_score::HighScore, high_scores::HighScores},
@@ -24,7 +24,7 @@ fn high_score_text_score(
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
-                color: Color::BLACK,
+                color: Color::WHITE,
                 ..default()
             },
         )]),
@@ -43,7 +43,7 @@ fn high_score_text_date(
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
-                color: Color::BLACK,
+                color: Color::WHITE,
                 ..default()
             },
         )]),
@@ -86,15 +86,16 @@ pub fn setup_high_score_text(
         return;
     }
 
-    let image_size = 350.0;
+    let image_size = ImageSize::new(340.0, 300.0);
+
     let mut piece_image_bundle =
-        ImageUI::image_bundle(ImageName::CatHand, &asset_server, &image_size);
+        ImageUI::image_bundle(ImageName::HighScoreFrame, &asset_server, &image_size);
     piece_image_bundle.style = Style {
         position_type: PositionType::Absolute,
         left: Val::Px(50.),
         bottom: Val::Px(50.),
-        height: Val::Px(image_size),
-        width: Val::Px(image_size),
+        height: Val::Px(*image_size.get_height()),
+        width: Val::Px(*image_size.get_width()),
         flex_direction: FlexDirection::Column,
         align_items: AlignItems::Center,
         ..piece_image_bundle.style
