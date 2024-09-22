@@ -14,13 +14,13 @@ use bevy::{
     asset::AssetServer,
     ecs::system::{Commands, Res},
     hierarchy::{BuildChildren, ChildBuilder},
-    prelude::{default, Query, With},
+    prelude::{default, Query},
     render::color::Color,
     text::{Text, TextAlignment, TextSection, TextStyle},
     ui::{
         node_bundles::{NodeBundle, TextBundle},
-        AlignItems, BackgroundColor, BorderColor, FlexDirection, JustifyContent, PositionType,
-        Style, UiRect, Val,
+        AlignItems, BackgroundColor, BorderColor, FlexDirection, JustifyContent, Style, UiRect,
+        Val,
     },
 };
 

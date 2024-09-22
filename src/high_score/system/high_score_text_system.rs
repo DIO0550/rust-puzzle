@@ -6,21 +6,19 @@ use crate::{
     },
     game::ui::image_ui::{ImageSize, ImageUI, ImageUITrait},
     high_score::{
-        component::high_score_text::{HighScoreTextDate, HighScoreTextScore},
-        resource::{high_score::HighScore, high_scores::HighScores},
+        component::high_score_text::{HighScoreText, HighScoreTextDate, HighScoreTextScore},
+        resource::high_scores::{HighScores, MAX_HIGH_SCORE_COUNT},
     },
 };
 use ::bevy::prelude::*;
 
-fn high_score_text_score(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    score: &str,
-) {
+const DEFAULT_SCORE_TEXT: &str = "-";
+
+fn high_score_text_score(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     children_builder.spawn((
         HighScoreTextScore,
         TextBundle::from_sections([TextSection::new(
-            score,
+            DEFAULT_SCORE_TEXT,
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
@@ -31,15 +29,11 @@ fn high_score_text_score(
     ));
 }
 
-fn high_score_text_date(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    date: &str,
-) {
+fn high_score_text_date(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     children_builder.spawn((
         HighScoreTextDate,
         TextBundle::from_sections([TextSection::new(
-            date,
+            DEFAULT_SCORE_TEXT,
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
@@ -50,30 +44,29 @@ fn high_score_text_date(
     ));
 }
 
-fn high_score_text(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    high_score: &HighScore,
-) {
+fn high_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     children_builder
-        .spawn(NodeBundle {
-            style: Style {
-                margin: UiRect {
-                    left: Val::Px(0.0),
-                    right: Val::Px(0.0),
-                    top: Val::Px(10.0),
-                    bottom: Val::Px(0.0),
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    margin: UiRect {
+                        left: Val::Px(0.0),
+                        right: Val::Px(0.0),
+                        top: Val::Px(10.0),
+                        bottom: Val::Px(0.0),
+                    },
+                    flex_direction: FlexDirection::Column,
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    ..default()
                 },
-                flex_direction: FlexDirection::Column,
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
                 ..default()
             },
-            ..default()
-        })
-        .with_children(|parent| {
-            high_score_text_score(parent, asset_server, &high_score.score.to_string());
-            high_score_text_date(parent, asset_server, &high_score.date);
+            HighScoreText,
+        ))
+        .with_children(|parent: &mut ChildBuilder<'_, '_, '_>| {
+            high_score_text_score(parent, asset_server);
+            high_score_text_date(parent, asset_server);
         });
 }
 
@@ -102,9 +95,51 @@ pub fn setup_high_score_text(
     };
 
     commands.spawn(piece_image_bundle).with_children(|parent| {
-        high_scores_res
-            .0
-            .iter()
-            .for_each(|high_score| high_score_text(parent, &asset_server, &high_score));
+        for _ in 0..MAX_HIGH_SCORE_COUNT {
+            high_score_text(parent, &asset_server)
+        }
     });
+}
+
+/**
+ * ハイスコアの更新
+ */
+pub fn update_high_score(
+    _: Commands,
+    mut high_score_text_score_query: Query<
+        &mut Text,
+        (With<HighScoreTextScore>, Without<HighScoreTextDate>),
+    >,
+    mut high_score_text_date_query: Query<
+        &mut Text,
+        (With<HighScoreTextDate>, Without<HighScoreTextScore>),
+    >,
+    high_scores_res: Res<HighScores>,
+) {
+    let mut score_iterator = high_score_text_score_query.iter_mut();
+    let mut date_iterator = high_score_text_date_query.iter_mut();
+
+    for high_score in high_scores_res.0.iter() {
+        let score_text_option = score_iterator.next();
+        match score_text_option {
+            Some(mut score_text) => {
+                score_text.sections[0].value = high_score.score.to_string();
+            }
+
+            None => {
+                // do nothing
+            }
+        }
+
+        let date_text_option = date_iterator.next();
+        match date_text_option {
+            Some(mut date_text) => {
+                date_text.sections[0].value = high_score.date.clone();
+            }
+
+            None => {
+                // do nothing
+            }
+        }
+    }
 }

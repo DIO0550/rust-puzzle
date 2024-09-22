@@ -46,7 +46,6 @@ fn main() {
     };
     let primary_window = Some(window);
     App::new()
-        .add_state::<GameState>()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window,
             ..default()

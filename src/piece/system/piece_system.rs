@@ -33,7 +33,7 @@ use crate::{
         },
         resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
     },
-    resource::grab_postion::{self, GrabPostion},
+    resource::grab_postion::GrabPostion,
     score::resource::score::Score,
 };
 
@@ -251,7 +251,6 @@ pub fn game_over_sensor_intersection_events(
     mut app_state: ResMut<NextState<GameState>>,
 ) {
     let Ok(entity) = query.get_single_mut() else {
-        println!("non single mut");
         return;
     };
 

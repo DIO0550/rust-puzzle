@@ -6,7 +6,7 @@ use super::high_score::HighScore;
 #[derive(Resource, Serialize, Deserialize)]
 pub struct HighScores(pub Vec<HighScore>);
 
-const MAX_HIGH_SCORE_COUNT: usize = 5;
+pub const MAX_HIGH_SCORE_COUNT: usize = 5;
 
 impl HighScores {
     pub fn push(&mut self, value: HighScore) {
