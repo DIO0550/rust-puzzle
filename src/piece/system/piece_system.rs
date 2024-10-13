@@ -1,5 +1,6 @@
 use bevy::{
     asset::{AssetServer, Assets},
+    audio::{AudioBundle, PlaybackSettings},
     ecs::{
         entity::Entity,
         event::EventReader,
@@ -23,6 +24,7 @@ use bevy_rapier2d::{
 };
 
 use crate::{
+    asset::resource::piece_sound::PieceFallSound,
     consts::consts::*,
     game::{component::game_over_sensor::GameOverSeonsor, system::game_state::GameState},
     piece::{
@@ -134,25 +136,32 @@ pub fn release_piece(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
+    piece_fall_sound_res: Res<PieceFallSound>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
         return;
     };
 
-    if keyboard_input.just_released(KeyCode::Space) {
-        commands.entity(entity).remove::<Grab>();
-        commands
-            .entity(entity)
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(
-                piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
-            ))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(ColliderMassProperties::Mass(50.0))
-            .insert(GravityScale(10.0))
-            .insert(Sleeping::disabled())
-            .insert(Falling);
+    if !keyboard_input.just_released(KeyCode::Space) {
+        return;
     }
+    commands.entity(entity).remove::<Grab>();
+    commands
+        .entity(entity)
+        .insert(RigidBody::Dynamic)
+        .insert(Collider::ball(
+            piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
+        ))
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(ColliderMassProperties::Mass(50.0))
+        .insert(GravityScale(10.0))
+        .insert(Sleeping::disabled())
+        .insert(Falling);
+
+    commands.spawn(AudioBundle {
+        source: piece_fall_sound_res.0.clone(),
+        settings: PlaybackSettings::DESPAWN,
+    });
 }
 
 /**

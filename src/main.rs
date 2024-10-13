@@ -1,31 +1,29 @@
 use asset::{
     asset::AssetTrait,
     image::image::{ImageAsset, ImageName},
+    plugin::piece_sound_plugin::PieceSoundPlugin,
 };
 use bevy::{
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
 use bevy_rapier2d::{
-    dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
-    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
-    pipeline::{CollisionEvent, ContactForceEvent},
+    geometry::{ActiveEvents, Collider, Sensor},
     plugin::{NoUserData, RapierPhysicsPlugin},
-    rapier::prelude::ColliderBuilder,
     render::RapierDebugRenderPlugin,
 };
 
 use consts::consts::*;
 use game::{
     component::game_over_sensor::GameOverSeonsor, plugin::game_plugin::GamePlugin,
-    system::game_state::GameState, ui::evolve_ui::evolve_describe,
+    ui::evolve_ui::evolve_describe,
 };
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
 use piece::plugin::piece_plugin::PiecePlugin;
 use resource::grab_postion::GrabPostion;
 use score::plugin::score_plugin::ScorePlugin;
-use shape::{Box, Circle, Quad};
+use shape::Quad;
 
 mod asset;
 mod consts;
@@ -57,6 +55,7 @@ fn main() {
         .add_plugins(GamePlugin)
         .add_plugins(GameOverPlugin)
         .add_plugins(HighScorePlugin)
+        .add_plugins(PieceSoundPlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .add_systems(Startup, setup)
