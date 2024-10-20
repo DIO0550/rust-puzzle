@@ -24,7 +24,7 @@ use bevy_rapier2d::{
 };
 
 use crate::{
-    asset::resource::piece_sound::PieceFallSound,
+    asset::resource::piece_sound::{PieceFallSound, PieceUnionSound},
     consts::consts::*,
     game::{component::game_over_sensor::GameOverSeonsor, system::game_state::GameState},
     piece::{
@@ -177,6 +177,7 @@ pub fn piece_collision_events(
     mut materials: ResMut<Assets<ColorMaterial>>,
     score_res: Res<Score>,
     asset_server: Res<AssetServer>,
+    piece_union_sound_res: Res<PieceUnionSound>,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -210,6 +211,11 @@ pub fn piece_collision_events(
 
         commands.entity(*entities.0).despawn();
         commands.entity(*entities.1).despawn();
+
+        commands.spawn(AudioBundle {
+            source: piece_union_sound_res.0.clone(),
+            settings: PlaybackSettings::DESPAWN,
+        });
 
         let Some(piece) = entity1.evolve() else {
             continue;
