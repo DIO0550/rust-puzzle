@@ -90,7 +90,7 @@ pub fn spawn_piece(
         .insert(ActiveCollisionTypes::all())
         .insert(TransformBundle::from(Transform::from_xyz(
             new_grab_postion.x,
-            BOX_SIZE_HEIHT * 2.0 / 3.0,
+            BOX_SIZE_HEIHT / 2.0 + PIECE_POSITION_Y_MARGIN,
             0.0,
         )));
 

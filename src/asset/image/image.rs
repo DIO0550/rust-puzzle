@@ -33,7 +33,11 @@ pub enum ImageName {
     CatHand,
     CatSilhouette,
     CatMug,
+    CatMugEar,
+    CatMugHandle,
     HighScoreFrame,
+    DeskBg,
+    PieceEvolve,
 }
 impl AssetNameTrait for ImageName {
     fn asset_path(&self) -> String {
@@ -41,7 +45,11 @@ impl AssetNameTrait for ImageName {
             Self::CatHand => "img/cat-hand.png".to_string(),
             Self::CatSilhouette => "img/cat-silhouette.png".to_string(),
             Self::CatMug => "img/cat-mug.png".to_string(),
+            Self::CatMugEar => "img/cat-mug-ear.png".to_string(),
+            Self::CatMugHandle => "img/cat-mug-handle.png".to_string(),
             Self::HighScoreFrame => "img/high-score-frame.png".to_string(),
+            Self::DeskBg => "img/desk-bg.png".to_string(),
+            Self::PieceEvolve => "img/piece-evolve.png".to_string(),
         }
     }
 }
