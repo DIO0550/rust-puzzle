@@ -4,6 +4,7 @@ use asset::{
     plugin::piece_sound_plugin::PieceSoundPlugin,
 };
 use bevy::{
+    math::{Affine3A, Vec3A},
     prelude::*,
     sprite::{MaterialMesh2dBundle, Mesh2dHandle},
 };
@@ -48,19 +49,18 @@ fn main() {
             primary_window,
             ..default()
         }))
+        .add_plugins(GamePlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ScorePlugin)
-        .add_plugins(PiecePlugin)
-        .add_plugins(GamePlugin)
         .add_plugins(GameOverPlugin)
         .add_plugins(HighScorePlugin)
         .add_plugins(PieceSoundPlugin)
+        .add_plugins(PiecePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .add_systems(Startup, setup)
-        .add_systems(Startup, (setup_physics, setup_cat_mug))
-        .add_systems(Startup, evolve_describe)
+        .add_systems(Startup, setup_physics)
         .run();
 }
 
@@ -68,84 +68,95 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn setup_physics(mut commands: Commands) {
+fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let cat_mug_image = ImageAsset::asset(&asset_server, &ImageName::CatMug);
+    let cat_mug_bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2 {
+                x: BOX_SIZE_WIDTH + BOX_THICKNESS * 2.0,
+                y: BOX_SIZE_HEIHT + BOX_THICKNESS * 2.0,
+            }),
+            ..default()
+        },
+        texture: cat_mug_image,
+        transform: Transform {
+            translation: Vec3 {
+                x: (0.0),
+                y: (0.0),
+                z: (-1.0),
+            },
+            ..default()
+        },
+
+        ..default()
+    };
+
+    let cat_mug_ear = ImageAsset::asset(&asset_server, &ImageName::CatMugEar);
+    let cat_mug_ear_bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2 {
+                x: (BOX_SIZE_WIDTH + BOX_THICKNESS) * 3.0 / 4.0,
+                y: BOX_SIZE_HEIHT / 5.0,
+            }),
+            ..default()
+        },
+        texture: cat_mug_ear,
+        transform: Transform {
+            translation: Vec3 {
+                x: (0.0),
+                y: (BOX_SIZE_HEIHT / 2.0 + BOX_SIZE_HEIHT / 10.0 - BOX_THICKNESS * 2.0),
+                z: (-2.0),
+            },
+            ..default()
+        },
+
+        ..default()
+    };
     let collider = Collider::compound(vec![
         // 左
         (
             Vec2 {
-                x: -BOX_SIZE_WIDTH,
-                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+                x: -BOX_SIZE_WIDTH / 2.0,
+                y: 0.0,
             },
             0.0,
-            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
+            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT / 2.0),
         ),
         // 真ん中
         (
             Vec2 {
                 x: 0.0,
-                y: -BOX_SIZE_HEIHT * 3.0 / 2.0 + BOX_MARGIN_BOTTOM,
+                y: -BOX_SIZE_HEIHT / 2.0,
             },
             0.0,
-            Collider::cuboid(BOX_SIZE_WIDTH + BOX_THICKNESS, BOX_THICKNESS),
+            Collider::cuboid(BOX_SIZE_WIDTH / 2.0 + BOX_THICKNESS, BOX_THICKNESS),
         ),
-        // 下
+        // 右
         (
             Vec2 {
-                x: BOX_SIZE_WIDTH,
-                y: -BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+                x: BOX_SIZE_WIDTH / 2.0,
+                y: 0.0,
             },
             0.0,
-            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT),
+            Collider::cuboid(BOX_THICKNESS, BOX_SIZE_HEIHT / 2.0),
         ),
     ]);
     // 入れ物生成
     commands
         .spawn(collider)
-        .insert(ActiveEvents::COLLISION_EVENTS);
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(cat_mug_bundle);
+
+    commands.spawn(cat_mug_ear_bundle);
 
     // ゲームオーバー用のセンサー生成
     commands
-        .spawn(Collider::cuboid(
-            BOX_SIZE_WIDTH + BOX_THICKNESS,
-            BOX_THICKNESS,
-        ))
+        .spawn(Collider::cuboid(BOX_SIZE_WIDTH / 2.0, BOX_THICKNESS))
         .insert(TransformBundle::from(Transform::from_xyz(
             0.0,
-            BOX_SIZE_HEIHT / 2.0 + BOX_MARGIN_BOTTOM,
+            BOX_SIZE_HEIHT / 2.0,
             0.0,
         )))
         .insert(GameOverSeonsor)
         .insert(Sensor);
-}
-
-fn setup_cat_mug(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
-) {
-    let image = ImageAsset::asset(&asset_server, &ImageName::CatMug);
-    let material = MaterialMesh2dBundle {
-        mesh: Mesh2dHandle(
-            meshes.add(
-                Quad::new(Vec2 {
-                    x: (BOX_SIZE_WIDTH * 3.5 - BOX_THICKNESS * 4.0),
-                    y: (BOX_SIZE_HEIHT * 2.5 - 5.0),
-                })
-                .into(),
-            ),
-        ),
-        transform: Transform {
-            translation: Vec3 {
-                x: (55.0),
-                y: (-BOX_MARGIN_BOTTOM * 2.0 - 17.0),
-                z: (-1.00),
-            },
-            ..default()
-        },
-        material: materials.add(image.into()),
-        ..default()
-    };
-
-    commands.spawn(material);
 }

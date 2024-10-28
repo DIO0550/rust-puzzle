@@ -13,7 +13,7 @@ pub struct GrabPostion {
 impl GrabPostion {
     pub fn new(position: f32, animal_piece: &dyn AnimalPiece) -> Self {
         let piece_size = animal_piece.get_size().to_f32() * UNIT_WIDTH * 2.0;
-        let range = BOX_SIZE_WIDTH - BOX_THICKNESS;
+        let range = BOX_SIZE_WIDTH / 2.0 - BOX_THICKNESS;
         let max = range - piece_size;
         let min = piece_size - range;
 
