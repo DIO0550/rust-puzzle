@@ -26,7 +26,7 @@ use bevy_rapier2d::{
 use crate::{
     asset::resource::piece_sound::{PieceFallSound, PieceUnionSound},
     consts::consts::*,
-    game::{component::game_over_sensor::GameOverSeonsor, system::game_state::GameState},
+    game::{component::game_over_sensor::GameOverSensor, system::game_state::GameState},
     piece::{
         component::{
             animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
@@ -262,7 +262,7 @@ pub fn game_over_sensor_intersection_events(
     mut config: ResMut<RapierConfiguration>,
     mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
     piece_query: Query<&AnimalPieceComponent>,
-    mut query: Query<Entity, (With<GameOverSeonsor>, With<Sensor>)>,
+    mut query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
     mut app_state: ResMut<NextState<GameState>>,
 ) {
     let Ok(entity) = query.get_single_mut() else {

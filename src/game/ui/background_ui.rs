@@ -11,9 +11,12 @@ use bevy::{
     window::{PrimaryWindow, Window},
 };
 
-use crate::asset::{
-    asset::AssetTrait,
-    image::image::{ImageAsset, ImageName},
+use crate::{
+    asset::{
+        asset::AssetTrait,
+        image::image::{ImageAsset, ImageName},
+    },
+    BOX_SIZE_HEIHT,
 };
 
 pub fn desk_background(
@@ -22,8 +25,8 @@ pub fn desk_background(
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
-    let width = window.width();
-    let height = window.height();
+    let width = window.width() * 0.7;
+    let height = width * 0.6;
     let image = ImageAsset::asset(&asset_server, &ImageName::DeskBg);
     let bundle = SpriteBundle {
         sprite: Sprite {
@@ -37,8 +40,8 @@ pub fn desk_background(
         transform: Transform {
             translation: Vec3 {
                 x: (0.0),
-                y: (0.0),
-                z: (-5.0),
+                y: (-BOX_SIZE_HEIHT + 100.0),
+                z: (-100.0),
             },
             ..default()
         },

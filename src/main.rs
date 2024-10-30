@@ -16,7 +16,7 @@ use bevy_rapier2d::{
 
 use consts::consts::*;
 use game::{
-    component::game_over_sensor::GameOverSeonsor, plugin::game_plugin::GamePlugin,
+    component::game_over_sensor::GameOverSensor, plugin::game_plugin::GamePlugin,
     ui::evolve_ui::evolve_describe,
 };
 use game_over::plugin::game_over_plugin::GameOverPlugin;
@@ -60,7 +60,7 @@ fn main() {
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .insert_resource(GrabPostion { x: 0.0 })
         .add_systems(Startup, setup)
-        .add_systems(Startup, setup_physics)
+        .add_systems(Startup, (setup_cat_mug, setup_gameover_sensor))
         .run();
 }
 
@@ -68,7 +68,7 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
+fn setup_cat_mug(mut commands: Commands, asset_server: Res<AssetServer>) {
     let cat_mug_image = ImageAsset::asset(&asset_server, &ImageName::CatMug);
     let cat_mug_bundle = SpriteBundle {
         sprite: Sprite {
@@ -91,7 +91,7 @@ fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
         ..default()
     };
 
-    let cat_mug_ear = ImageAsset::asset(&asset_server, &ImageName::CatMugEar);
+    let cat_mug_ear_image = ImageAsset::asset(&asset_server, &ImageName::CatMugEar);
     let cat_mug_ear_bundle = SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2 {
@@ -100,7 +100,7 @@ fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
             }),
             ..default()
         },
-        texture: cat_mug_ear,
+        texture: cat_mug_ear_image,
         transform: Transform {
             translation: Vec3 {
                 x: (0.0),
@@ -112,6 +112,30 @@ fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
 
         ..default()
     };
+
+    let cat_mug_handle_image = ImageAsset::asset(&asset_server, &ImageName::CatMugHandle);
+    let cat_mug_handle_image_width = BOX_SIZE_WIDTH / 4.0;
+    let cat_mug_handle_bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2 {
+                x: cat_mug_handle_image_width,
+                y: BOX_SIZE_HEIHT,
+            }),
+            ..default()
+        },
+        texture: cat_mug_handle_image,
+        transform: Transform {
+            translation: Vec3 {
+                x: (BOX_SIZE_WIDTH / 2.0 + (cat_mug_handle_image_width / 2.0) - BOX_THICKNESS),
+                y: (0.0),
+                z: (5.0),
+            },
+            ..default()
+        },
+
+        ..default()
+    };
+
     let collider = Collider::compound(vec![
         // 左
         (
@@ -146,9 +170,11 @@ fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
         .spawn(collider)
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(cat_mug_bundle);
-
     commands.spawn(cat_mug_ear_bundle);
+    commands.spawn(cat_mug_handle_bundle);
+}
 
+fn setup_gameover_sensor(mut commands: Commands) {
     // ゲームオーバー用のセンサー生成
     commands
         .spawn(Collider::cuboid(BOX_SIZE_WIDTH / 2.0, BOX_THICKNESS))
@@ -157,6 +183,6 @@ fn setup_physics(mut commands: Commands, asset_server: Res<AssetServer>) {
             BOX_SIZE_HEIHT / 2.0,
             0.0,
         )))
-        .insert(GameOverSeonsor)
+        .insert(GameOverSensor)
         .insert(Sensor);
 }
