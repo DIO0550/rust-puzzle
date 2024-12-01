@@ -37,6 +37,7 @@ pub enum ImageName {
     CatMugHandle,
     HighScoreFrame,
     DeskBg,
+    DeskBookBg,
     PieceEvolve,
 }
 impl AssetNameTrait for ImageName {
@@ -49,6 +50,7 @@ impl AssetNameTrait for ImageName {
             Self::CatMugHandle => "img/cat-mug-handle.png".to_string(),
             Self::HighScoreFrame => "img/high-score-frame.png".to_string(),
             Self::DeskBg => "img/desk-bg.png".to_string(),
+            Self::DeskBookBg => "img/desk-book-bg.png".to_string(),
             Self::PieceEvolve => "img/piece-evolve.png".to_string(),
         }
     }

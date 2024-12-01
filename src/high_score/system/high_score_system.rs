@@ -4,7 +4,7 @@ use serde_json::{from_value, json};
 
 use crate::{
     file::file_reader::{FileReader, FileReaderTrait},
-    high_score::resource::{high_score::HighScore, high_scores::HighScores, month_high_score},
+    high_score::resource::{high_score::HighScore, high_scores::HighScores},
     score::resource::score::Score,
 };
 

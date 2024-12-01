@@ -2,7 +2,7 @@ use bevy::{
     asset::AssetServer,
     ecs::system::{Commands, Res},
     hierarchy::{BuildChildren, ChildBuilder},
-    prelude::{default, ImageBundle},
+    prelude::default,
     render::color::Color,
     text::{TextSection, TextStyle},
     ui::{
@@ -15,7 +15,7 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
-        image::image::{ImageAsset, ImageName},
+        image::image::ImageName,
     },
     piece::component::animal_piece::piece_type::PieceType,
 };
@@ -129,11 +129,11 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 })
                                 .with_children(|parent| {
                                     parent.spawn(
-                                        PieceUI::new(PieceType::Penguin)
+                                        PieceUI::new(PieceType::Elephant)
                                             .image_bundle(&asset_server, &image_size),
                                     );
                                     parent.spawn(
-                                        PieceUI::new(PieceType::Horse)
+                                        PieceUI::new(PieceType::Penguin)
                                             .image_bundle(&asset_server, &image_size),
                                     );
                                 });
@@ -149,15 +149,15 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                                 })
                                 .with_children(|parent| {
                                     parent.spawn(
+                                        PieceUI::new(PieceType::Horse)
+                                            .image_bundle(&asset_server, &image_size),
+                                    );
+                                    parent.spawn(
                                         PieceUI::new(PieceType::Panda)
                                             .image_bundle(&asset_server, &image_size),
                                     );
                                     parent.spawn(
                                         PieceUI::new(PieceType::Giraffe)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Elephant)
                                             .image_bundle(&asset_server, &image_size),
                                     );
                                 });

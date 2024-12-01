@@ -1,12 +1,8 @@
 use bevy::{
     asset::AssetServer,
-    math::{Affine3A, Vec2, Vec3, Vec3A},
-    prelude::{
-        BuildChildren, Commands, GlobalTransform, ImageBundle, NodeBundle, Query, Res, Transform,
-        With,
-    },
+    math::{Vec2, Vec3},
+    prelude::{Commands, Query, Res, Transform, With},
     sprite::{Sprite, SpriteBundle},
-    ui::{FlexDirection, PositionType, Style, UiImage, Val, ZIndex},
     utils::default,
     window::{PrimaryWindow, Window},
 };
@@ -16,7 +12,7 @@ use crate::{
         asset::AssetTrait,
         image::image::{ImageAsset, ImageName},
     },
-    BOX_SIZE_HEIHT,
+    BOX_SIZE_HEIHT, BOX_SIZE_WIDTH, BOX_THICKNESS,
 };
 
 pub fn desk_background(
@@ -40,7 +36,34 @@ pub fn desk_background(
         transform: Transform {
             translation: Vec3 {
                 x: (0.0),
-                y: (-BOX_SIZE_HEIHT + 100.0),
+                y: -height / 2.0 - BOX_SIZE_HEIHT / 2.0 - BOX_THICKNESS,
+                z: (-100.0),
+            },
+            ..default()
+        },
+
+        ..default()
+    };
+    commands.spawn(bundle);
+}
+
+pub fn desk_book_background(mut commands: Commands, asset_server: Res<AssetServer>) {
+    let width = 200.0;
+    let height = 100.0;
+    let image = ImageAsset::asset(&asset_server, &ImageName::DeskBookBg);
+    let bundle = SpriteBundle {
+        sprite: Sprite {
+            custom_size: Some(Vec2 {
+                x: width,
+                y: height,
+            }),
+            ..default()
+        },
+        texture: image,
+        transform: Transform {
+            translation: Vec3 {
+                x: (-BOX_SIZE_WIDTH / 2.0 - width / 2.0),
+                y: height / 2.0 - BOX_SIZE_HEIHT / 2.0 - BOX_THICKNESS,
                 z: (-100.0),
             },
             ..default()
