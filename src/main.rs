@@ -22,6 +22,7 @@ mod high_score;
 mod piece;
 mod resource;
 mod score;
+mod title;
 
 fn main() {
     let window = Window {
