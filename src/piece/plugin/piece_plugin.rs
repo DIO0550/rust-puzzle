@@ -4,7 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    game::system::{despawn::despawn_component, game_state::GameState},
+    game::{state::game_state::GameState, system::despawn::despawn_component},
     piece::{
         component::animal_piece::animal_piece_component::AnimalPieceComponent,
         resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},

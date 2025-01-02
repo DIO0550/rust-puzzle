@@ -1,9 +1,10 @@
 use crate::{
     game::{
-        component::on_display_over::OnDisplayGameOver,
-        system::{despawn::despawn_component, game_state::GameState},
+        component::on_display_over::OnDisplayGameOver, state::game_state::GameState,
+        system::despawn::despawn_component,
     },
     game_over::{
+        component::game_over_menu_item::GameOverMenu,
         resource::select_game_over_menu::SelectGameOverMenu,
         system::game_over_system::{change_select_menu, reset_select_menu, select_menu},
         ui::game_over_ui::{display_game_over, update_menu},
@@ -19,7 +20,7 @@ use bevy::{
 pub struct GameOverPlugin;
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(SelectGameOverMenu::Restart)
+        app.insert_resource(SelectGameOverMenu(GameOverMenu::Restart))
             .add_systems(OnEnter(GameState::GameOver), (display_game_over).chain())
             .add_systems(
                 Update,

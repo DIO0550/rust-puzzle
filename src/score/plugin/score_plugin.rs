@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::system::game_state::GameState,
+    game::state::game_state::GameState,
     score::{
         resource::score::Score,
         system::score_system::{setup_score, update_current_score_text},

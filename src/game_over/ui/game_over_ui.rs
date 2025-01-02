@@ -181,36 +181,45 @@ pub fn update_menu(
     select_menu_res: Res<SelectGameOverMenu>,
 ) {
     for (mut style, menu) in menu_query.iter_mut() {
-        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
-            style.0 = ColorTheme::NORWAY;
-        }
-        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
-            style.0 = ColorTheme::SPROUT
-        }
+        style.0 = match select_menu_res.0 == *menu {
+            true => ColorTheme::NORWAY,
+            false => ColorTheme::SPROUT,
+        };
 
-        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
-            style.0 = ColorTheme::NORWAY;
-        }
+        // if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
+        //     style.0 = ColorTheme::NORWAY;
+        // }
+        // if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
+        //     style.0 = ColorTheme::SPROUT
+        // }
 
-        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
-            style.0 = ColorTheme::SPROUT
-        }
+        // if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
+        //     style.0 = ColorTheme::NORWAY;
+        // }
+
+        // if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
+        //     style.0 = ColorTheme::SPROUT
+        // }
     }
 
     for (mut menu_text, menu) in menu_text_query.iter_mut() {
-        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
-            menu_text.sections[0].style.color = Color::WHITE;
-        }
-        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
-            menu_text.sections[0].style.color = Color::BLACK;
-        }
+        menu_text.sections[0].style.color = match select_menu_res.0 == *menu {
+            true => Color::WHITE,
+            false => Color::BLACK,
+        };
+        // if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::Restart {
+        //     menu_text.sections[0].style.color = Color::WHITE;
+        // }
+        // if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::Restart {
+        //     menu_text.sections[0].style.color = Color::BLACK;
+        // }
 
-        if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
-            menu_text.sections[0].style.color = Color::WHITE;
-        }
+        // if *select_menu_res == SelectGameOverMenu::BackTitle && *menu == GameOverMenu::GoTitle {
+        //     menu_text.sections[0].style.color = Color::WHITE;
+        // }
 
-        if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
-            menu_text.sections[0].style.color = Color::BLACK;
-        }
+        // if *select_menu_res == SelectGameOverMenu::Restart && *menu == GameOverMenu::GoTitle {
+        //     menu_text.sections[0].style.color = Color::BLACK;
+        // }
     }
 }

@@ -4,11 +4,8 @@ use bevy::{
 };
 
 use crate::game::{
-    system::{
-        game_page_state::GamePageState,
-        game_state::GameState,
-        game_system::{restart, setup_cat_mug, setup_gameover_sensor},
-    },
+    state::{game_page_state::GamePageState, game_state::GameState},
+    system::game_system::{restart, setup_cat_mug, setup_gameover_sensor},
     ui::{
         background_ui::{desk_background, desk_book_background},
         evolve_ui::evolve_describe,

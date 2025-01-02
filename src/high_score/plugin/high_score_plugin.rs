@@ -1,6 +1,7 @@
 use crate::{
-    game::system::{
-        despawn::despawn_component, game_page_state::GamePageState, game_state::GameState,
+    game::{
+        state::{game_page_state::GamePageState, game_state::GameState},
+        system::despawn::despawn_component,
     },
     high_score::{
         component::high_score_text::HighScoreText,

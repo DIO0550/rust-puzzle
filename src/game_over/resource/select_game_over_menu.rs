@@ -1,23 +1,22 @@
 use bevy::ecs::system::Resource;
 
-#[derive(Resource, Debug, Copy, Clone, PartialEq)]
-pub enum SelectGameOverMenu {
-    Restart,
-    BackTitle,
-}
+use crate::game_over::component::game_over_menu_item::GameOverMenu;
+
+#[derive(Resource)]
+pub struct SelectGameOverMenu(pub GameOverMenu);
 
 impl SelectGameOverMenu {
-    pub fn next_menu(&self) -> SelectGameOverMenu {
-        match self {
-            Self::Restart => Self::BackTitle,
-            Self::BackTitle => Self::Restart,
+    pub fn next(&self) -> SelectGameOverMenu {
+        match self.0 {
+            GameOverMenu::Restart => SelectGameOverMenu(GameOverMenu::GoTitle),
+            GameOverMenu::GoTitle => SelectGameOverMenu(GameOverMenu::Restart),
         }
     }
 
-    pub fn prev_menu(&self) -> SelectGameOverMenu {
-        match self {
-            Self::Restart => Self::BackTitle,
-            Self::BackTitle => Self::Restart,
+    pub fn prev(&self) -> SelectGameOverMenu {
+        match self.0 {
+            GameOverMenu::Restart => SelectGameOverMenu(GameOverMenu::GoTitle),
+            GameOverMenu::GoTitle => SelectGameOverMenu(GameOverMenu::Restart),
         }
     }
 }

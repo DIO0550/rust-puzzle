@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
 use crate::{
-    game::system::game_page_state::GamePageState,
+    game::{state::game_page_state::GamePageState, system::despawn::despawn_component},
     title::{
-        component::title_menu_item::TitleMenuItem, resource::select_title_menu::SelectTitleMenu,
+        component::{title_menu::TitleMenu, title_menu_item::TitleMenuItem},
+        resource::select_title_menu::SelectTitleMenu,
         ui::menu_ui::setup_title_menu,
     },
 };
@@ -14,11 +15,8 @@ impl Plugin for ScorePlugin {
         app.insert_resource(SelectTitleMenu(TitleMenuItem::StartGame))
             .add_systems(
                 Startup,
-                setup_title_menu.run_if(in_state(GamePageState::StartPage)),
-            );
-        // .add_systems(
-        //     Update,
-        //     update_current_score_text.run_if(in_state(GameState::InGame)),
-        // );
+                setup_title_menu.run_if(in_state(GamePageState::Title)),
+            )
+            .add_systems(OnExit(GamePageState::Title), despawn_component::<TitleMenu>);
     }
 }

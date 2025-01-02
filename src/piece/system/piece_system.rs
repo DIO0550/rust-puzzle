@@ -26,7 +26,7 @@ use bevy_rapier2d::{
 use crate::{
     asset::resource::piece_sound::{PieceFallSound, PieceUnionSound},
     consts::consts::*,
-    game::{component::game_over_sensor::GameOverSensor, system::game_state::GameState},
+    game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
     piece::{
         component::{
             animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
