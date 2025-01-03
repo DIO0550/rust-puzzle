@@ -5,18 +5,28 @@ use crate::{
     title::{
         component::{title_menu::TitleMenu, title_menu_item::TitleMenuItem},
         resource::select_title_menu::SelectTitleMenu,
-        ui::menu_ui::setup_title_menu,
+        system::select_title_system::*,
+        ui::menu_ui::*,
     },
 };
 
-pub struct ScorePlugin;
-impl Plugin for ScorePlugin {
+pub struct TitlePlugin;
+impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SelectTitleMenu(TitleMenuItem::StartGame))
             .add_systems(
                 Startup,
                 setup_title_menu.run_if(in_state(GamePageState::Title)),
             )
-            .add_systems(OnExit(GamePageState::Title), despawn_component::<TitleMenu>);
+            .add_systems(OnExit(GamePageState::Title), despawn_component::<TitleMenu>)
+            .add_systems(
+                Update,
+                (
+                    change_select_title_menu,
+                    select_title_menu,
+                    update_title_menu,
+                )
+                    .run_if(in_state(GamePageState::Title)),
+            );
     }
 }
