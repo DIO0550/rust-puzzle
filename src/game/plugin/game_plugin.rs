@@ -1,6 +1,6 @@
 use bevy::{
     app::{App, Plugin, Startup},
-    prelude::OnEnter,
+    prelude::{in_state, IntoSystemConfigs, OnEnter},
 };
 
 use crate::game::{
@@ -15,18 +15,24 @@ use crate::game::{
 pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
+        let game_systems = (
+            evolve_describe,
+            setup_cat_mug,
+            setup_gameover_sensor,
+            desk_background,
+            desk_book_background,
+        );
+
         app.add_state::<GameState>()
             .add_state::<GamePageState>()
-            .add_systems(OnEnter(GameState::InGame), restart)
             .add_systems(
-                Startup,
-                (
-                    evolve_describe,
-                    setup_cat_mug,
-                    setup_gameover_sensor,
-                    desk_background,
-                    desk_book_background,
-                ),
-            );
+                OnEnter(GameState::InGame),
+                (restart).run_if(in_state(GamePageState::Game)),
+            )
+            .add_systems(
+                OnEnter(GamePageState::Game),
+                game_systems.run_if(in_state(GamePageState::Game)),
+            )
+            .add_systems(Startup, game_systems.run_if(in_state(GamePageState::Game)));
     }
 }
