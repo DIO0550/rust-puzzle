@@ -5,7 +5,7 @@ use crate::asset::asset::AssetTrait;
 use super::image::{ImageAsset, ImageName};
 
 #[derive(Resource)]
-pub struct ImageAssets {
+pub struct PieceImageAssets {
     pub cat_hand: Handle<Image>,
     pub cat_silhouette: Handle<Image>,
     pub cat_mug: Handle<Image>,
@@ -17,7 +17,7 @@ pub struct ImageAssets {
     pub piece_evolve: Handle<Image>,
 }
 
-impl ImageAssets {
+impl PieceImageAssets {
     pub fn new(asset_server: &Res<AssetServer>) -> Self {
         let cat_hand = ImageAsset::asset(asset_server, &ImageName::CatHand);
         let cat_silhouette = ImageAsset::asset(asset_server, &ImageName::CatSilhouette);

@@ -1,4 +1,4 @@
-use asset::plugin::piece_sound_plugin::PieceSoundPlugin;
+use asset::plugin::{assets_pluin::AssetsPlugin, piece_sound_plugin::PieceSoundPlugin};
 use bevy::prelude::*;
 use bevy_rapier2d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
@@ -38,6 +38,7 @@ fn main() {
             primary_window,
             ..default()
         }))
+        .add_plugins(AssetsPlugin)
         .add_plugins(GamePlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
