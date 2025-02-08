@@ -1,44 +1,58 @@
-use bevy::prelude::*;
+use bevy::{asset::UntypedAssetId, prelude::*};
 
-use crate::asset::asset::AssetTrait;
+use crate::asset::asset::{AssetIdCollection, AssetLoadTrait, AssetTrait};
 
-use super::image::{ImageAsset, ImageName};
+use super::image::{PieceImageAsset, PieceImageName};
 
 #[derive(Resource)]
 pub struct PieceImageAssets {
-    pub cat_hand: Handle<Image>,
-    pub cat_silhouette: Handle<Image>,
-    pub cat_mug: Handle<Image>,
-    pub cat_mug_ear: Handle<Image>,
-    pub cat_mug_handle: Handle<Image>,
-    pub high_score_frame: Handle<Image>,
-    pub desk_bg: Handle<Image>,
-    pub desk_book_bg: Handle<Image>,
-    pub piece_evolve: Handle<Image>,
+    pub rat: Handle<Image>,
+    pub cat: Handle<Image>,
+    pub dog: Handle<Image>,
+    pub giraffe: Handle<Image>,
+    pub horse: Handle<Image>,
+    pub penguin: Handle<Image>,
+    pub panda: Handle<Image>,
+    pub elephant: Handle<Image>,
 }
+
+impl AssetIdCollection<Image> for PieceImageAssets {
+    fn assets_ids(&self) -> Vec<AssetId<Image>> {
+        vec![
+            self.rat.id(),
+            self.cat.id(),
+            self.dog.id(),
+            self.giraffe.id(),
+            self.horse.id(),
+            self.penguin.id(),
+            self.panda.id(),
+            self.elephant.id(),
+        ]
+    }
+}
+
+impl AssetLoadTrait<Image> for PieceImageAssets {}
 
 impl PieceImageAssets {
     pub fn new(asset_server: &Res<AssetServer>) -> Self {
-        let cat_hand = ImageAsset::asset(asset_server, &ImageName::CatHand);
-        let cat_silhouette = ImageAsset::asset(asset_server, &ImageName::CatSilhouette);
-        let cat_mug = ImageAsset::asset(asset_server, &ImageName::CatMug);
-        let cat_mug_ear = ImageAsset::asset(asset_server, &ImageName::CatMugEar);
-        let cat_mug_handle = ImageAsset::asset(asset_server, &ImageName::CatMugHandle);
-        let high_score_frame = ImageAsset::asset(asset_server, &ImageName::HighScoreFrame);
-        let desk_bg = ImageAsset::asset(asset_server, &ImageName::DeskBg);
-        let desk_book_bg = ImageAsset::asset(asset_server, &ImageName::DeskBookBg);
-        let piece_evolve = ImageAsset::asset(asset_server, &ImageName::PieceEvolve);
+        let rat = PieceImageAsset::asset(asset_server, &PieceImageName::Rat);
+        let cat = PieceImageAsset::asset(asset_server, &PieceImageName::Cat);
+        let dog = PieceImageAsset::asset(asset_server, &PieceImageName::Dog);
+        let giraffe = PieceImageAsset::asset(asset_server, &PieceImageName::Giraffe);
+        let horse = PieceImageAsset::asset(asset_server, &PieceImageName::Horse);
+        let penguin = PieceImageAsset::asset(asset_server, &PieceImageName::Penguin);
+        let panda = PieceImageAsset::asset(asset_server, &PieceImageName::Panda);
+        let elephant = PieceImageAsset::asset(asset_server, &PieceImageName::Elephant);
 
         Self {
-            cat_hand,
-            cat_silhouette,
-            cat_mug,
-            cat_mug_ear,
-            cat_mug_handle,
-            high_score_frame,
-            desk_bg,
-            desk_book_bg,
-            piece_evolve,
+            rat,
+            cat,
+            dog,
+            giraffe,
+            horse,
+            penguin,
+            panda,
+            elephant,
         }
     }
 }

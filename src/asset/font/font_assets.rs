@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::asset::asset::AssetTrait;
+use crate::asset::asset::{AssetIdCollection, AssetLoadTrait, AssetTrait};
 
 use super::font::{FontAsset, FontName};
 
@@ -8,6 +8,14 @@ use super::font::{FontAsset, FontName};
 pub struct FontAssets {
     pub hachi_maru_pop_regular: Handle<Font>,
 }
+
+impl AssetIdCollection<Font> for FontAssets {
+    fn assets_ids(&self) -> Vec<AssetId<Font>> {
+        vec![self.hachi_maru_pop_regular.id()]
+    }
+}
+
+impl AssetLoadTrait<Font> for FontAssets {}
 
 impl FontAssets {
     pub fn new(asset_server: &Res<AssetServer>) -> Self {

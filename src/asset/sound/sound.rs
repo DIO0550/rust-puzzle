@@ -1,3 +1,5 @@
+use bevy::audio::AudioSource;
+
 use crate::asset::asset::{AssetNameTrait, AssetTrait};
 
 pub enum PieceSoundName {
@@ -15,4 +17,4 @@ impl AssetNameTrait for PieceSoundName {
 }
 
 pub struct PieceSoundAsset {}
-impl AssetTrait<PieceSoundName> for PieceSoundAsset {}
+impl AssetTrait<PieceSoundName, AudioSource> for PieceSoundAsset {}

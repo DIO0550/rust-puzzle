@@ -1,4 +1,6 @@
-use crate::asset::asset::{AssetNameTrait, AssetTrait};
+use bevy::{asset::AssetId, render::texture::Image};
+
+use crate::asset::asset::{AssetIdCollection, AssetNameTrait, AssetTrait};
 
 pub enum PieceImageName {
     Rat,
@@ -27,7 +29,7 @@ impl AssetNameTrait for PieceImageName {
 }
 
 pub struct PieceImageAsset {}
-impl AssetTrait<PieceImageName> for PieceImageAsset {}
+impl AssetTrait<PieceImageName, Image> for PieceImageAsset {}
 
 pub enum ImageName {
     CatHand,
@@ -56,4 +58,4 @@ impl AssetNameTrait for ImageName {
     }
 }
 pub struct ImageAsset {}
-impl AssetTrait<ImageName> for ImageAsset {}
+impl AssetTrait<ImageName, Image> for ImageAsset {}

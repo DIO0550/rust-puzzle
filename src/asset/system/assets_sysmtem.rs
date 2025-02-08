@@ -3,7 +3,11 @@ use bevy::{
     ecs::system::{Commands, Res},
 };
 
-use crate::asset::{font::font_assets::FontAssets, image::piece_image_assets::PieceImageAssets};
+use crate::asset::{
+    asset::AssetLoadTrait,
+    font::font_assets::FontAssets,
+    image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
+};
 
 use super::{font_loader_system::load_font_assets, image_loader_system::load_image_assets};
 
@@ -14,8 +18,14 @@ pub fn load_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn check_assets_ready(
     asset_server: Res<AssetServer>,
-    image_assets: Res<PieceImageAssets>,
+    piece_image_assets: Res<PieceImageAssets>,
+    image_assets: Res<ImageAssets>,
     font_assets: Res<FontAssets>,
 ) {
-    // TODO
+    if (piece_image_assets.is_loaded(&asset_server)
+        && image_assets.is_loaded(&asset_server)
+        && font_assets.is_loaded(&asset_server))
+    {
+        // TODO: ここでアセットのロードが完了したことを通知する
+    }
 }
