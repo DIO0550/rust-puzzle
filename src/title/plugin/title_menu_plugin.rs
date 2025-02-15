@@ -14,10 +14,7 @@ pub struct TitlePlugin;
 impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(SelectTitleMenu(TitleMenuItem::StartGame))
-            .add_systems(
-                Startup,
-                setup_title_menu.run_if(in_state(GamePageState::Title)),
-            )
+            .add_systems(OnEnter(GamePageState::Title), setup_title_menu)
             .add_systems(OnExit(GamePageState::Title), despawn_component::<TitleMenu>)
             .add_systems(
                 Update,

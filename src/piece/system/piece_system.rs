@@ -58,16 +58,12 @@ pub fn spawn_piece(
     };
 
     if *app_state.get() != GameState::InGame {
-        print!("Not InGame");
         return;
     }
 
     if *spawn_piece_state == SpawnPieceState::Wait {
-        println!("wait");
         return;
     }
-
-    println!("Spawn");
 
     let piece = AnimalPieceComponent::from(next_piece_res.0);
     let size = piece.animal_piece.get_size().to_f32();

@@ -25,25 +25,20 @@ pub fn load_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 pub fn check_assets_ready(
     asset_server: Res<AssetServer>,
-    assets: (
-        Option<Res<PieceImageAssets>>,
-        Option<Res<ImageAssets>>,
-        Option<Res<FontAssets>>,
-    ),
+    piece_images_assets: Option<Res<PieceImageAssets>>,
+    images_assets: Option<Res<ImageAssets>>,
+    fonts_assets: Option<Res<FontAssets>>,
     mut assets_load_state: ResMut<NextState<AssetLoadState>>,
     mut game_page_state: ResMut<NextState<GamePageState>>,
 ) {
     let all_loaded = [
-        assets
-            .0
+        piece_images_assets
             .map(|a| a.is_loaded(&asset_server))
             .unwrap_or(false),
-        assets
-            .1
+        images_assets
             .map(|a| a.is_loaded(&asset_server))
             .unwrap_or(false),
-        assets
-            .2
+        fonts_assets
             .map(|a| a.is_loaded(&asset_server))
             .unwrap_or(false),
     ]
