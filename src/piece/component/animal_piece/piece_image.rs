@@ -1,34 +1,27 @@
-use bevy::{
-    asset::{AssetServer, Handle},
-    ecs::system::Res,
-    render::texture::Image,
-};
+// use bevy::{asset::Handle, ecs::system::Res, render::texture::Image};
 
-use crate::asset::{
-    asset::AssetTrait,
-    image::image::{PieceImageAsset, PieceImageName},
-};
+// use crate::asset::image::piece_image_assets::PieceImageAssets;
 
-use super::piece_type::PieceType;
+// use super::piece_type::PieceType;
 
-pub struct PieceImage {}
+// pub struct PieceImage {}
 
-impl PieceImage {
-    pub fn from_piece_type(
-        asset_server: &Res<AssetServer>,
-        piece_type: &PieceType,
-    ) -> Handle<Image> {
-        let image = match piece_type {
-            PieceType::Cat => PieceImageAsset::asset(asset_server, &PieceImageName::Cat),
-            PieceType::Dog => PieceImageAsset::asset(asset_server, &PieceImageName::Dog),
-            PieceType::Elephant => PieceImageAsset::asset(asset_server, &PieceImageName::Elephant),
-            PieceType::Giraffe => PieceImageAsset::asset(asset_server, &PieceImageName::Giraffe),
-            PieceType::Horse => PieceImageAsset::asset(asset_server, &PieceImageName::Horse),
-            PieceType::Panda => PieceImageAsset::asset(asset_server, &PieceImageName::Panda),
-            PieceType::Penguin => PieceImageAsset::asset(asset_server, &PieceImageName::Penguin),
-            PieceType::Rat => PieceImageAsset::asset(asset_server, &PieceImageName::Rat),
-        };
+// impl PieceImage {
+//     pub fn from_piece_type(
+//         piece_image_assets: &Res<PieceImageAssets>,
+//         piece_type: &PieceType,
+//     ) -> Handle<Image> {
+//         let image = match piece_type {
+//             PieceType::Cat => piece_image_assets.cat.clone(),
+//             PieceType::Dog => piece_image_assets.dog.clone(),
+//             PieceType::Elephant => piece_image_assets.elephant.clone(),
+//             PieceType::Giraffe => piece_image_assets.giraffe.clone(),
+//             PieceType::Horse => piece_image_assets.horse.clone(),
+//             PieceType::Panda => piece_image_assets.panda.clone(),
+//             PieceType::Penguin => piece_image_assets.penguin.clone(),
+//             PieceType::Rat => piece_image_assets.rat.clone(),
+//         };
 
-        return image;
-    }
-}
+//         return image;
+//     }
+// }

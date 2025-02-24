@@ -24,6 +24,7 @@ mod piece;
 mod resource;
 mod score;
 mod title;
+mod ui;
 
 fn main() {
     let window = Window {

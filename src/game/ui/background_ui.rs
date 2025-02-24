@@ -10,20 +10,23 @@ use bevy::{
 use crate::{
     asset::{
         asset::AssetTrait,
-        image::image::{ImageAsset, ImageName},
+        image::{
+            game_image_assets::{self, GameImageAssets},
+            image::{ImageAsset, ImageName},
+        },
     },
     BOX_SIZE_HEIHT, BOX_SIZE_WIDTH, BOX_THICKNESS,
 };
 
 pub fn desk_background(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    image_assets: Res<GameImageAssets>,
     window_query: Query<&Window, With<PrimaryWindow>>,
 ) {
     let window = window_query.get_single().unwrap();
     let width = window.width() * 0.7;
     let height = width * 0.6;
-    let image = ImageAsset::asset(&asset_server, &ImageName::DeskBg);
+    let image = image_assets.desk_bg.clone();
     let bundle = SpriteBundle {
         sprite: Sprite {
             custom_size: Some(Vec2 {

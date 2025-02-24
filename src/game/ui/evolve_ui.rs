@@ -15,15 +15,13 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
-        image::image::ImageName,
+        image::{image::ImageName, piece_image_assets::PieceImageAssets},
     },
     piece::component::animal_piece::piece_type::PieceType,
+    ui::image::{game_image_bundle::GameImageBundle, piece_image::PieceImage},
 };
 
-use super::{
-    image_ui::{ImageUI, ImageUITrait},
-    piece_ui::{PieceImageUITrait, PieceUI},
-};
+use super::image_ui::{ImageUI, ImageUITrait};
 
 fn evolve_title_text(child_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
     child_builder
@@ -49,7 +47,11 @@ fn evolve_title_text(child_builder: &mut ChildBuilder, asset_server: &Res<AssetS
         });
 }
 
-pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
+pub fn evolve_describe(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    piece_image_assets: Res<PieceImageAssets>,
+) {
     let image_size = 50.0;
     let mut piece_evolve_image_bundle =
         ImageUI::image_bundle(ImageName::PieceEvolve, &asset_server, &(image_size * 7.0));
@@ -104,18 +106,21 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     ..default()
                                 })
                                 .with_children(|parent| {
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Rat)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Cat)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Dog)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Rat,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Cat,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Dog,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
                                 });
                             parent
                                 .spawn(NodeBundle {
@@ -128,14 +133,16 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     ..default()
                                 })
                                 .with_children(|parent| {
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Elephant)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Penguin)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Elephant,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Penguin,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
                                 });
                             parent
                                 .spawn(NodeBundle {
@@ -148,18 +155,21 @@ pub fn evolve_describe(mut commands: Commands, asset_server: Res<AssetServer>) {
                                     ..default()
                                 })
                                 .with_children(|parent| {
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Horse)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Panda)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
-                                    parent.spawn(
-                                        PieceUI::new(PieceType::Giraffe)
-                                            .image_bundle(&asset_server, &image_size),
-                                    );
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Horse,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Panda,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
+                                    parent.spawn(PieceImage::image_bundle(
+                                        PieceType::Giraffe,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    ));
                                 });
                         });
                 });

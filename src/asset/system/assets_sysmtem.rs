@@ -10,7 +10,7 @@ use crate::{
     asset::{
         asset::AssetLoadTrait,
         font::font_assets::FontAssets,
-        image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
+        image::{game_image_assets::GameImageAssets, piece_image_assets::PieceImageAssets},
         state::asset_load_state::AssetLoadState,
     },
     game::state::{game_page_state::GamePageState, game_state::GameState},
@@ -26,7 +26,7 @@ pub fn load_assets(mut commands: Commands, asset_server: Res<AssetServer>) {
 pub fn check_assets_ready(
     asset_server: Res<AssetServer>,
     piece_images_assets: Option<Res<PieceImageAssets>>,
-    images_assets: Option<Res<ImageAssets>>,
+    images_assets: Option<Res<GameImageAssets>>,
     fonts_assets: Option<Res<FontAssets>>,
     mut assets_load_state: ResMut<NextState<AssetLoadState>>,
     mut game_page_state: ResMut<NextState<GamePageState>>,

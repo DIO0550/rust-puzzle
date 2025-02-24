@@ -1,19 +1,11 @@
-use bevy::{asset::AssetId, render::texture::Image};
+use bevy::render::texture::Image;
 
-use crate::asset::asset::{AssetIdCollection, AssetNameTrait, AssetTrait};
+use crate::{
+    asset::asset::{AssetNameTrait, AssetTrait},
+    piece::component::animal_piece::piece_type::PieceType,
+};
 
-pub enum PieceImageName {
-    Rat,
-    Cat,
-    Dog,
-    Giraffe,
-    Horse,
-    Penguin,
-    Panda,
-    Elephant,
-}
-
-impl AssetNameTrait for PieceImageName {
+impl AssetNameTrait for PieceType {
     fn asset_path(&self) -> String {
         match self {
             Self::Rat => "img/Rat.png".to_string(),
@@ -29,7 +21,7 @@ impl AssetNameTrait for PieceImageName {
 }
 
 pub struct PieceImageAsset {}
-impl AssetTrait<PieceImageName, Image> for PieceImageAsset {}
+impl AssetTrait<PieceType, Image> for PieceImageAsset {}
 
 pub enum ImageName {
     CatHand,

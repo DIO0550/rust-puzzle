@@ -24,13 +24,15 @@ use bevy_rapier2d::{
 };
 
 use crate::{
-    asset::resource::piece_sound::{PieceFallSound, PieceUnionSound},
+    asset::{
+        image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
+        resource::piece_sound::{PieceFallSound, PieceUnionSound},
+    },
     consts::consts::*,
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
     piece::{
         component::{
-            animal_piece::{animal_piece_component::AnimalPieceComponent, piece_image::PieceImage},
-            falling::Falling,
+            animal_piece::animal_piece_component::AnimalPieceComponent, falling::Falling,
             grab::Grab,
         },
         resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
@@ -48,7 +50,7 @@ pub fn spawn_piece(
     grab_position_resource: Res<GrabPostion>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
-    asset_server: Res<AssetServer>,
+    piece_image_assets: Res<PieceImageAssets>,
     next_piece_res: Res<NextPiece>,
     spawn_piece_state: Res<SpawnPieceState>,
     app_state: ResMut<State<GameState>>,
@@ -67,7 +69,7 @@ pub fn spawn_piece(
 
     let piece = AnimalPieceComponent::from(next_piece_res.0);
     let size = piece.animal_piece.get_size().to_f32();
-    let image = PieceImage::from_piece_type(&asset_server, &piece.animal_piece.get_piece_type());
+    let image = piece_image_assets.handle_image_from(&piece.animal_piece.get_piece_type());
 
     let new_grab_postion = GrabPostion::new(grab_position_resource.x, &*piece.animal_piece);
 
@@ -172,7 +174,7 @@ pub fn piece_collision_events(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
     score_res: Res<Score>,
-    asset_server: Res<AssetServer>,
+    piece_image_assets: Res<PieceImageAssets>,
     piece_union_sound_res: Res<PieceUnionSound>,
 ) {
     for collision_event in collision_events.read() {
@@ -220,7 +222,7 @@ pub fn piece_collision_events(
         commands.insert_resource(Score(new_score));
 
         let size = piece.animal_piece.get_size().to_f32();
-        let image = PieceImage::from_piece_type(&asset_server, piece.animal_piece.get_piece_type());
+        let image = piece_image_assets.handle_image_from(piece.animal_piece.get_piece_type());
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 

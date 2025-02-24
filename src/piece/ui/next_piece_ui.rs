@@ -12,13 +12,13 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
-        image::image::ImageName,
+        image::{
+            image::ImageName, image_assets::ImageAssets, piece_image_assets::PieceImageAssets,
+        },
     },
-    game::ui::{
-        image_ui::{ImageUI, ImageUITrait},
-        piece_ui::{PieceImageUITrait, PieceUI},
-    },
-    piece::{component::animal_piece::piece_image::PieceImage, resource::next_piece::NextPiece},
+    game::ui::image_ui::{ImageUI, ImageUITrait},
+    piece::resource::next_piece::NextPiece,
+    ui::image::{game_image_bundle::GameImageBundle, piece_image::PieceImage},
 };
 
 const PIECE_IMAGE_SIZE: f32 = 100.0;
@@ -28,11 +28,11 @@ pub struct NextPieceImage;
 
 fn next_piece_icon(
     child_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
+    piece_image_assets: &Res<PieceImageAssets>,
     next_piece_res: &Res<NextPiece>,
 ) {
     let piece_image_bundle =
-        PieceUI::new(next_piece_res.0).image_bundle(&asset_server, &PIECE_IMAGE_SIZE);
+        PieceImage::image_bundle(next_piece_res.0, piece_image_assets, &PIECE_IMAGE_SIZE);
 
     child_builder
         .spawn(NodeBundle {
@@ -80,6 +80,7 @@ fn next_piece_title(child_builder: &mut ChildBuilder, asset_server: &Res<AssetSe
 pub fn setup_display_next_piece(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    piece_image_assets: Res<PieceImageAssets>,
     next_piece_res: Res<NextPiece>,
 ) {
     let image_size = 250.0;
@@ -101,16 +102,16 @@ pub fn setup_display_next_piece(
         .with_children(|parent| {
             next_piece_title(parent, &asset_server);
         })
-        .with_children(|parent| next_piece_icon(parent, &asset_server, &next_piece_res));
+        .with_children(|parent| next_piece_icon(parent, &piece_image_assets, &next_piece_res));
 }
 
 pub fn update_display_next_piece(
     mut next_piece_image: Query<&mut UiImage, With<NextPieceImage>>,
-    asset_server: Res<AssetServer>,
+    piece_image_assets: Res<PieceImageAssets>,
     next_piece_res: Res<NextPiece>,
 ) {
     let mut next_piece_image = next_piece_image.single_mut();
 
-    let image = PieceImage::from_piece_type(&asset_server, &next_piece_res.0);
+    let image = piece_image_assets.handle_image_from(&next_piece_res.0);
     next_piece_image.texture = image;
 }

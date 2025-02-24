@@ -1,8 +1,14 @@
-use bevy::{asset::UntypedAssetId, prelude::*};
+use bevy::prelude::*;
 
-use crate::asset::asset::{AssetIdCollection, AssetLoadTrait, AssetTrait};
+use crate::{
+    asset::asset::{AssetIdCollection, AssetLoadTrait, AssetTrait},
+    piece::component::animal_piece::piece_type::PieceType,
+};
 
-use super::image::{PieceImageAsset, PieceImageName};
+use super::{
+    image::PieceImageAsset,
+    image_assets::{FromAssetServer, ImageAssets},
+};
 
 #[derive(Resource)]
 pub struct PieceImageAssets {
@@ -33,16 +39,16 @@ impl AssetIdCollection<Image> for PieceImageAssets {
 
 impl AssetLoadTrait<Image> for PieceImageAssets {}
 
-impl PieceImageAssets {
-    pub fn new(asset_server: &Res<AssetServer>) -> Self {
-        let rat = PieceImageAsset::asset(asset_server, &PieceImageName::Rat);
-        let cat = PieceImageAsset::asset(asset_server, &PieceImageName::Cat);
-        let dog = PieceImageAsset::asset(asset_server, &PieceImageName::Dog);
-        let giraffe = PieceImageAsset::asset(asset_server, &PieceImageName::Giraffe);
-        let horse = PieceImageAsset::asset(asset_server, &PieceImageName::Horse);
-        let penguin = PieceImageAsset::asset(asset_server, &PieceImageName::Penguin);
-        let panda = PieceImageAsset::asset(asset_server, &PieceImageName::Panda);
-        let elephant = PieceImageAsset::asset(asset_server, &PieceImageName::Elephant);
+impl FromAssetServer for PieceImageAssets {
+    fn new(asset_server: &Res<AssetServer>) -> Self {
+        let rat = PieceImageAsset::asset(asset_server, &PieceType::Rat);
+        let cat = PieceImageAsset::asset(asset_server, &PieceType::Cat);
+        let dog = PieceImageAsset::asset(asset_server, &PieceType::Dog);
+        let giraffe = PieceImageAsset::asset(asset_server, &PieceType::Giraffe);
+        let horse = PieceImageAsset::asset(asset_server, &PieceType::Horse);
+        let penguin = PieceImageAsset::asset(asset_server, &PieceType::Penguin);
+        let panda = PieceImageAsset::asset(asset_server, &PieceType::Panda);
+        let elephant = PieceImageAsset::asset(asset_server, &PieceType::Elephant);
 
         Self {
             rat,
@@ -54,5 +60,22 @@ impl PieceImageAssets {
             panda,
             elephant,
         }
+    }
+}
+
+impl ImageAssets<PieceType> for PieceImageAssets {
+    fn handle_image_from(&self, asset_name: &PieceType) -> Handle<Image> {
+        let image = match asset_name {
+            PieceType::Rat => self.rat.clone(),
+            PieceType::Cat => self.cat.clone(),
+            PieceType::Dog => self.dog.clone(),
+            PieceType::Giraffe => self.giraffe.clone(),
+            PieceType::Horse => self.horse.clone(),
+            PieceType::Penguin => self.penguin.clone(),
+            PieceType::Panda => self.panda.clone(),
+            PieceType::Elephant => self.elephant.clone(),
+        };
+
+        return image;
     }
 }
