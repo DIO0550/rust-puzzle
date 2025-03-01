@@ -1,0 +1,140 @@
+use bevy::{
+    ecs::{
+        component::Component,
+        entity::Entity,
+        system::{Commands, Res},
+    },
+    hierarchy::BuildChildren,
+    render::color::Color,
+    text::{TextAlignment, TextSection, TextStyle},
+    ui::{
+        node_bundles::{NodeBundle, TextBundle},
+        BackgroundColor, Style, Val,
+    },
+    utils::default,
+};
+
+use crate::{asset::font::font_assets::FontAssets, consts::color_theme::ColorTheme};
+
+#[derive(Debug, Component)]
+pub struct MenuItem {
+    pub id: String,
+    pub label: String,
+}
+
+#[derive(Debug, Component)]
+pub struct MenuItemState {
+    pub is_selected: bool,
+}
+
+#[derive(Debug, Component)]
+pub struct MenuItemColor {
+    pub normal: Color,
+    pub selected: Color,
+}
+
+pub struct MenuItemEntityBuilder {
+    item: MenuItem,
+    state: MenuItemState,
+    color: MenuItemColor,
+    style: Style,
+}
+
+impl MenuItemEntityBuilder {
+    pub fn new(id: &str, text: &str) -> Self {
+        Self {
+            item: MenuItem {
+                id: id.to_string(),
+                label: text.to_string(),
+            },
+            state: MenuItemState { is_selected: false },
+            color: MenuItemColor {
+                normal: ColorTheme::CHROME_WHITE,
+                selected: ColorTheme::CHROME_WHITE,
+            },
+            style: Style {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                ..Default::default()
+            },
+        }
+    }
+
+    // メニューアイテムを変更するメソッド
+    pub fn menu_item(mut self, menu_item: MenuItem) -> Self {
+        self.item = menu_item;
+        self
+    }
+
+    // 選択状態を設定
+    pub fn selected(mut self, is_selected: bool) -> Self {
+        self.state.is_selected = is_selected;
+
+        self
+    }
+
+    // 色を設定
+    pub fn color(mut self, normal: Color, selected: Color) -> Self {
+        self.color = MenuItemColor { normal, selected };
+        self
+    }
+
+    // スタイルを設定
+    pub fn style(mut self, style: Style) -> Self {
+        self.style = style;
+        self
+    }
+
+    // エンティティを構築
+    pub fn build(self, commands: &mut Commands, font_assets: Res<FontAssets>) -> Entity {
+        let background_color = if self.state.is_selected {
+            BackgroundColor(self.color.selected)
+        } else {
+            BackgroundColor(self.color.normal)
+        };
+
+        let label = self.item.label.clone();
+
+        let button_bundle = NodeBundle {
+            style: self.style,
+            background_color: background_color,
+            ..Default::default()
+        };
+
+        let entity = commands
+            .spawn((self.item, self.state, self.color, button_bundle))
+            .with_children(|parent| {
+                parent
+                    .spawn(NodeBundle {
+                        style: Style { ..default() },
+                        ..default()
+                    })
+                    .with_children(|parent| {
+                        parent.spawn((TextBundle::from_sections([TextSection::new(
+                            label,
+                            TextStyle {
+                                font: font_assets.hachi_maru_pop_regular.clone(),
+                                font_size: 100.,
+                                color: Color::BLACK,
+                                ..default()
+                            },
+                        )])
+                        .with_text_alignment(TextAlignment::Center),));
+                    });
+            })
+            .id();
+
+        entity
+    }
+
+    pub fn build_as_child(
+        self,
+        commands: &mut Commands,
+        parent_entity: Entity,
+        font_assets: Res<FontAssets>,
+    ) -> Entity {
+        let entity = self.build(commands, font_assets);
+        commands.entity(parent_entity).add_child(entity);
+        entity
+    }
+}
