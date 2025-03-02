@@ -12,15 +12,17 @@ pub struct Menu {
     pub id: String,
 }
 
-pub struct MenuEntityBuilder {
+pub struct MenuEntityBuilder<T: Component> {
     menu: Menu,
+    marker: T,
     style: Style,
 }
 
-impl MenuEntityBuilder {
-    pub fn new(id: &str) -> Self {
+impl<T: Component> MenuEntityBuilder<T> {
+    pub fn new(id: &str, marker: T) -> Self {
         Self {
             menu: Menu { id: id.to_string() },
+            marker: marker,
             style: Style {
                 ..Default::default()
             },
@@ -46,14 +48,9 @@ impl MenuEntityBuilder {
                     ..Default::default()
                 },
                 self.menu,
+                self.marker,
             ))
             .id();
         entity
     }
-}
-
-#[derive(Event)]
-pub struct MenuSelectEvent {
-    pub menu_id: String,
-    pub item_id: String,
 }

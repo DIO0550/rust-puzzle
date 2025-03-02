@@ -23,9 +23,7 @@ pub struct MenuItem {
 }
 
 #[derive(Debug, Component)]
-pub struct MenuItemState {
-    pub is_selected: bool,
-}
+pub struct MenuItemSelected;
 
 #[derive(Debug, Component)]
 pub struct MenuItemColor {
@@ -33,25 +31,27 @@ pub struct MenuItemColor {
     pub selected: Color,
 }
 
-pub struct MenuItemEntityBuilder {
+pub struct MenuItemEntityBuilder<T: Component> {
     item: MenuItem,
-    state: MenuItemState,
+    is_selected: bool,
     color: MenuItemColor,
+    marker: T,
     style: Style,
 }
 
-impl MenuItemEntityBuilder {
-    pub fn new(id: &str, text: &str) -> Self {
+impl<T: Component> MenuItemEntityBuilder<T> {
+    pub fn new(id: &str, text: &str, marker: T) -> Self {
         Self {
             item: MenuItem {
                 id: id.to_string(),
                 label: text.to_string(),
             },
-            state: MenuItemState { is_selected: false },
+            is_selected: false,
             color: MenuItemColor {
                 normal: ColorTheme::CHROME_WHITE,
                 selected: ColorTheme::CHROME_WHITE,
             },
+            marker,
             style: Style {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
@@ -68,7 +68,7 @@ impl MenuItemEntityBuilder {
 
     // 選択状態を設定
     pub fn selected(mut self, is_selected: bool) -> Self {
-        self.state.is_selected = is_selected;
+        self.is_selected = is_selected;
 
         self
     }
@@ -86,8 +86,8 @@ impl MenuItemEntityBuilder {
     }
 
     // エンティティを構築
-    pub fn build(self, commands: &mut Commands, font_assets: Res<FontAssets>) -> Entity {
-        let background_color = if self.state.is_selected {
+    pub fn build(self, commands: &mut Commands, font_assets: &Res<FontAssets>) -> Entity {
+        let background_color = if self.is_selected {
             BackgroundColor(self.color.selected)
         } else {
             BackgroundColor(self.color.normal)
@@ -101,8 +101,16 @@ impl MenuItemEntityBuilder {
             ..Default::default()
         };
 
-        let entity = commands
-            .spawn((self.item, self.state, self.color, button_bundle))
+        // 基本的なエンティティを作成
+        let mut entity_commands =
+            commands.spawn((self.item, self.color, self.marker, button_bundle));
+
+        // 選択状態に応じて条件付きでマーカーコンポーネントを追加
+        if self.is_selected {
+            entity_commands.insert(MenuItemSelected);
+        }
+
+        let entity = entity_commands
             .with_children(|parent| {
                 parent
                     .spawn(NodeBundle {
@@ -131,7 +139,7 @@ impl MenuItemEntityBuilder {
         self,
         commands: &mut Commands,
         parent_entity: Entity,
-        font_assets: Res<FontAssets>,
+        font_assets: &Res<FontAssets>,
     ) -> Entity {
         let entity = self.build(commands, font_assets);
         commands.entity(parent_entity).add_child(entity);

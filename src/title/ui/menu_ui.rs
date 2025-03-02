@@ -10,10 +10,14 @@ use prelude::TextBundle;
 use crate::{
     asset::{
         asset::AssetTrait,
-        font::font::{FontAsset, FontName},
+        font::{
+            font::{FontAsset, FontName},
+            font_assets::FontAssets,
+        },
     },
     consts::color_theme::ColorTheme,
     title::component::{title_menu::TitleMenu, title_menu_item::TitleMenuItem},
+    ui::menu::{menu_bundle::MenuEntityBuilder, menu_item_bundle::MenuItemEntityBuilder},
 };
 
 pub fn menu_item(
@@ -63,25 +67,57 @@ pub fn menu_item(
         });
 }
 
-pub fn setup_title_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    height: Val::Percent(100.),
-                    width: Val::Percent(100.),
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    ..default()
-                },
+pub fn setup_title_menu(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    font_assets: Res<FontAssets>,
+) {
+    // commands
+    //     .spawn((
+    //         NodeBundle {
+    //             style: Style {
+    //                 flex_direction: FlexDirection::Column,
+    //                 height: Val::Percent(100.),
+    //                 width: Val::Percent(100.),
+    //                 align_items: AlignItems::Center,
+    //                 justify_content: JustifyContent::Center,
+    //                 ..default()
+    //             },
 
-                ..default()
-            },
-            TitleMenu,
-        ))
-        .with_children(|parent| {
-            menu_item(parent, TitleMenuItem::StartGame, &asset_server);
-            menu_item(parent, TitleMenuItem::HighScore, &asset_server);
-        });
+    //             ..default()
+    //         },
+    //         TitleMenu,
+    //     ))
+    //     .with_children(|parent| {
+    //         menu_item(parent, TitleMenuItem::StartGame, &asset_server);
+    //         menu_item(parent, TitleMenuItem::HighScore, &asset_server);
+    //     });
+
+    let menu_item = MenuEntityBuilder::new("title_menu", TitleMenu)
+        .size(400.0, 400.0)
+        .build(&mut commands);
+
+    let start_game = MenuItemEntityBuilder::new(
+        "start_game",
+        &TitleMenuItem::StartGame.to_string(),
+        TitleMenuItem::StartGame,
+    )
+    .style(Style {
+        width: Val::Px(400.0),
+        height: Val::Px(100.0),
+        ..Default::default()
+    })
+    .build_as_child(&mut commands, menu_item, &font_assets);
+
+    let high_score = MenuItemEntityBuilder::new(
+        "high_score",
+        &TitleMenuItem::HighScore.to_string(),
+        TitleMenuItem::HighScore,
+    )
+    .style(Style {
+        width: Val::Px(400.0),
+        height: Val::Px(100.0),
+        ..Default::default()
+    })
+    .build_as_child(&mut commands, menu_item, &font_assets);
 }
