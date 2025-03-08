@@ -49,7 +49,7 @@ impl<T: Component> MenuItemEntityBuilder<T> {
             is_selected: false,
             color: MenuItemColor {
                 normal: ColorTheme::CHROME_WHITE,
-                selected: ColorTheme::CHROME_WHITE,
+                selected: ColorTheme::SPROUT,
             },
             marker,
             style: Style {

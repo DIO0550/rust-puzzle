@@ -8,6 +8,7 @@ use crate::{
         system::select_title_system::*,
         ui::menu_ui::*,
     },
+    ui::menu::menu_controller::{menu_item_select, menu_navigation},
 };
 
 pub struct TitlePlugin;
@@ -19,9 +20,8 @@ impl Plugin for TitlePlugin {
             .add_systems(
                 Update,
                 (
-                    change_select_title_menu,
-                    select_title_menu,
-                    update_title_menu,
+                    menu_navigation::<TitleMenu, TitleMenuItem>,
+                    menu_item_select::<TitleMenu, TitleMenuItem>,
                 )
                     .run_if(in_state(GamePageState::Title)),
             );

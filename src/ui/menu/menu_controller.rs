@@ -1,17 +1,21 @@
+use std::ops::Add;
+
 use bevy::{
     ecs::{
         component::Component,
         entity::Entity,
-        query::With,
-        system::{Commands, Query, Res},
+        query::{Added, Changed, Or, With},
+        removal_detection::RemovedComponents,
+        system::{Commands, Query, Remove, Res},
     },
     hierarchy::Children,
     input::{keyboard::KeyCode, Input},
+    ui::BackgroundColor,
 };
 
 use super::{
     menu_bundle::Menu,
-    menu_item_bundle::{MenuItem, MenuItemSelected},
+    menu_item_bundle::{MenuItem, MenuItemColor, MenuItemSelected},
 };
 
 pub trait MenuControll<MenuItemMarker: Component> {
@@ -111,8 +115,9 @@ impl<MenuItemMarker: Component> MenuControll<MenuItemMarker> for MenuController 
         }
     }
 }
+
 pub fn menu_navigation<MenuMaker: Component, MenuItemMarker: Component>(
-    commands: &mut Commands,
+    mut commands: Commands,
     children_query: Query<&Children>,
     menu_query: Query<Entity, (With<Menu>, With<MenuMaker>)>,
     select_item_query: Query<Entity, (With<MenuItemSelected>, With<MenuItemMarker>)>,
@@ -125,13 +130,40 @@ pub fn menu_navigation<MenuMaker: Component, MenuItemMarker: Component>(
     match keyboard_input {
         keyboard if keyboard.just_pressed(KeyCode::Up) => MenuController::select_previous(
             menu_entity,
-            commands,
+            &mut commands,
             &children_query,
             &select_item_query,
         ),
-        keyboard if keyboard.just_pressed(KeyCode::Down) => {
-            MenuController::select_next(menu_entity, commands, &children_query, &select_item_query)
-        }
+        keyboard if keyboard.just_pressed(KeyCode::Down) => MenuController::select_next(
+            menu_entity,
+            &mut commands,
+            &children_query,
+            &select_item_query,
+        ),
         _ => (),
     };
+}
+
+pub fn menu_item_select<MenuMaker: Component, MenuItemMarker: Component>(
+    changed_select_item_query: Query<Entity, Added<MenuItemSelected>>,
+    mut removed: RemovedComponents<MenuItemSelected>,
+    mut color_query: Query<(&mut BackgroundColor, &MenuItemColor)>,
+) {
+    for changed_entity in changed_select_item_query.iter() {
+        println!("changed");
+        let Ok((mut bg_color, color)) = color_query.get_mut(changed_entity) else {
+            continue;
+        };
+        println!("color: {:?}", color);
+        bg_color.0 = color.selected;
+    }
+
+    for entity in removed.read() {
+        println!("remove");
+        let Ok((mut bg_color, color)) = color_query.get_mut(entity) else {
+            continue;
+        };
+        println!("color: {:?}", color);
+        bg_color.0 = color.normal;
+    }
 }
