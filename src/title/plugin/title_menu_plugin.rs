@@ -3,12 +3,18 @@ use bevy::prelude::*;
 use crate::{
     game::{state::game_page_state::GamePageState, system::despawn::despawn_component},
     title::{
-        component::{title_menu::TitleMenu, title_menu_item::TitleMenuItem},
+        component::{
+            title_menu::TitleMenu, title_menu_item::TitleMenuItem,
+            title_menu_item_select_command::TitleMenuItemSelectCommand,
+        },
         resource::select_title_menu::SelectTitleMenu,
         system::select_title_system::*,
         ui::menu_ui::*,
     },
-    ui::menu::menu_controller::{menu_item_select, menu_navigation},
+    ui::menu::{
+        menu_controller::{menu_navigation, update_menu_item_colors},
+        menu_item_action::select_menu_item_action,
+    },
 };
 
 pub struct TitlePlugin;
@@ -21,7 +27,8 @@ impl Plugin for TitlePlugin {
                 Update,
                 (
                     menu_navigation::<TitleMenu, TitleMenuItem>,
-                    menu_item_select::<TitleMenu, TitleMenuItem>,
+                    update_menu_item_colors::<TitleMenu, TitleMenuItem>,
+                    select_menu_item_action::<TitleMenuItemSelectCommand>,
                 )
                     .run_if(in_state(GamePageState::Title)),
             );

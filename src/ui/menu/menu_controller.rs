@@ -144,26 +144,22 @@ pub fn menu_navigation<MenuMaker: Component, MenuItemMarker: Component>(
     };
 }
 
-pub fn menu_item_select<MenuMaker: Component, MenuItemMarker: Component>(
+pub fn update_menu_item_colors<MenuMaker: Component, MenuItemMarker: Component>(
     changed_select_item_query: Query<Entity, Added<MenuItemSelected>>,
     mut removed: RemovedComponents<MenuItemSelected>,
     mut color_query: Query<(&mut BackgroundColor, &MenuItemColor)>,
 ) {
     for changed_entity in changed_select_item_query.iter() {
-        println!("changed");
         let Ok((mut bg_color, color)) = color_query.get_mut(changed_entity) else {
             continue;
         };
-        println!("color: {:?}", color);
         bg_color.0 = color.selected;
     }
 
     for entity in removed.read() {
-        println!("remove");
         let Ok((mut bg_color, color)) = color_query.get_mut(entity) else {
             continue;
         };
-        println!("color: {:?}", color);
         bg_color.0 = color.normal;
     }
 }
