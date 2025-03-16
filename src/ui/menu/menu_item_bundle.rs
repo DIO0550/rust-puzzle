@@ -16,6 +16,8 @@ use bevy::{
 
 use crate::{asset::font::font_assets::FontAssets, consts::color_theme::ColorTheme};
 
+use super::menu_item_action::MenuItemSelectAction;
+
 #[derive(Debug, Component)]
 pub struct MenuItem {
     pub id: String,
@@ -31,16 +33,17 @@ pub struct MenuItemColor {
     pub selected: Color,
 }
 
-pub struct MenuItemEntityBuilder<T: Component> {
+pub struct MenuItemEntityBuilder<T: Component, A: MenuItemSelectAction + Component> {
     item: MenuItem,
     is_selected: bool,
     color: MenuItemColor,
     marker: T,
+    action: A,
     style: Style,
 }
 
-impl<T: Component> MenuItemEntityBuilder<T> {
-    pub fn new(id: &str, text: &str, marker: T) -> Self {
+impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T, A> {
+    pub fn new(id: &str, text: &str, marker: T, action: A) -> Self {
         Self {
             item: MenuItem {
                 id: id.to_string(),
@@ -57,6 +60,7 @@ impl<T: Component> MenuItemEntityBuilder<T> {
                 height: Val::Percent(100.0),
                 ..Default::default()
             },
+            action,
         }
     }
 
@@ -102,8 +106,13 @@ impl<T: Component> MenuItemEntityBuilder<T> {
         };
 
         // 基本的なエンティティを作成
-        let mut entity_commands =
-            commands.spawn((self.item, self.color, self.marker, button_bundle));
+        let mut entity_commands = commands.spawn((
+            self.item,
+            self.color,
+            self.marker,
+            button_bundle,
+            self.action,
+        ));
 
         // 選択状態に応じて条件付きでマーカーコンポーネントを追加
         if self.is_selected {

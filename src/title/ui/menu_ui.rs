@@ -1,22 +1,14 @@
 use bevy::{
-    asset::AssetServer,
-    prelude::{BuildChildren, ChildBuilder, Color, Commands, NodeBundle, Res},
-    text::{TextAlignment, TextSection, TextStyle},
+    prelude::{Commands, Res},
     ui::*,
-    utils::default,
 };
-use prelude::TextBundle;
 
 use crate::{
-    asset::{
-        asset::AssetTrait,
-        font::{
-            font::{FontAsset, FontName},
-            font_assets::FontAssets,
-        },
+    asset::font::font_assets::FontAssets,
+    title::component::{
+        title_menu::TitleMenu, title_menu_item::TitleMenuItem,
+        title_menu_item_select_action::TitleMenuItemSelectAction,
     },
-    consts::color_theme::ColorTheme,
-    title::component::{title_menu::TitleMenu, title_menu_item::TitleMenuItem},
     ui::menu::{menu_bundle::MenuEntityBuilder, menu_item_bundle::MenuItemEntityBuilder},
 };
 
@@ -29,6 +21,7 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         "start_game",
         &TitleMenuItem::StartGame.to_string(),
         TitleMenuItem::StartGame,
+        TitleMenuItemSelectAction::StartGame,
     )
     .style(Style {
         width: Val::Px(400.0),
@@ -41,6 +34,7 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         "high_score",
         &TitleMenuItem::HighScore.to_string(),
         TitleMenuItem::HighScore,
+        TitleMenuItemSelectAction::HighScore,
     )
     .style(Style {
         width: Val::Px(400.0),

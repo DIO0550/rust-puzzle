@@ -1,7 +1,5 @@
-use bevy::a11y::accesskit::Size;
 use bevy::ecs::entity::Entity;
-use bevy::ecs::event::{Event, EventReader};
-use bevy::ecs::system::{Commands, Query};
+use bevy::ecs::system::Commands;
 use bevy::ui::node_bundles::NodeBundle;
 use bevy::ui::{Style, Val};
 
