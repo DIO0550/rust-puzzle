@@ -3,9 +3,13 @@ use bevy::{
     ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
 };
 
-use crate::asset::{
-    state::asset_load_state::AssetLoadState,
-    system::assets_sysmtem::{check_assets_ready, load_assets},
+use crate::{
+    asset::{
+        state::asset_load_state::AssetLoadState,
+        system::assets_sysmtem::{check_assets_ready, load_assets},
+    },
+    piece::next_piece::resource::next_piece::NextPiece,
+    ui::image::{game_image::GameImage, update_piece::update_image},
 };
 
 pub struct AssetsPlugin;

@@ -1,16 +1,23 @@
 use bevy::{
     app::*,
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
+    ecs::{
+        schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
+        system::Resource,
+    },
 };
 
 use crate::{
+    asset::image::game_image_assets::GameImageAssets,
     game::{state::game_state::GameState, system::despawn::despawn_component},
     piece::{
-        component::animal_piece::animal_piece_component::AnimalPieceComponent,
+        component::animal_piece::{
+            animal_piece_component::AnimalPieceComponent, piece_type::PieceType,
+        },
         resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
         system::piece_system::*,
         ui::next_piece_ui::*,
     },
+    ui::image::update_piece::update_image,
 };
 
 pub struct PiecePlugin;
@@ -41,6 +48,10 @@ impl Plugin for PiecePlugin {
             .add_systems(
                 Update,
                 (update_display_next_piece).run_if(in_state(GameState::InGame)),
+            )
+            .add_systems(
+                Update,
+                update_image::<PieceType, GameImageAssets, NextPiece, NextPieceImage>,
             );
     }
 }
