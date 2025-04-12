@@ -1,38 +1,25 @@
 use bevy::{
     app::*,
-    ecs::{
-        schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
-        system::Resource,
-    },
+    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
 };
 
 use crate::{
-    asset::image::game_image_assets::GameImageAssets,
     game::{state::game_state::GameState, system::despawn::despawn_component},
     piece::{
-        component::animal_piece::{
-            animal_piece_component::AnimalPieceComponent, piece_type::PieceType,
-        },
-        resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
-        system::piece_system::*,
-        ui::next_piece_ui::*,
+        component::animal_piece::animal_piece_component::AnimalPieceComponent,
+        resource::spawn_piece_state::SpawnPieceState, system::piece_system::*,
     },
-    ui::image::update_piece::update_image,
 };
 
 pub struct PiecePlugin;
 impl Plugin for PiecePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(NextPiece::new())
-            .insert_resource(SpawnPieceState::ShouldSpawn)
+        app.insert_resource(SpawnPieceState::ShouldSpawn)
             .add_systems(
                 OnEnter(GameState::InGame),
                 despawn_component::<AnimalPieceComponent>,
             )
-            .add_systems(
-                Startup,
-                (spawn_piece, setup_display_next_piece).run_if(in_state(GameState::InGame)),
-            )
+            .add_systems(Startup, (spawn_piece).run_if(in_state(GameState::InGame)))
             .add_systems(
                 Update,
                 (
@@ -44,14 +31,6 @@ impl Plugin for PiecePlugin {
                 )
                     .chain()
                     .run_if(in_state(GameState::InGame)),
-            )
-            .add_systems(
-                Update,
-                (update_display_next_piece).run_if(in_state(GameState::InGame)),
-            )
-            .add_systems(
-                Update,
-                update_image::<PieceType, GameImageAssets, NextPiece, NextPieceImage>,
             );
     }
 }

@@ -65,7 +65,6 @@ impl NextPieceTitleTextContainer {
                     ..default()
                 },))
                 .with_children(|parent| {
-                    // スコアのタイトルテキストを追加
                     parent.spawn(NextPieceTitleText::spawn(font_assets));
                 });
         });

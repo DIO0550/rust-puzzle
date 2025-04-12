@@ -9,7 +9,9 @@ use consts::consts::*;
 use game::plugin::game_plugin::GamePlugin;
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
-use piece::plugin::piece_plugin::PiecePlugin;
+use piece::{
+    next_piece::plugin::next_piece_plugin::NextPiecePlugin, plugin::piece_plugin::PiecePlugin,
+};
 use resource::grab_postion::GrabPostion;
 use score::plugin::score_plugin::ScorePlugin;
 use title::plugin::title_menu_plugin::TitlePlugin;
@@ -47,6 +49,7 @@ fn main() {
         .add_plugins(GameOverPlugin)
         .add_plugins(HighScorePlugin)
         .add_plugins(PieceSoundPlugin)
+        .add_plugins(NextPiecePlugin)
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))

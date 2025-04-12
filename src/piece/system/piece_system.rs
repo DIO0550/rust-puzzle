@@ -1,5 +1,5 @@
 use bevy::{
-    asset::{AssetServer, Assets},
+    asset::Assets,
     audio::{AudioBundle, PlaybackSettings},
     ecs::{
         entity::Entity,
@@ -35,7 +35,8 @@ use crate::{
             animal_piece::animal_piece_component::AnimalPieceComponent, falling::Falling,
             grab::Grab,
         },
-        resource::{next_piece::NextPiece, spawn_piece_state::SpawnPieceState},
+        next_piece::resource::next_piece::NextPiece,
+        resource::spawn_piece_state::SpawnPieceState,
     },
     resource::grab_postion::GrabPostion,
     score::resource::score::Score,

@@ -1,5 +1,6 @@
 use bevy::{
     ecs::{
+        change_detection::DetectChanges,
         component::Component,
         query::With,
         system::{Query, Res, Resource},
@@ -7,13 +8,10 @@ use bevy::{
     ui::UiImage,
 };
 
-use crate::asset::image::image_assets::ImageAssets;
-
 use super::image_handle_resource::ImageHandleResource;
 
 pub fn update_image<
-    R: Resource,
-    Assets: Resource + ImageAssets<R>,
+    Assets: Resource,
     TargetResource: Resource + ImageHandleResource<Assets>,
     MarkerComponent: Component,
 >(
@@ -21,6 +19,10 @@ pub fn update_image<
     resource: Res<TargetResource>,
     assets: Res<Assets>,
 ) {
+    if !resource.is_changed() {
+        return;
+    }
+
     for mut image in query.iter_mut() {
         let image_handle = resource.image_handle_resource(&assets);
         image.texture = image_handle;
