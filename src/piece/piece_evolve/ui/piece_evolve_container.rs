@@ -1,6 +1,6 @@
 use bevy::{
     ecs::{component::Component, entity::Entity, system::Commands},
-    ui::{node_bundles::NodeBundle, FlexDirection, Style, UiRect, Val},
+    ui::{node_bundles::NodeBundle, Display, FlexDirection, PositionType, Style, UiRect, Val},
     utils::default,
 };
 
@@ -9,15 +9,11 @@ pub(crate) struct PieceEvolveContainer;
 impl PieceEvolveContainer {
     fn style() -> Style {
         Style {
-            margin: UiRect {
-                left: (Val::Px(50.0)),
-                right: (Val::Px(42.0)),
-                top: (Val::Px(40.0)),
-                bottom: (Val::Px(0.0)),
-            },
-
-            row_gap: Val::Px(60.0),
+            position_type: PositionType::Absolute,
+            right: Val::Px(15.),
+            bottom: Val::Px(15.),
             flex_direction: FlexDirection::Column,
+            display: Display::Flex,
             ..default()
         }
     }

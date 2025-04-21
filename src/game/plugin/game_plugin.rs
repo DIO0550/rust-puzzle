@@ -6,17 +6,13 @@ use bevy::{
 use crate::game::{
     state::{game_page_state::GamePageState, game_state::GameState},
     system::game_system::{restart, setup_cat_mug, setup_gameover_sensor},
-    ui::{
-        background_ui::{desk_background, desk_book_background},
-        evolve_ui::evolve_describe,
-    },
+    ui::background_ui::{desk_background, desk_book_background},
 };
 
 pub struct GamePlugin;
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let game_systems = (
-            evolve_describe,
             setup_cat_mug,
             setup_gameover_sensor,
             desk_background,

@@ -10,7 +10,9 @@ use game::plugin::game_plugin::GamePlugin;
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
 use piece::{
-    next_piece::plugin::next_piece_plugin::NextPiecePlugin, plugin::piece_plugin::PiecePlugin,
+    next_piece::plugin::next_piece_plugin::NextPiecePlugin,
+    piece_evolve::plugin::piece_evolve_plugin::PieceEvolvePlugin,
+    plugin::piece_plugin::PiecePlugin,
 };
 use resource::grab_postion::GrabPostion;
 use score::plugin::score_plugin::ScorePlugin;
@@ -50,6 +52,7 @@ fn main() {
         .add_plugins(HighScorePlugin)
         .add_plugins(PieceSoundPlugin)
         .add_plugins(NextPiecePlugin)
+        .add_plugins(PieceEvolvePlugin)
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))

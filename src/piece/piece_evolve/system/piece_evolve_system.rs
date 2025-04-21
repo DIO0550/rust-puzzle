@@ -5,7 +5,7 @@ use crate::{
         font::font_assets::FontAssets,
         image::{game_image_assets::GameImageAssets, piece_image_assets::PieceImageAssets},
     },
-    piece::evolve_piece::ui::{
+    piece::piece_evolve::ui::{
         piece_evolve_backgroud_image_container::PieceEvolveBackgroundImageContainer,
         piece_evolve_container::PieceEvolveContainer,
         piece_evolve_describe_container::PieceEvolveDescribeContainer,
@@ -30,12 +30,13 @@ pub(crate) fn setup_evolve_piece(
         &mut commands,
         evolve_piece_container,
         &game_image_assets,
-        200.0,
+        350.0,
     );
 
     PieceEvolveDescribeContainer::spawn_as_child(
         &mut commands,
         piece_evolve_bg_image,
         &piece_image_assets,
+        50.0,
     );
 }

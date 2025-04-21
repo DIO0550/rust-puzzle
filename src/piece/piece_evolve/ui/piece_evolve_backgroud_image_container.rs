@@ -4,7 +4,7 @@ use bevy::{
         system::{Commands, Res},
     },
     hierarchy::BuildChildren,
-    ui::{Style, Val},
+    ui::{Display, FlexDirection, Style, Val},
     utils::default,
 };
 
@@ -19,6 +19,8 @@ impl PieceEvolveBackgroundImageContainer {
         Style {
             width: Val::Px(image_size),
             height: Val::Px(image_size),
+            flex_direction: FlexDirection::Column,
+            display: Display::Flex,
             ..default()
         }
     }
