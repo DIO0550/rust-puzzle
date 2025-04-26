@@ -20,6 +20,7 @@ use title::plugin::title_menu_plugin::TitlePlugin;
 
 mod asset;
 mod consts;
+mod field;
 mod file;
 mod game;
 mod game_over;
