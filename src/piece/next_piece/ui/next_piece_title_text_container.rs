@@ -15,9 +15,7 @@ use bevy::{
 
 use crate::asset::font::font_assets::FontAssets;
 
-struct NextPieceTitleText {
-    text: String,
-}
+struct NextPieceTitleText;
 impl NextPieceTitleText {
     fn text_style(font_assets: &Res<FontAssets>) -> TextStyle {
         TextStyle {

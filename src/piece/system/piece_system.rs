@@ -36,9 +36,10 @@ use crate::{
             grab::Grab,
         },
         next_piece::resource::next_piece::NextPiece,
+        parameter::piece_spawer::{self, PieceSpawner},
         resource::spawn_piece_state::SpawnPieceState,
     },
-    resource::grab_postion::GrabPostion,
+    resource::grab_postion::GrabPosition,
     score::resource::score::Score,
 };
 
@@ -48,13 +49,9 @@ use crate::{
 pub fn spawn_piece(
     mut commands: Commands,
     mut query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
-    grab_position_resource: Res<GrabPostion>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-    piece_image_assets: Res<PieceImageAssets>,
-    next_piece_res: Res<NextPiece>,
     spawn_piece_state: Res<SpawnPieceState>,
     app_state: ResMut<State<GameState>>,
+    piece_spawer: &mut PieceSpawner,
 ) {
     let Err(_) = query.get_single_mut() else {
         return;
@@ -68,32 +65,8 @@ pub fn spawn_piece(
         return;
     }
 
-    let piece = AnimalPieceComponent::from(next_piece_res.0);
-    let size = piece.animal_piece.get_size().to_f32();
-    let image = piece_image_assets.handle_image_from(&piece.animal_piece.get_piece_type());
+    piece_spawer.spawn();
 
-    let new_grab_postion = GrabPostion::new(grab_position_resource.x, &*piece.animal_piece);
-
-    commands.insert_resource(NextPiece::new());
-
-    commands
-        .spawn(Grab)
-        .insert(piece)
-        .insert(MaterialMesh2dBundle {
-            mesh: bevy::sprite::Mesh2dHandle(
-                meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
-            ),
-            material: materials.add(image.into()),
-            ..default()
-        })
-        .insert(ActiveCollisionTypes::all())
-        .insert(TransformBundle::from(Transform::from_xyz(
-            new_grab_postion.x,
-            BOX_SIZE_HEIHT / 2.0 + PIECE_POSITION_Y_MARGIN,
-            0.0,
-        )));
-
-    commands.insert_resource(new_grab_postion);
     commands.insert_resource(SpawnPieceState::Wait)
 }
 
@@ -123,7 +96,7 @@ pub fn move_piece(
     let new_paddle_position =
         transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
     let new_grab_position =
-        GrabPostion::new(new_paddle_position, &*animal_piece_component.animal_piece);
+        GrabPosition::new(new_paddle_position, &*animal_piece_component.animal_piece);
     transform.translation.x = new_grab_position.x;
     commands.insert_resource(new_grab_position)
 }

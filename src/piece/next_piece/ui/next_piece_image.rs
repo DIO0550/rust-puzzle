@@ -11,9 +11,8 @@ use bevy::{
 use crate::{
     asset::image::piece_image_assets::PieceImageAssets,
     piece::next_piece::resource::next_piece::NextPiece,
-    ui::image::{game_image_bundle::GameImageBundle, piece_image::PieceImage},
+    ui::image::{game_image_bundle::GameImageBundleWithStyle, piece_image::PieceImage},
 };
-const PIECE_IMAGE_SIZE: f32 = 100.0;
 
 #[derive(Component)]
 pub struct NextPieceImage;
@@ -38,7 +37,7 @@ impl NextPieceImage {
         next_piece_res: &Res<NextPiece>,
     ) {
         let piece_image_bundle =
-            PieceImage::image_bundle(next_piece_res.0, piece_image_assets, &PIECE_IMAGE_SIZE);
+            PieceImage::image_bundle(next_piece_res.0, piece_image_assets, Self::style());
 
         commands.entity(parent_entity).with_children(|parent| {
             parent.spawn((piece_image_bundle, NextPieceImage));

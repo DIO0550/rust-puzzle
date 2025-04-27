@@ -15,7 +15,7 @@ use piece::{
     piece_evolve::plugin::piece_evolve_plugin::PieceEvolvePlugin,
     plugin::piece_plugin::PiecePlugin,
 };
-use resource::grab_postion::GrabPostion;
+use resource::grab_postion::GrabPosition;
 use score::plugin::score_plugin::ScorePlugin;
 use title::plugin::title_menu_plugin::TitlePlugin;
 
@@ -26,6 +26,7 @@ mod file;
 mod game;
 mod game_over;
 mod high_score;
+mod parameter;
 mod piece;
 mod resource;
 mod score;
@@ -59,7 +60,7 @@ fn main() {
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
-        .insert_resource(GrabPostion { x: 0.0 })
+        .insert_resource(GrabPosition { x: 0.0 })
         .add_systems(Startup, setup)
         .run();
 }

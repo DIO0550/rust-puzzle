@@ -1,6 +1,6 @@
 use bevy::{
     asset::Handle,
-    ecs::system::{Res, Resource},
+    ecs::system::{Res, ResMut, Resource, SystemParam},
     render::texture::Image,
 };
 
@@ -25,5 +25,20 @@ impl NextPiece {
 impl ImageHandleResource<PieceImageAssets> for NextPiece {
     fn image_handle_resource(&self, assets: &Res<PieceImageAssets>) -> Handle<Image> {
         return assets.handle_image_from(&self.0);
+    }
+}
+
+#[derive(SystemParam)]
+pub struct NextPieceManager<'w> {
+    next_piece: ResMut<'w, NextPiece>,
+}
+
+impl<'w> NextPieceManager<'w> {
+    pub fn update_next_piece(&mut self) {
+        self.next_piece.0 = NextPiece::new().0;
+    }
+
+    pub fn get_next_piece(&self) -> &PieceType {
+        return &self.next_piece.0;
     }
 }
