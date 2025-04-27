@@ -6,6 +6,7 @@ use bevy_rapier2d::{
 };
 
 use consts::consts::*;
+use field::game::plugin::game_field_plugin::GameFieldPlugin;
 use game::plugin::game_plugin::GamePlugin;
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
@@ -46,6 +47,7 @@ fn main() {
         }))
         .add_plugins(AssetsPlugin)
         .add_plugins(GamePlugin)
+        .add_plugins(GameFieldPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ScorePlugin)

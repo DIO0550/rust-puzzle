@@ -11,7 +11,7 @@ use crate::{
     asset::{
         asset::AssetTrait,
         image::{
-            game_image_assets::{self, GameImageAssets},
+            game_image_assets::GameImageAssets,
             image::{ImageAsset, ImageName},
         },
     },

@@ -1,5 +1,8 @@
 use bevy::{
-    ecs::system::{Commands, Res},
+    ecs::{
+        component::Component,
+        system::{Commands, Res},
+    },
     math::{Vec2, Vec3},
     sprite::{Sprite, SpriteBundle},
     transform::components::Transform,
@@ -12,7 +15,8 @@ use crate::{
     consts::consts::{BOX_SIZE_HEIHT, BOX_SIZE_WIDTH, BOX_THICKNESS},
 };
 
-struct CatMugSprite;
+#[derive(Component)]
+pub(crate) struct CatMugSprite;
 
 impl CatMugSprite {
     fn sprite(custom_size: Option<Vec2>) -> Sprite {
@@ -65,7 +69,7 @@ impl CatMugSprite {
         ]);
     }
 
-    fn spawn(commands: &mut Commands, game_image_assets: Res<GameImageAssets>) {
+    pub(crate) fn spawn(commands: &mut Commands, game_image_assets: &Res<GameImageAssets>) {
         let cat_mug_image = game_image_assets.cat_mug.clone();
         let cat_mug_bundle = SpriteBundle {
             sprite: Self::sprite(Some(Vec2 {

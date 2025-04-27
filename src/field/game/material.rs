@@ -1,3 +1,3 @@
-pub mod cat_mag_ear_sprite;
-pub mod cat_mag_handle_sprite;
-pub mod cat_mag_sprite;
+pub mod cat_mug_ear_sprite;
+pub mod cat_mug_handle_sprite;
+pub mod cat_mug_sprite;
