@@ -6,11 +6,11 @@ use crate::{
 };
 
 #[derive(Resource)]
-pub struct GrabPosition {
+pub struct DropPosition {
     pub x: f32,
 }
 
-impl GrabPosition {
+impl DropPosition {
     pub fn new(position: f32, animal_piece: &dyn AnimalPiece) -> Self {
         let piece_size = animal_piece.get_size().to_f32() * UNIT_WIDTH * 2.0;
         let range = BOX_SIZE_WIDTH / 2.0 - BOX_THICKNESS;
@@ -19,25 +19,25 @@ impl GrabPosition {
 
         if position < min {
             let new_position = min;
-            return GrabPosition { x: new_position };
+            return DropPosition { x: new_position };
         }
 
         if max < position {
             let new_position = max;
-            return GrabPosition { x: new_position };
+            return DropPosition { x: new_position };
         }
 
-        return GrabPosition { x: position };
+        return DropPosition { x: position };
     }
 }
 
 #[derive(SystemParam)]
-pub struct GrabPostionManager<'w> {
-    pub grab_position: ResMut<'w, GrabPosition>,
+pub struct DropPositionController<'w> {
+    pub grab_position: ResMut<'w, DropPosition>,
 }
 
-impl<'w> GrabPostionManager<'w> {
+impl<'w> DropPositionController<'w> {
     pub fn set_grab_position(&mut self, animal_piece: &dyn AnimalPiece) {
-        self.grab_position.x = GrabPosition::new(self.grab_position.x, animal_piece).x;
+        self.grab_position.x = DropPosition::new(self.grab_position.x, animal_piece).x;
     }
 }

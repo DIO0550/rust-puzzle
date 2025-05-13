@@ -15,7 +15,7 @@ use piece::{
     piece_evolve::plugin::piece_evolve_plugin::PieceEvolvePlugin,
     plugin::piece_plugin::PiecePlugin,
 };
-use resource::grab_postion::GrabPosition;
+use resource::drop_postion::DropPosition;
 use score::plugin::score_plugin::ScorePlugin;
 use title::plugin::title_menu_plugin::TitlePlugin;
 
@@ -60,7 +60,7 @@ fn main() {
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
-        .insert_resource(GrabPosition { x: 0.0 })
+        .insert_resource(DropPosition { x: 0.0 })
         .add_systems(Startup, setup)
         .run();
 }

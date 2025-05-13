@@ -12,12 +12,12 @@ use crate::{
     consts::consts::{BOX_SIZE_HEIHT, PIECE_POSITION_Y_MARGIN},
     parameter::material_mesh::MeshMaterial,
     piece::component::{
+        active_piece::ActivePiece,
         animal_piece::{
             animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponentGenerator,
         },
-        grab::Grab,
     },
-    resource::grab_postion::GrabPostionManager,
+    resource::drop_postion::DropPositionController,
 };
 
 #[derive(SystemParam)]
@@ -26,7 +26,7 @@ pub struct PieceSpawner<'w, 's> {
     mesh_material: MeshMaterial<'w>,
     animal_piece_generator: AnimalPieceComponentGenerator<'w>,
     piece_image_assets: Res<'w, PieceImageAssets>,
-    grab_position_manager: GrabPostionManager<'w>,
+    grab_position_manager: DropPositionController<'w>,
 }
 
 impl<'w, 's> PieceSpawner<'w, 's> {
@@ -46,7 +46,7 @@ impl<'w, 's> PieceSpawner<'w, 's> {
 
         return self
             .commands
-            .spawn(Grab)
+            .spawn(ActivePiece)
             .insert(animal_piece_component)
             .insert(material_mesh)
             .insert(ActiveCollisionTypes::all())

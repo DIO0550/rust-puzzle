@@ -32,14 +32,14 @@ use crate::{
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
     piece::{
         component::{
-            animal_piece::animal_piece_component::AnimalPieceComponent, falling::Falling,
-            grab::Grab,
+            active_piece::ActivePiece, animal_piece::animal_piece_component::AnimalPieceComponent,
+            falling::Falling,
         },
         next_piece::resource::next_piece::NextPiece,
         parameter::piece_spawer::{self, PieceSpawner},
         resource::spawn_piece_state::SpawnPieceState,
     },
-    resource::grab_postion::GrabPosition,
+    resource::drop_postion::DropPosition,
     score::resource::score::Score,
 };
 
@@ -48,7 +48,7 @@ use crate::{
  */
 pub fn spawn_piece(
     mut commands: Commands,
-    mut query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    mut query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
     spawn_piece_state: Res<SpawnPieceState>,
     app_state: ResMut<State<GameState>>,
     piece_spawer: &mut PieceSpawner,
@@ -76,7 +76,7 @@ pub fn spawn_piece(
 pub fn move_piece(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(&mut Transform, &AnimalPieceComponent), With<Grab>>,
+    mut query: Query<(&mut Transform, &AnimalPieceComponent), With<ActivePiece>>,
     time: Res<Time>,
 ) {
     let Ok((mut transform, animal_piece_component)) = query.get_single_mut() else {
@@ -96,7 +96,7 @@ pub fn move_piece(
     let new_paddle_position =
         transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
     let new_grab_position =
-        GrabPosition::new(new_paddle_position, &*animal_piece_component.animal_piece);
+        DropPosition::new(new_paddle_position, &*animal_piece_component.animal_piece);
     transform.translation.x = new_grab_position.x;
     commands.insert_resource(new_grab_position)
 }
@@ -107,7 +107,7 @@ pub fn move_piece(
 pub fn release_piece(
     mut commands: Commands,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<(Entity, &AnimalPieceComponent), With<Grab>>,
+    mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
     piece_fall_sound_res: Res<PieceFallSound>,
 ) {
     let Ok((entity, piece)) = query.get_single_mut() else {
@@ -117,7 +117,7 @@ pub fn release_piece(
     if !keyboard_input.just_released(KeyCode::Space) {
         return;
     }
-    commands.entity(entity).remove::<Grab>();
+    commands.entity(entity).remove::<ActivePiece>();
     commands
         .entity(entity)
         .insert(RigidBody::Dynamic)
@@ -232,7 +232,7 @@ pub fn game_over_sensor_intersection_events(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut config: ResMut<RapierConfiguration>,
-    mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<Grab>, With<Falling>)>>,
+    mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
     piece_query: Query<&AnimalPieceComponent>,
     mut query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
     mut app_state: ResMut<NextState<GameState>>,
