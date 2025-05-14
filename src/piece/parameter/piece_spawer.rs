@@ -8,14 +8,13 @@ use bevy::{
 use bevy_rapier2d::prelude::ActiveCollisionTypes;
 
 use crate::{
-    asset::image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
     consts::consts::{BOX_SIZE_HEIHT, PIECE_POSITION_Y_MARGIN},
-    parameter::material_mesh::MeshMaterial,
-    piece::component::{
-        active_piece::ActivePiece,
-        animal_piece::{
-            animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponentGenerator,
+    piece::{
+        component::{
+            active_piece::ActivePiece,
+            animal_piece::animal_piece_component::AnimalPieceComponentGenerator,
         },
+        system::piece_renderer::PieceRenderer,
     },
     resource::drop_postion::DropPositionController,
 };
@@ -23,26 +22,20 @@ use crate::{
 #[derive(SystemParam)]
 pub struct PieceSpawner<'w, 's> {
     commands: Commands<'w, 's>,
-    mesh_material: MeshMaterial<'w>,
+    piece_renderer: PieceRenderer<'w>,
     animal_piece_generator: AnimalPieceComponentGenerator<'w>,
-    piece_image_assets: Res<'w, PieceImageAssets>,
     grab_position_manager: DropPositionController<'w>,
 }
 
 impl<'w, 's> PieceSpawner<'w, 's> {
     pub fn spawn(&mut self) -> Entity {
         let animal_piece_component = self.animal_piece_generator.generate();
-
-        let size = animal_piece_component.get_size().to_f32();
-        let image = self
-            .piece_image_assets
-            .handle_image_from(&animal_piece_component.get_piece_type());
-
         self.grab_position_manager
             .set_grab_position(animal_piece_component.animal_piece.as_ref());
-
         let new_grab_postion = self.grab_position_manager.grab_position.x;
-        let material_mesh = self.mesh_material.create_circle_material_mesh(size, image);
+        let material_mesh = self
+            .piece_renderer
+            .create_material_mesh(&animal_piece_component);
 
         return self
             .commands
