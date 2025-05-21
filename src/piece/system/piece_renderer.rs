@@ -1,15 +1,13 @@
 use bevy::{
     ecs::system::{Res, SystemParam},
-    pbr::StandardMaterial,
-    sprite::{ColorMaterial, Material2d, MaterialMesh2dBundle},
+    sprite::{ColorMaterial, MaterialMesh2dBundle},
 };
 
 use crate::{
     asset::image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
     parameter::material_mesh::MeshMaterial,
     piece::component::animal_piece::{
-        animal_piece::AnimalPiece,
-        animal_piece_component::{AnimalPieceComponent, AnimalPieceComponentGenerator},
+        animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
     },
 };
 

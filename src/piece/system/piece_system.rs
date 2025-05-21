@@ -36,7 +36,11 @@ use crate::{
             falling::Falling,
         },
         next_piece::resource::next_piece::NextPiece,
-        parameter::piece_spawer::{self, PieceSpawner},
+        parameter::{
+            piece_faller::{self, PieceFaller},
+            piece_physics_converter::{self, PiecePhysicsConverter},
+            piece_spawer::{self, PieceSpawner},
+        },
         resource::spawn_piece_state::SpawnPieceState,
     },
     resource::drop_postion::DropPosition,
@@ -106,29 +110,22 @@ pub fn move_piece(
  */
 pub fn release_piece(
     mut commands: Commands,
+    mut piece_physics_converter: PiecePhysicsConverter,
+    mut piece_faller: PieceFaller,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
     piece_fall_sound_res: Res<PieceFallSound>,
 ) {
+    if !keyboard_input.just_released(KeyCode::Space) {
+        return;
+    }
+
     let Ok((entity, piece)) = query.get_single_mut() else {
         return;
     };
 
-    if !keyboard_input.just_released(KeyCode::Space) {
-        return;
-    }
-    commands.entity(entity).remove::<ActivePiece>();
-    commands
-        .entity(entity)
-        .insert(RigidBody::Dynamic)
-        .insert(Collider::ball(
-            piece.animal_piece.get_size().to_f32() * 2.0 * UNIT_WIDTH,
-        ))
-        .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(ColliderMassProperties::Mass(50.0))
-        .insert(GravityScale(10.0))
-        .insert(Sleeping::disabled())
-        .insert(Falling);
+    piece_physics_converter.convert_to_physical(entity, piece);
+    piece_faller.make_falling(entity);
 
     commands.spawn(AudioBundle {
         source: piece_fall_sound_res.0.clone(),
