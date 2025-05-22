@@ -1,7 +1,7 @@
 use bevy::{
     asset::AssetServer,
     ecs::{
-        schedule::{NextState, State},
+        schedule::NextState,
         system::{Commands, Res, ResMut},
     },
 };
@@ -13,7 +13,7 @@ use crate::{
         image::{game_image_assets::GameImageAssets, piece_image_assets::PieceImageAssets},
         state::asset_load_state::AssetLoadState,
     },
-    game::state::{game_page_state::GamePageState, game_state::GameState},
+    game::state::game_page_state::GamePageState,
 };
 
 use super::{font_loader_system::load_font_assets, image_loader_system::load_image_assets};
