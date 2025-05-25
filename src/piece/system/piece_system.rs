@@ -1,6 +1,4 @@
 use bevy::{
-    asset::Assets,
-    audio::{AudioBundle, PlaybackSettings},
     ecs::{
         entity::Entity,
         event::EventReader,
@@ -9,25 +7,16 @@ use bevy::{
         system::{Commands, Query, Res, ResMut},
     },
     input::{keyboard::KeyCode, Input},
-    math::Vec2,
-    prelude::default,
-    render::mesh::{shape::Circle, Mesh},
-    sprite::{ColorMaterial, MaterialMesh2dBundle},
     time::Time,
-    transform::{components::Transform, TransformBundle},
+    transform::components::Transform,
 };
 use bevy_rapier2d::{
-    dynamics::{GravityScale, RigidBody, Sleeping, Velocity},
-    geometry::{ActiveCollisionTypes, ActiveEvents, Collider, ColliderMassProperties, Sensor},
+    geometry::Sensor,
     pipeline::CollisionEvent,
     plugin::{RapierConfiguration, RapierContext},
 };
 
 use crate::{
-    asset::{
-        image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
-        resource::piece_sound::{PieceFallSound, PieceUnionSound},
-    },
     consts::consts::*,
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
     piece::{
@@ -35,11 +24,9 @@ use crate::{
             active_piece::ActivePiece, animal_piece::animal_piece_component::AnimalPieceComponent,
             falling::Falling,
         },
-        next_piece::resource::next_piece::NextPiece,
         parameter::{
-            piece_faller::{self, PieceFaller},
-            piece_physics_converter::{self, PiecePhysicsConverter},
-            piece_spawer::{self, PieceSpawner},
+            piece_faller::PieceFaller, piece_physics_converter::PiecePhysicsConverter,
+            piece_sound_player::PieceSoundPlayer, piece_spawer::PieceSpawner,
         },
         resource::spawn_piece_state::SpawnPieceState,
     },
@@ -70,7 +57,6 @@ pub fn spawn_piece(
     }
 
     piece_spawer.spawn();
-
     commands.insert_resource(SpawnPieceState::Wait)
 }
 
@@ -109,12 +95,11 @@ pub fn move_piece(
  * ピースを離す
  */
 pub fn release_piece(
-    mut commands: Commands,
+    _: Commands,
     mut piece_physics_converter: PiecePhysicsConverter,
     mut piece_faller: PieceFaller,
     keyboard_input: Res<Input<KeyCode>>,
     mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
-    piece_fall_sound_res: Res<PieceFallSound>,
 ) {
     if !keyboard_input.just_released(KeyCode::Space) {
         return;
@@ -126,11 +111,6 @@ pub fn release_piece(
 
     piece_physics_converter.convert_to_physical(entity, piece);
     piece_faller.make_falling(entity);
-
-    commands.spawn(AudioBundle {
-        source: piece_fall_sound_res.0.clone(),
-        settings: PlaybackSettings::DESPAWN,
-    });
 }
 
 /**
@@ -142,11 +122,10 @@ pub fn piece_collision_events(
     piece_query: Query<(&AnimalPieceComponent, &Transform)>,
     falling_query: Query<&Falling>,
     sensor_query: Query<&Sensor>,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
     score_res: Res<Score>,
-    piece_image_assets: Res<PieceImageAssets>,
-    piece_union_sound_res: Res<PieceUnionSound>,
+    mut piece_sound_player: PieceSoundPlayer,
+    mut piece_spawer: PieceSpawner,
+    mut piece_physics_converter: PiecePhysicsConverter,
 ) {
     for collision_event in collision_events.read() {
         let entities = match collision_event {
@@ -181,10 +160,7 @@ pub fn piece_collision_events(
         commands.entity(*entities.0).despawn();
         commands.entity(*entities.1).despawn();
 
-        commands.spawn(AudioBundle {
-            source: piece_union_sound_res.0.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        piece_sound_player.play_union_sound();
 
         let Some(piece) = entity1.evolve() else {
             continue;
@@ -192,33 +168,11 @@ pub fn piece_collision_events(
         let new_score = score_res.0 + entity1.animal_piece.get_score().to_u32();
         commands.insert_resource(Score(new_score));
 
-        let size = piece.animal_piece.get_size().to_f32();
-        let image = piece_image_assets.handle_image_from(piece.animal_piece.get_piece_type());
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
-        commands
-            .spawn(piece)
-            .insert(MaterialMesh2dBundle {
-                mesh: bevy::sprite::Mesh2dHandle(
-                    meshes.add(Circle::new(size * 2.0 * UNIT_WIDTH).into()),
-                ),
-                material: materials.add(image.into()),
-                ..default()
-            })
-            .insert(TransformBundle::from(Transform::from_xyz(
-                position_x, position_y, 0.0,
-            )))
-            .insert(RigidBody::Dynamic)
-            .insert(Collider::ball(size * 2.0 * UNIT_WIDTH))
-            .insert(ColliderMassProperties::Mass(50.0))
-            .insert(GravityScale(10.0))
-            .insert(ActiveEvents::COLLISION_EVENTS)
-            .insert(Velocity {
-                linvel: Vec2::new(0.0, 0.0),
-                angvel: 0.0,
-            })
-            .insert(Sleeping::disabled());
+        let entity = piece_spawer.spawn_inactive_piece_with_position(position_x, position_y);
+        piece_physics_converter.convert_to_physical(entity, &piece);
     }
 }
 

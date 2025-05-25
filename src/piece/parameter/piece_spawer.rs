@@ -50,4 +50,46 @@ impl<'w, 's> PieceSpawner<'w, 's> {
             )))
             .id();
     }
+
+    pub fn spawn_with_position(&mut self, position_x: f32, position_y: f32) -> Entity {
+        let animal_piece_component = self.animal_piece_generator.generate();
+        self.grab_position_manager
+            .set_grab_position(animal_piece_component.animal_piece.as_ref());
+        let material_mesh = self
+            .piece_renderer
+            .create_material_mesh(&animal_piece_component);
+
+        return self
+            .commands
+            .spawn(ActivePiece)
+            .insert(animal_piece_component)
+            .insert(material_mesh)
+            .insert(ActiveCollisionTypes::all())
+            .insert(TransformBundle::from(Transform::from_xyz(
+                position_x, position_y, 0.0,
+            )))
+            .id();
+    }
+
+    pub fn spawn_inactive_piece_with_position(
+        &mut self,
+        position_x: f32,
+        position_y: f32,
+    ) -> Entity {
+        let animal_piece_component = self.animal_piece_generator.generate();
+        self.grab_position_manager
+            .set_grab_position(animal_piece_component.animal_piece.as_ref());
+        let material_mesh = self
+            .piece_renderer
+            .create_material_mesh(&animal_piece_component);
+
+        return self
+            .commands
+            .spawn(TransformBundle::from(Transform::from_xyz(
+                position_x, position_y, 0.0,
+            )))
+            .insert(animal_piece_component)
+            .insert(material_mesh)
+            .id();
+    }
 }
