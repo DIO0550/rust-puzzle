@@ -19,7 +19,9 @@ use bevy_rapier2d::{
 use crate::{
     consts::consts::*,
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
+    parameter::{input::PlayerInput, time::TimeParams},
     piece::{
+        self,
         component::{
             active_piece::ActivePiece, animal_piece::animal_piece_component::AnimalPieceComponent,
             falling::Falling,
@@ -33,6 +35,35 @@ use crate::{
     resource::drop_postion::DropPosition,
     score::resource::score::Score,
 };
+
+#[derive(Debug, Clone, Copy)]
+pub struct PieceMovement {
+    direction: f32,
+    speed: f32,
+    delta_time: f32,
+}
+
+impl PieceMovement {
+    pub fn new(input: &PlayerInput, speed: f32, delta_time: f32) -> Self {
+        PieceMovement {
+            direction: match (input.is_key_pressed_left(), input.is_key_pressed_right()) {
+                (true, false) => -1.0,
+                (false, true) => 1.0,
+                _ => 0.0,
+            },
+            speed,
+            delta_time,
+        }
+    }
+
+    pub fn calculate_new_position(&self, current_x: f32) -> f32 {
+        current_x + self.direction * self.speed * self.delta_time
+    }
+
+    pub fn is_moving(&self) -> bool {
+        self.direction != 0.0
+    }
+}
 
 /**
  * ピース生成
@@ -65,30 +96,24 @@ pub fn spawn_piece(
  */
 pub fn move_piece(
     mut commands: Commands,
-    keyboard_input: Res<Input<KeyCode>>,
+    input: PlayerInput,
     mut query: Query<(&mut Transform, &AnimalPieceComponent), With<ActivePiece>>,
-    time: Res<Time>,
+    time: TimeParams,
 ) {
     let Ok((mut transform, animal_piece_component)) = query.get_single_mut() else {
         return;
     };
 
-    let mut direction = 0.0;
-
-    if keyboard_input.pressed(KeyCode::Left) {
-        direction -= 1.0;
+    let piece_movement = PieceMovement::new(&input, PIECE_SPEED, time.delta_seconds());
+    if !piece_movement.is_moving() {
+        return;
     }
 
-    if keyboard_input.pressed(KeyCode::Right) {
-        direction += 1.0;
-    }
-
-    let new_paddle_position =
-        transform.translation.x + direction * PIECE_SPEED * time.delta_seconds();
-    let new_grab_position =
-        DropPosition::new(new_paddle_position, &*animal_piece_component.animal_piece);
-    transform.translation.x = new_grab_position.x;
-    commands.insert_resource(new_grab_position)
+    let new_position = piece_movement.calculate_new_position(transform.translation.x);
+    let new_drop_position =
+        DropPosition::new(new_position, animal_piece_component.animal_piece.as_ref());
+    transform.translation.x = new_drop_position.x;
+    commands.insert_resource(new_drop_position);
 }
 
 /**
