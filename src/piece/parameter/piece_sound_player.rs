@@ -1,16 +1,9 @@
 use bevy::{
     audio::{AudioBundle, PlaybackSettings},
-    ecs::{
-        entity::Entity,
-        system::{Commands, Res, SystemParam},
-    },
+    ecs::system::{Commands, Res, SystemParam},
 };
-use bevy_rapier2d::prelude::{ActiveEvents, Collider, ColliderMassProperties, RigidBody, Sleeping};
 
-use crate::{
-    asset::sound::piece_sound_assets::PieceSoundAssets, consts::consts::UNIT_WIDTH,
-    piece::component::animal_piece::animal_piece_component::AnimalPieceComponent,
-};
+use crate::asset::sound::piece_sound_assets::PieceSoundAssets;
 
 #[derive(SystemParam)]
 pub struct PieceSoundPlayer<'w, 's> {

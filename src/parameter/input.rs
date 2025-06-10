@@ -17,4 +17,8 @@ impl PlayerInput<'_> {
     pub fn is_key_pressed_right(&self) -> bool {
         self.keyboard_input.pressed(KeyCode::Right)
     }
+
+    pub fn is_key_just_released_space(&self) -> bool {
+        self.keyboard_input.just_released(KeyCode::Space)
+    }
 }

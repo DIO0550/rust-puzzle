@@ -2,7 +2,7 @@ use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
-        query::{Or, With},
+        query::{Or, With, Without},
         schedule::{NextState, State},
         system::{Commands, Query, Res, ResMut},
     },
@@ -23,7 +23,10 @@ use crate::{
     piece::{
         self,
         component::{
-            active_piece::ActivePiece, animal_piece::animal_piece_component::AnimalPieceComponent,
+            active_piece::ActivePiece,
+            animal_piece::{
+                animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
+            },
             falling::Falling,
         },
         parameter::{
@@ -70,12 +73,12 @@ impl PieceMovement {
  */
 pub fn spawn_piece(
     mut commands: Commands,
-    mut query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
+    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
     spawn_piece_state: Res<SpawnPieceState>,
     app_state: ResMut<State<GameState>>,
-    piece_spawer: &mut PieceSpawner,
+    mut piece_spawer: PieceSpawner,
 ) {
-    let Err(_) = query.get_single_mut() else {
+    if !query.is_empty() {
         return;
     };
 
@@ -123,10 +126,10 @@ pub fn release_piece(
     _: Commands,
     mut piece_physics_converter: PiecePhysicsConverter,
     mut piece_faller: PieceFaller,
-    keyboard_input: Res<Input<KeyCode>>,
+    input: PlayerInput,
     mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
 ) {
-    if !keyboard_input.just_released(KeyCode::Space) {
+    if !input.is_key_just_released_space() {
         return;
     }
 
@@ -141,62 +144,62 @@ pub fn release_piece(
 /**
  * 衝突イベント
  */
-pub fn piece_collision_events(
+pub fn handle_piece_collisions(
     mut commands: Commands,
     mut collision_events: EventReader<CollisionEvent>,
     piece_query: Query<(&AnimalPieceComponent, &Transform)>,
     falling_query: Query<&Falling>,
     sensor_query: Query<&Sensor>,
-    score_res: Res<Score>,
+    mut score_res: ResMut<Score>,
     mut piece_sound_player: PieceSoundPlayer,
-    mut piece_spawer: PieceSpawner,
+    mut piece_spawner: PieceSpawner,
     mut piece_physics_converter: PiecePhysicsConverter,
 ) {
     for collision_event in collision_events.read() {
-        let entities = match collision_event {
+        let (entity1, entity2) = match collision_event {
             CollisionEvent::Started(entity1, entity2, _) => (entity1, entity2),
             CollisionEvent::Stopped(entity1, entity2, _) => (entity1, entity2),
         };
 
-        if sensor_query.get(*entities.0).is_ok() || sensor_query.get(*entities.1).is_ok() {
+        if sensor_query.contains(*entity1) || sensor_query.contains(*entity2) {
             continue;
         }
 
-        if falling_query.get(*entities.0).is_ok() {
-            commands.entity(*entities.0).remove::<Falling>();
-        };
+        // 落下状態を解除（contains で効率化）
+        if falling_query.contains(*entity1) {
+            commands.entity(*entity1).remove::<Falling>();
+        }
+        if falling_query.contains(*entity2) {
+            commands.entity(*entity2).remove::<Falling>();
+        }
 
-        if falling_query.get(*entities.1).is_ok() {
-            commands.entity(*entities.1).remove::<Falling>();
-        };
-
-        let Ok((entity1, transform1)) = piece_query.get(*entities.0) else {
+        let Ok((piece_comp1, transform1)) = piece_query.get(*entity1) else {
             continue;
         };
 
-        let Ok((entity2, transform2)) = piece_query.get(*entities.1) else {
+        let Ok((piece_comp2, transform2)) = piece_query.get(*entity2) else {
             continue;
         };
 
-        if entity1.animal_piece.get_piece_type() != entity2.animal_piece.get_piece_type() {
+        if piece_comp1.get_piece_type() != piece_comp2.get_piece_type() {
             continue;
         }
 
-        commands.entity(*entities.0).despawn();
-        commands.entity(*entities.1).despawn();
+        commands.entity(*entity1).despawn();
+        commands.entity(*entity2).despawn();
 
         piece_sound_player.play_union_sound();
 
-        let Some(piece) = entity1.evolve() else {
+        score_res.0 += piece_comp1.animal_piece.get_score().to_u32();
+
+        let Some(piece) = piece_comp1.evolve() else {
             continue;
         };
-        let new_score = score_res.0 + entity1.animal_piece.get_score().to_u32();
-        commands.insert_resource(Score(new_score));
 
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
-        let entity = piece_spawer.spawn_inactive_piece_with_position(position_x, position_y);
+        let entity = piece_spawner.spawn_inactive_piece_with_position(position_x, position_y);
         piece_physics_converter.convert_to_physical(entity, &piece);
     }
 }
@@ -204,16 +207,15 @@ pub fn piece_collision_events(
 /**
  *  ゲームオーバーセンサーとの交差イベント
  */
-pub fn game_over_sensor_intersection_events(
+pub fn handle_game_over_sensor_collisions(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut config: ResMut<RapierConfiguration>,
-    mut exclude_piece_query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
-    piece_query: Query<&AnimalPieceComponent>,
-    mut query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
-    mut app_state: ResMut<NextState<GameState>>,
+    target_piece_query: Query<&AnimalPieceComponent, (Without<ActivePiece>, Without<Falling>)>,
+    mut sensor_query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
+    mut game_state: ResMut<NextState<GameState>>,
 ) {
-    let Ok(entity) = query.get_single_mut() else {
+    let Ok(entity) = sensor_query.get_single_mut() else {
         return;
     };
 
@@ -221,25 +223,26 @@ pub fn game_over_sensor_intersection_events(
         if !intersecting {
             continue;
         }
-        if exclude_piece_query.get(collider1).is_ok() || exclude_piece_query.get(collider2).is_ok()
-        {
-            continue;
-        }
 
-        // Piece以外なら除外
-        if !piece_query.get(collider1).is_ok() && !piece_query.get(collider2).is_ok() {
+        if !target_piece_query.contains(collider1) && !target_piece_query.contains(collider2) {
             continue;
         }
 
         config.physics_pipeline_active = false;
-        app_state.set(GameState::GameOver);
+        game_state.set(GameState::GameOver);
 
         return;
     }
+}
 
-    let Err(_) = exclude_piece_query.get_single_mut() else {
+pub fn update_spawn_piece_state(
+    mut spawn_piece_state: ResMut<SpawnPieceState>,
+    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
+) {
+    // アクティブまたは落下中のピースがない場合のみ
+    if !query.is_empty() {
         return;
-    };
+    }
 
-    commands.insert_resource(SpawnPieceState::ShouldSpawn);
+    *spawn_piece_state = SpawnPieceState::ShouldSpawn;
 }

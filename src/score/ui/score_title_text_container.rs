@@ -3,7 +3,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Res},
     },
-    hierarchy::{BuildChildren, ChildBuilder},
+    hierarchy::BuildChildren,
     render::color::Color,
     text::TextStyle,
     ui::{
