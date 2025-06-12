@@ -6,8 +6,6 @@ use bevy::{
         schedule::{NextState, State},
         system::{Commands, Query, Res, ResMut},
     },
-    input::{keyboard::KeyCode, Input},
-    time::Time,
     transform::components::Transform,
 };
 use bevy_rapier2d::{
@@ -21,7 +19,6 @@ use crate::{
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
     parameter::{input::PlayerInput, time::TimeParams},
     piece::{
-        self,
         component::{
             active_piece::ActivePiece,
             animal_piece::{
@@ -29,9 +26,10 @@ use crate::{
             },
             falling::Falling,
         },
+        ext::piece_commands_ext::PieceCommandsExt,
         parameter::{
-            piece_faller::PieceFaller, piece_physics_converter::PiecePhysicsConverter,
-            piece_sound_player::PieceSoundPlayer, piece_spawer::PieceSpawner,
+            piece_faller::PieceFaller, piece_sound_player::PieceSoundPlayer,
+            piece_spawer::PieceSpawner,
         },
         resource::spawn_piece_state::SpawnPieceState,
     },
@@ -123,8 +121,7 @@ pub fn move_piece(
  * ピースを離す
  */
 pub fn release_piece(
-    _: Commands,
-    mut piece_physics_converter: PiecePhysicsConverter,
+    mut commnads: Commands,
     mut piece_faller: PieceFaller,
     input: PlayerInput,
     mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
@@ -137,7 +134,7 @@ pub fn release_piece(
         return;
     };
 
-    piece_physics_converter.convert_to_physical(entity, piece);
+    commnads.convert_to_physical(entity, piece);
     piece_faller.make_falling(entity);
 }
 
@@ -153,7 +150,6 @@ pub fn handle_piece_collisions(
     mut score_res: ResMut<Score>,
     mut piece_sound_player: PieceSoundPlayer,
     mut piece_spawner: PieceSpawner,
-    mut piece_physics_converter: PiecePhysicsConverter,
 ) {
     for collision_event in collision_events.read() {
         let (entity1, entity2) = match collision_event {
@@ -200,7 +196,7 @@ pub fn handle_piece_collisions(
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
         let entity = piece_spawner.spawn_inactive_piece_with_position(position_x, position_y);
-        piece_physics_converter.convert_to_physical(entity, &piece);
+        commands.convert_to_physical(entity, &piece);
     }
 }
 
@@ -208,7 +204,7 @@ pub fn handle_piece_collisions(
  *  ゲームオーバーセンサーとの交差イベント
  */
 pub fn handle_game_over_sensor_collisions(
-    mut commands: Commands,
+    _: Commands,
     rapier_context: Res<RapierContext>,
     mut config: ResMut<RapierConfiguration>,
     target_piece_query: Query<&AnimalPieceComponent, (Without<ActivePiece>, Without<Falling>)>,

@@ -1,19 +1,15 @@
 use bevy::{
-    a11y::accesskit::Node,
     ecs::{
         entity::Entity,
         system::{Commands, Res},
     },
     hierarchy::{BuildChildren, ChildBuilder},
-    ui::{
-        node_bundles::NodeBundle, AlignItems, Display, FlexDirection, JustifyContent, Style,
-        UiRect, Val,
-    },
+    ui::{node_bundles::NodeBundle, Display, FlexDirection, JustifyContent, Style, UiRect, Val},
     utils::default,
 };
 
 use crate::{
-    asset::image::{self, piece_image_assets::PieceImageAssets},
+    asset::image::piece_image_assets::PieceImageAssets,
     piece::component::animal_piece::piece_type::PieceType,
     ui::image::{game_image_bundle::GameImageBundle, piece_image::PieceImage},
 };

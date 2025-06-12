@@ -1,7 +1,7 @@
 use bevy::{
     ecs::{
         entity::Entity,
-        system::{Commands, Res, ResMut, SystemParam},
+        system::{Commands, SystemParam},
     },
     transform::{components::Transform, TransformBundle},
 };

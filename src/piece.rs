@@ -1,4 +1,5 @@
 pub mod component;
+pub mod ext;
 pub mod next_piece;
 pub mod parameter;
 pub mod piece_evolve;

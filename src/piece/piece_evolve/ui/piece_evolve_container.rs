@@ -1,6 +1,6 @@
 use bevy::{
     ecs::{component::Component, entity::Entity, system::Commands},
-    ui::{node_bundles::NodeBundle, Display, FlexDirection, PositionType, Style, UiRect, Val},
+    ui::{node_bundles::NodeBundle, Display, FlexDirection, PositionType, Style, Val},
     utils::default,
 };
 
