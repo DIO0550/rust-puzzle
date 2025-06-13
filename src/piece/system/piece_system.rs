@@ -6,7 +6,12 @@ use bevy::{
         schedule::{NextState, State},
         system::{Commands, Query, Res, ResMut},
     },
+    gizmos::gizmos::Gizmos,
+    math::Vec2,
+    render::{color::Color, primitives::Sphere},
+    sprite::{Sprite, SpriteBundle},
     transform::components::Transform,
+    utils::default,
 };
 use bevy_rapier2d::{
     geometry::Sensor,
@@ -20,11 +25,12 @@ use crate::{
     parameter::{input::PlayerInput, time::TimeParams},
     piece::{
         component::{
-            active_piece::ActivePiece,
+            active_piece::{self, ActivePiece},
             animal_piece::{
                 animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
             },
-            falling::Falling,
+            drop_piece_indicator::DropPieceIndicator,
+            falling::{self, Falling},
         },
         ext::piece_commands_ext::PieceCommandsExt,
         parameter::{
@@ -33,7 +39,7 @@ use crate::{
         },
         resource::spawn_piece_state::SpawnPieceState,
     },
-    resource::drop_postion::DropPosition,
+    resource::drop_postion::{self, DropPosition},
     score::resource::score::Score,
 };
 
@@ -195,7 +201,18 @@ pub fn handle_piece_collisions(
         let position_x = (transform1.translation.x + transform2.translation.x) / 2.0;
         let position_y = (transform1.translation.y + transform2.translation.y) / 2.0;
 
-        let entity = piece_spawner.spawn_inactive_piece_with_position(position_x, position_y);
+        println!(
+            "Entity1 pos: ({}, {})",
+            transform1.translation.x, transform1.translation.y
+        );
+        println!(
+            "Entity2 pos: ({}, {})",
+            transform2.translation.x, transform2.translation.y
+        );
+        println!("New piece pos: ({}, {})", position_x, position_y);
+
+        let entity =
+            piece_spawner.spawn_inactive_piece_with_position(position_x, position_y, piece.clone());
         commands.convert_to_physical(entity, &piece);
     }
 }
@@ -241,4 +258,59 @@ pub fn update_spawn_piece_state(
     }
 
     *spawn_piece_state = SpawnPieceState::ShouldSpawn;
+}
+
+pub fn despawn_drop_piece_indicator(
+    mut commands: Commands,
+    falling_query: Query<&Falling>,
+    query: Query<Entity, With<DropPieceIndicator>>,
+) {
+    if falling_query.is_empty() {
+        return;
+    }
+
+    for entity in query.iter() {
+        commands.entity(entity).despawn();
+    }
+}
+
+pub fn spawn_drop_piece_indicator(
+    mut commands: Commands,
+    drop_piece_indicator: Query<Entity, With<DropPieceIndicator>>,
+    drop_position: Res<DropPosition>,
+    active_piece_query: Query<Entity, With<ActivePiece>>,
+) {
+    if active_piece_query.is_empty() {
+        return;
+    }
+
+    // スポーン済み
+    if !drop_piece_indicator.is_empty() {
+        return;
+    }
+
+    let position_x = drop_position.x;
+
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                // 色を指定
+                color: Color::rgba(1.0, 1.0, 0.0, 0.6),
+                // サイズを指定（幅、高さ）
+                custom_size: Some(Vec2::new(3.0, 600.0)), // 幅3px、高さ600pxの矩形
+                // テクスチャの一部を切り取り（アトラス使用時）
+                rect: None,
+                // 水平/垂直反転
+                flip_x: false,
+                flip_y: false,
+                // アンカーポイント（中心、左上など）
+                anchor: bevy::sprite::Anchor::Center,
+                ..default()
+            },
+            // 位置、回転、スケール
+            transform: Transform::from_xyz(position_x, 0.0, 5.0),
+            ..default()
+        },
+        DropPieceIndicator,
+    ));
 }

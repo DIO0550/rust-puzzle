@@ -12,7 +12,12 @@ use crate::{
     piece::{
         component::{
             active_piece::ActivePiece,
-            animal_piece::animal_piece_component::AnimalPieceComponentGenerator,
+            animal_piece::{
+                self,
+                animal_piece_component::{AnimalPieceComponent, AnimalPieceComponentGenerator},
+                piece_type::{self, PieceType},
+            },
+            factory::piece_factory::{Factory, PieceFactory},
         },
         system::piece_renderer::PieceRenderer,
     },
@@ -75,8 +80,8 @@ impl<'w, 's> PieceSpawner<'w, 's> {
         &mut self,
         position_x: f32,
         position_y: f32,
+        animal_piece_component: AnimalPieceComponent,
     ) -> Entity {
-        let animal_piece_component = self.animal_piece_generator.generate();
         self.grab_position_manager
             .set_grab_position(animal_piece_component.animal_piece.as_ref());
         let material_mesh = self
@@ -85,11 +90,11 @@ impl<'w, 's> PieceSpawner<'w, 's> {
 
         return self
             .commands
-            .spawn(TransformBundle::from(Transform::from_xyz(
+            .spawn(animal_piece_component)
+            .insert(material_mesh)
+            .insert(TransformBundle::from(Transform::from_xyz(
                 position_x, position_y, 0.0,
             )))
-            .insert(animal_piece_component)
-            .insert(material_mesh)
             .id();
     }
 }

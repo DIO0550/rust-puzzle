@@ -5,6 +5,7 @@ use bevy::{
 
 use crate::{
     asset::image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
+    consts::consts::UNIT_WIDTH,
     parameter::material_mesh::MeshMaterial,
     piece::component::animal_piece::{
         animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
@@ -22,7 +23,7 @@ impl<'w> PieceRenderer<'w> {
         &mut self,
         animal_piece_component: &AnimalPieceComponent,
     ) -> MaterialMesh2dBundle<ColorMaterial> {
-        let size = animal_piece_component.get_size().to_f32();
+        let size = animal_piece_component.get_size().to_f32() * UNIT_WIDTH * 2.0;
         let image = self
             .piece_image_assets
             .handle_image_from(&animal_piece_component.get_piece_type());

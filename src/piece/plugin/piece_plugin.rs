@@ -29,6 +29,8 @@ impl Plugin for PiecePlugin {
                     handle_piece_collisions,
                     handle_game_over_sensor_collisions,
                     update_spawn_piece_state,
+                    spawn_drop_piece_indicator,
+                    despawn_drop_piece_indicator,
                 )
                     .chain()
                     .run_if(in_state(GameState::InGame)),

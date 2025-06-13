@@ -1,16 +1,13 @@
 use crate::piece::{
     component::factory::piece_factory::{Factory, PieceFactory},
-    next_piece::resource::next_piece::{NextPiece, NextPieceManager},
+    next_piece::resource::next_piece::NextPieceManager,
 };
 
 use super::{
     animal_piece::{self, AnimalPiece},
     piece_type::PieceType,
 };
-use bevy::ecs::{
-    component::Component,
-    system::{Res, ResMut, SystemParam},
-};
+use bevy::ecs::{component::Component, system::SystemParam};
 
 #[derive(Component)]
 pub struct AnimalPieceComponent {
@@ -39,6 +36,15 @@ impl AnimalPieceComponent {
     }
 }
 
+// 手動でCloneを実装
+impl Clone for AnimalPieceComponent {
+    fn clone(&self) -> Self {
+        Self {
+            animal_piece: self.animal_piece.clone_box(),
+        }
+    }
+}
+
 impl AnimalPiece for AnimalPieceComponent {
     fn can_evolve(&self) -> bool {
         return self.animal_piece.can_evolve();
@@ -54,6 +60,10 @@ impl AnimalPiece for AnimalPieceComponent {
 
     fn get_score(&self) -> &animal_piece::PieceScore {
         return self.animal_piece.get_score();
+    }
+
+    fn clone_box(&self) -> Box<dyn AnimalPiece> {
+        self.animal_piece.clone_box()
     }
 }
 

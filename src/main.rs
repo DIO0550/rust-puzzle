@@ -1,4 +1,4 @@
-use asset::plugin::{assets_pluin::AssetsPlugin, piece_sound_plugin::PieceSoundPlugin};
+use asset::plugin::assets_pluin::AssetsPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
@@ -54,7 +54,6 @@ fn main() {
         .add_plugins(ScorePlugin)
         .add_plugins(GameOverPlugin)
         .add_plugins(HighScorePlugin)
-        .add_plugins(PieceSoundPlugin)
         .add_plugins(NextPiecePlugin)
         .add_plugins(PieceEvolvePlugin)
         .add_plugins(PiecePlugin)
