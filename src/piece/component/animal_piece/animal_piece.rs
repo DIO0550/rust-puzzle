@@ -1,5 +1,3 @@
-use serde::de;
-
 use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
 
 use super::piece_type::PieceType;
