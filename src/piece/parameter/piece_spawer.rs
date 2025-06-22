@@ -12,12 +12,9 @@ use crate::{
     piece::{
         component::{
             active_piece::ActivePiece,
-            animal_piece::{
-                self,
-                animal_piece_component::{AnimalPieceComponent, AnimalPieceComponentGenerator},
-                piece_type::{self, PieceType},
+            animal_piece::animal_piece_component::{
+                AnimalPieceComponent, AnimalPieceComponentGenerator,
             },
-            factory::piece_factory::{Factory, PieceFactory},
         },
         system::piece_renderer::PieceRenderer,
     },

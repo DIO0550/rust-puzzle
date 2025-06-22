@@ -2,7 +2,6 @@ use bevy::{
     ecs::{
         change_detection::DetectChanges,
         component::Component,
-        entity::Entity,
         query::With,
         system::{Query, Res, Resource},
     },

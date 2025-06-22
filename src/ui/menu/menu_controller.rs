@@ -1,12 +1,10 @@
-use std::ops::Add;
-
 use bevy::{
     ecs::{
         component::Component,
         entity::Entity,
-        query::{Added, Changed, Or, With},
+        query::{Added, With},
         removal_detection::RemovedComponents,
-        system::{Commands, Query, Remove, Res},
+        system::{Commands, Query, Res},
     },
     hierarchy::Children,
     input::{keyboard::KeyCode, Input},
@@ -15,7 +13,7 @@ use bevy::{
 
 use super::{
     menu_bundle::Menu,
-    menu_item_bundle::{MenuItem, MenuItemColor, MenuItemSelected},
+    menu_item_bundle::{MenuItemColor, MenuItemSelected},
 };
 
 pub trait MenuControll<MenuItemMarker: Component> {

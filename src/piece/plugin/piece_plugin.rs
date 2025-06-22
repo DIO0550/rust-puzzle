@@ -10,7 +10,14 @@ use crate::{
     },
     piece::{
         component::animal_piece::animal_piece_component::AnimalPieceComponent,
-        resource::spawn_piece_state::SpawnPieceState, system::piece_system::*,
+        resource::spawn_piece_state::SpawnPieceState,
+        system::{
+            drop_piece_indicator::{
+                despawn_drop_piece_indicator, spawn_drop_piece_indicator,
+                update_drop_piece_indicator_position,
+            },
+            piece_system::*,
+        },
     },
 };
 
@@ -39,6 +46,7 @@ impl Plugin for PiecePlugin {
                     update_spawn_piece_state,
                     spawn_drop_piece_indicator,
                     despawn_drop_piece_indicator,
+                    update_drop_piece_indicator_position,
                 )
                     .chain()
                     .run_if(in_state(GamePageState::Game))
