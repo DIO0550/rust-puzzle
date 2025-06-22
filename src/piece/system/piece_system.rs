@@ -29,7 +29,6 @@ use crate::{
             animal_piece::{
                 animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
             },
-            drop_piece_indicator::DropPieceIndicator,
             falling::{self, Falling},
         },
         ext::piece_commands_ext::PieceCommandsExt,

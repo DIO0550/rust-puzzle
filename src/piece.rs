@@ -1,5 +1,6 @@
 pub mod component;
 pub mod ext;
+pub(crate) mod indicator;
 pub mod next_piece;
 pub mod parameter;
 pub mod piece_evolve;

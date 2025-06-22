@@ -10,14 +10,12 @@ use crate::{
     },
     piece::{
         component::animal_piece::animal_piece_component::AnimalPieceComponent,
-        resource::spawn_piece_state::SpawnPieceState,
-        system::{
-            drop_piece_indicator::{
-                despawn_drop_piece_indicator, spawn_drop_piece_indicator,
-                update_drop_piece_indicator_position,
-            },
-            piece_system::*,
+        indicator::drop_piece_indicator::{
+            despawn_drop_piece_indicator, spawn_drop_piece_indicator,
+            update_drop_piece_indicator_position,
         },
+        resource::spawn_piece_state::SpawnPieceState,
+        system::piece_system::*,
     },
 };
 

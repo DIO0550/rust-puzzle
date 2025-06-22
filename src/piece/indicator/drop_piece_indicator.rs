@@ -1,3 +1,5 @@
+use bevy::ecs::component::Component;
+
 use bevy::{
     ecs::{
         entity::Entity,
@@ -12,13 +14,14 @@ use bevy::{
 };
 
 use crate::{
-    piece::component::{
-        active_piece::ActivePiece, drop_piece_indicator::DropPieceIndicator, falling::Falling,
-    },
+    piece::component::{active_piece::ActivePiece, falling::Falling},
     resource::drop_postion::DropPosition,
 };
 
-pub fn spawn_drop_piece_indicator(
+#[derive(Component)]
+pub(crate) struct DropPieceIndicator;
+
+pub(crate) fn spawn_drop_piece_indicator(
     mut commands: Commands,
     drop_piece_indicator: Query<Entity, With<DropPieceIndicator>>,
     drop_position: Res<DropPosition>,
@@ -59,7 +62,7 @@ pub fn spawn_drop_piece_indicator(
     ));
 }
 
-pub fn despawn_drop_piece_indicator(
+pub(crate) fn despawn_drop_piece_indicator(
     mut commands: Commands,
     falling_query: Query<&Falling>,
     query: Query<Entity, With<DropPieceIndicator>>,
@@ -73,7 +76,7 @@ pub fn despawn_drop_piece_indicator(
     }
 }
 
-pub fn update_drop_piece_indicator_position(
+pub(crate) fn update_drop_piece_indicator_position(
     mut transform_query: Query<&mut Transform, With<DropPieceIndicator>>,
     drop_position: Res<DropPosition>,
 ) {
