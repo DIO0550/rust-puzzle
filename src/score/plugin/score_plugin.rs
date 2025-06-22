@@ -1,21 +1,36 @@
-use bevy::prelude::*;
+use bevy::{ecs::system::Despawn, prelude::*};
 
 use crate::{
-    game::state::game_state::GameState,
+    game::{
+        state::{game_page_state::GamePageState, game_state::GameState},
+        system::despawn::despawn_component,
+    },
     score::{
         resource::score::Score,
-        system::score_system::{setup_score, update_current_score_text},
+        system::score_system::setup_score,
+        ui::{
+            score_text_container::ScoreTextContainer, score_value_text_container::ScoreValueText,
+        },
     },
+    ui::text::updateable_text_controller::update_text,
 };
 
 pub struct ScorePlugin;
 impl Plugin for ScorePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Score(0))
-            .add_systems(Startup, setup_score.run_if(in_state(GameState::InGame)))
+        app.init_resource::<Score>()
+            .add_systems(
+                OnEnter(GamePageState::Game),
+                setup_score.run_if(in_state(GameState::InGame)),
+            )
             .add_systems(
                 Update,
-                update_current_score_text.run_if(in_state(GameState::InGame)),
+                update_text::<ScoreValueText, Score>
+                    .run_if(in_state(GamePageState::Game).and_then(in_state(GameState::InGame))),
+            )
+            .add_systems(
+                OnExit(GamePageState::Game),
+                despawn_component::<ScoreTextContainer>,
             );
     }
 }

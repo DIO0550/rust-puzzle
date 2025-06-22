@@ -1,4 +1,4 @@
-use asset::plugin::piece_sound_plugin::PieceSoundPlugin;
+use asset::plugin::assets_pluin::AssetsPlugin;
 use bevy::prelude::*;
 use bevy_rapier2d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
@@ -6,24 +6,32 @@ use bevy_rapier2d::{
 };
 
 use consts::consts::*;
+use field::game::plugin::game_field_plugin::GameFieldPlugin;
 use game::plugin::game_plugin::GamePlugin;
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
-use piece::plugin::piece_plugin::PiecePlugin;
-use resource::grab_postion::GrabPostion;
+use piece::{
+    next_piece::plugin::next_piece_plugin::NextPiecePlugin,
+    piece_evolve::plugin::piece_evolve_plugin::PieceEvolvePlugin,
+    plugin::piece_plugin::PiecePlugin,
+};
+use resource::drop_postion::DropPosition;
 use score::plugin::score_plugin::ScorePlugin;
 use title::plugin::title_menu_plugin::TitlePlugin;
 
 mod asset;
 mod consts;
+mod field;
 mod file;
 mod game;
 mod game_over;
 mod high_score;
+mod parameter;
 mod piece;
 mod resource;
 mod score;
 mod title;
+mod ui;
 
 fn main() {
     let window = Window {
@@ -38,17 +46,20 @@ fn main() {
             primary_window,
             ..default()
         }))
+        .add_plugins(AssetsPlugin)
         .add_plugins(GamePlugin)
+        .add_plugins(GameFieldPlugin)
         .add_plugins(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(300.0))
         .add_plugins(RapierDebugRenderPlugin::default())
         .add_plugins(ScorePlugin)
         .add_plugins(GameOverPlugin)
         .add_plugins(HighScorePlugin)
-        .add_plugins(PieceSoundPlugin)
+        .add_plugins(NextPiecePlugin)
+        .add_plugins(PieceEvolvePlugin)
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
-        .insert_resource(GrabPostion { x: 0.0 })
+        .insert_resource(DropPosition { x: 0.0 })
         .add_systems(Startup, setup)
         .run();
 }

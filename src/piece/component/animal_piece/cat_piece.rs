@@ -33,4 +33,10 @@ impl AnimalPiece for CatPiece {
     fn get_score(&self) -> &PieceScore {
         return &self.piece.score;
     }
+
+    fn clone_box(&self) -> Box<dyn AnimalPiece> {
+        return Box::new(CatPiece {
+            piece: self.piece.clone(),
+        });
+    }
 }

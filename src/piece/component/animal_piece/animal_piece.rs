@@ -1,8 +1,8 @@
-
 use crate::piece::component::factory::piece_factory::{Factory, PieceFactory};
 
 use super::piece_type::PieceType;
 
+#[derive(Clone)]
 pub struct PieceSize(u32);
 impl PieceSize {
     pub fn to_f32(&self) -> f32 {
@@ -10,6 +10,7 @@ impl PieceSize {
     }
 }
 
+#[derive(Clone)]
 pub struct PieceScore(u32);
 impl PieceScore {
     pub fn to_u32(&self) -> u32 {
@@ -29,8 +30,10 @@ pub trait AnimalPiece: Send + Sync + 'static {
     fn get_size(&self) -> &PieceSize;
     fn get_piece_type(&self) -> &PieceType;
     fn get_score(&self) -> &PieceScore;
+    fn clone_box(&self) -> Box<dyn AnimalPiece>;
 }
 
+#[derive(Clone)]
 pub struct Piece {
     pub(super) size: PieceSize,
     pub(super) piece_type: PieceType,

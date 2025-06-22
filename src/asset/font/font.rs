@@ -1,3 +1,5 @@
+use bevy::text::Font;
+
 use crate::asset::asset::{AssetNameTrait, AssetTrait};
 
 pub enum FontName {
@@ -13,4 +15,4 @@ impl AssetNameTrait for FontName {
 }
 
 pub struct FontAsset {}
-impl AssetTrait<FontName> for FontAsset {}
+impl AssetTrait<FontName, Font> for FontAsset {}
