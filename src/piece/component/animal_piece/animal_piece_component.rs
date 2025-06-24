@@ -1,6 +1,6 @@
 use crate::piece::{
     component::factory::piece_factory::{Factory, PieceFactory},
-    next_piece::resource::next_piece::NextPieceManager,
+    next::state::NextPieceManager,
 };
 
 use super::{

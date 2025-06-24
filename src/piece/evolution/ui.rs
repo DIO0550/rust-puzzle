@@ -1,4 +1,5 @@
-pub(crate) mod piece_evolve_backgroud_image_container;
-pub(crate) mod piece_evolve_container;
-pub(crate) mod piece_evolve_describe_container;
-pub(crate) mod piece_evolve_title_text_container;
+pub(crate) mod backgroud_image_container;
+pub(crate) mod container;
+pub(crate) mod describe_container;
+pub(crate) mod setup;
+pub(crate) mod title_text_container;

@@ -6,10 +6,9 @@ use bevy::{
 use crate::{
     asset::image::piece_image_assets::PieceImageAssets,
     game::state::{game_page_state::GamePageState, game_state::GameState},
-    piece::next_piece::{
-        resource::next_piece::NextPiece, system::next_piece_system::setup_next_piece,
-        ui::next_piece_image::NextPieceImage,
-    },
+    piece::next::state::NextPiece,
+    piece::next::ui::image::NextPieceImage,
+    piece::next::ui::setup::setup_next_piece,
     ui::image::update_image::update_image,
 };
 

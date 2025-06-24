@@ -10,7 +10,7 @@ use bevy::{
 
 use crate::{
     asset::image::piece_image_assets::PieceImageAssets,
-    piece::next_piece::resource::next_piece::NextPiece,
+    piece::next::state::NextPiece,
     ui::image::{game_image_bundle::GameImageBundleWithStyle, piece_image::PieceImage},
 };
 
