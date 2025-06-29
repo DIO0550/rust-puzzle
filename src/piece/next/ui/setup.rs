@@ -5,11 +5,11 @@ use crate::{
         font::font_assets::FontAssets,
         image::{game_image_assets::GameImageAssets, piece_image_assets::PieceImageAssets},
     },
-    piece::next_piece::{
-        resource::next_piece::NextPiece,
+    piece::next::{
+        state::NextPiece,
         ui::{
-            next_piece_container::NextPieceContainer, next_piece_image::NextPieceImage,
-            next_piece_title_text_container::NextPieceTitleTextContainer,
+            container::NextPieceContainer, image::NextPieceImage,
+            title_text_container::NextPieceTitleTextContainer,
         },
     },
 };

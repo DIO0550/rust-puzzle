@@ -1,1 +1,1 @@
-pub mod piece_commands_ext;
+pub mod commands_ext;

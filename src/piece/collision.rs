@@ -2,16 +2,11 @@ use bevy::{
     ecs::{
         entity::Entity,
         event::EventReader,
-        query::{Or, With, Without},
-        schedule::{NextState, State},
+        query::{With, Without},
+        schedule::NextState,
         system::{Commands, Query, Res, ResMut},
     },
-    gizmos::gizmos::Gizmos,
-    math::Vec2,
-    render::{color::Color, primitives::Sphere},
-    sprite::{Sprite, SpriteBundle},
     transform::components::Transform,
-    utils::default,
 };
 use bevy_rapier2d::{
     geometry::Sensor,
@@ -20,129 +15,21 @@ use bevy_rapier2d::{
 };
 
 use crate::{
-    consts::consts::*,
     game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
-    parameter::{input::PlayerInput, time::TimeParams},
     piece::{
         component::{
-            active_piece::{self, ActivePiece},
+            active_piece::ActivePiece,
             animal_piece::{
                 animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
             },
-            drop_piece_indicator::DropPieceIndicator,
-            falling::{self, Falling},
+            falling::Falling,
         },
-        ext::piece_commands_ext::PieceCommandsExt,
-        parameter::{
-            piece_faller::PieceFaller, piece_sound_player::PieceSoundPlayer,
-            piece_spawer::PieceSpawner,
-        },
-        resource::spawn_piece_state::SpawnPieceState,
+        ext::commands_ext::PieceCommandsExt,
+        sound::PieceSoundPlayer,
+        spawner::PieceSpawner,
     },
-    resource::drop_postion::{self, DropPosition},
     score::resource::score::Score,
 };
-
-#[derive(Debug, Clone, Copy)]
-pub struct PieceMovement {
-    direction: f32,
-    speed: f32,
-    delta_time: f32,
-}
-
-impl PieceMovement {
-    pub fn new(input: &PlayerInput, speed: f32, delta_time: f32) -> Self {
-        PieceMovement {
-            direction: match (input.is_key_pressed_left(), input.is_key_pressed_right()) {
-                (true, false) => -1.0,
-                (false, true) => 1.0,
-                _ => 0.0,
-            },
-            speed,
-            delta_time,
-        }
-    }
-
-    pub fn calculate_new_position(&self, current_x: f32) -> f32 {
-        current_x + self.direction * self.speed * self.delta_time
-    }
-
-    pub fn is_moving(&self) -> bool {
-        self.direction != 0.0
-    }
-}
-
-/**
- * ピース生成
- */
-pub fn spawn_piece(
-    mut commands: Commands,
-    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
-    spawn_piece_state: Res<SpawnPieceState>,
-    app_state: ResMut<State<GameState>>,
-    mut piece_spawer: PieceSpawner,
-) {
-    if !query.is_empty() {
-        return;
-    };
-
-    if *app_state.get() != GameState::InGame {
-        return;
-    }
-
-    if *spawn_piece_state == SpawnPieceState::Wait {
-        return;
-    }
-
-    piece_spawer.spawn();
-    commands.insert_resource(SpawnPieceState::Wait)
-}
-
-/**
- * ピース移動
- */
-pub fn move_piece(
-    mut commands: Commands,
-    input: PlayerInput,
-    mut query: Query<(&mut Transform, &AnimalPieceComponent), With<ActivePiece>>,
-    time: TimeParams,
-) {
-    let Ok((mut transform, animal_piece_component)) = query.get_single_mut() else {
-        return;
-    };
-
-    let piece_movement = PieceMovement::new(&input, PIECE_SPEED, time.delta_seconds());
-    if !piece_movement.is_moving() {
-        return;
-    }
-
-    let new_position = piece_movement.calculate_new_position(transform.translation.x);
-    let new_drop_position =
-        DropPosition::new(new_position, animal_piece_component.animal_piece.as_ref());
-    transform.translation.x = new_drop_position.x;
-    commands.insert_resource(new_drop_position);
-}
-
-/**
- * ピースを離す
- */
-pub fn release_piece(
-    mut commnads: Commands,
-    mut piece_faller: PieceFaller,
-    input: PlayerInput,
-    mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
-) {
-    if !input.is_key_just_released_space() {
-        return;
-    }
-
-    let Ok((entity, piece)) = query.get_single_mut() else {
-        return;
-    };
-
-    commnads.convert_to_physical(entity, piece);
-    piece_faller.make_falling(entity);
-}
 
 /**
  * 衝突イベント
@@ -236,16 +123,4 @@ pub fn handle_game_over_sensor_collisions(
 
         return;
     }
-}
-
-pub fn update_spawn_piece_state(
-    mut spawn_piece_state: ResMut<SpawnPieceState>,
-    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
-) {
-    // アクティブまたは落下中のピースがない場合のみ
-    if !query.is_empty() {
-        return;
-    }
-
-    *spawn_piece_state = SpawnPieceState::ShouldSpawn;
 }

@@ -11,11 +11,8 @@ use game::plugin::game_plugin::GamePlugin;
 use game_over::plugin::game_over_plugin::GameOverPlugin;
 use high_score::plugin::high_score_plugin::HighScorePlugin;
 use piece::{
-    next_piece::plugin::next_piece_plugin::NextPiecePlugin,
-    piece_evolve::plugin::piece_evolve_plugin::PieceEvolvePlugin,
-    plugin::piece_plugin::PiecePlugin,
+    evolution::plugin::PieceEvolvePlugin, next::plugin::NextPiecePlugin, plugin::PiecePlugin,
 };
-use resource::drop_postion::DropPosition;
 use score::plugin::score_plugin::ScorePlugin;
 use title::plugin::title_menu_plugin::TitlePlugin;
 
@@ -28,7 +25,7 @@ mod game_over;
 mod high_score;
 mod parameter;
 mod piece;
-mod resource;
+
 mod score;
 mod title;
 mod ui;
@@ -59,7 +56,6 @@ fn main() {
         .add_plugins(PiecePlugin)
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
-        .insert_resource(DropPosition { x: 0.0 })
         .add_systems(Startup, setup)
         .run();
 }

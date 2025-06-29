@@ -1,8 +1,11 @@
+pub(crate) mod collision;
 pub mod component;
+pub(crate) mod drop;
+pub mod evolution;
 pub mod ext;
-pub mod next_piece;
-pub mod parameter;
-pub mod piece_evolve;
+pub(crate) mod movement;
+pub mod next;
 pub mod plugin;
-pub mod resource;
-pub mod system;
+pub(crate) mod renderer;
+pub(crate) mod sound;
+pub(crate) mod spawner;
