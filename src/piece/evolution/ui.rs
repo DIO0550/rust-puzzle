@@ -1,4 +1,4 @@
-pub(crate) mod backgroud_image_container;
+pub(crate) mod background_image_container;
 pub(crate) mod container;
 pub(crate) mod describe_container;
 pub(crate) mod setup;
