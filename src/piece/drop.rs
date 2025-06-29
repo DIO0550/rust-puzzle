@@ -1,10 +1,9 @@
-use bevy::ecs::component::Component;
-
 use bevy::{
     ecs::{
+        component::Component,
         entity::Entity,
         query::With,
-        system::{Commands, Query, Res},
+        system::{Commands, Query, Res, ResMut, Resource, SystemParam},
     },
     math::Vec2,
     render::color::Color,
@@ -14,9 +13,77 @@ use bevy::{
 };
 
 use crate::{
-    piece::component::{active_piece::ActivePiece, falling::Falling},
-    resource::drop_postion::DropPosition,
+    parameter::input::PlayerInput,
+    piece::{
+        component::{
+            active_piece::ActivePiece,
+            animal_piece::{
+                animal_piece::AnimalPiece, animal_piece_component::AnimalPieceComponent,
+            },
+            falling::{Falling, PieceFaller},
+        },
+        ext::commands_ext::PieceCommandsExt,
+    },
+    BOX_SIZE_WIDTH, BOX_THICKNESS, UNIT_WIDTH,
 };
+
+#[derive(Resource)]
+pub struct DropPosition {
+    pub x: f32,
+}
+
+impl DropPosition {
+    pub fn new(position: f32, animal_piece: &dyn AnimalPiece) -> Self {
+        let piece_size = animal_piece.get_size().to_f32() * UNIT_WIDTH * 2.0;
+        let range = BOX_SIZE_WIDTH / 2.0 - BOX_THICKNESS;
+        let max = range - piece_size;
+        let min = piece_size - range;
+
+        if position < min {
+            let new_position = min;
+            return DropPosition { x: new_position };
+        }
+
+        if max < position {
+            let new_position = max;
+            return DropPosition { x: new_position };
+        }
+
+        return DropPosition { x: position };
+    }
+}
+
+#[derive(SystemParam)]
+pub struct DropPositionController<'w> {
+    pub grab_position: ResMut<'w, DropPosition>,
+}
+
+impl<'w> DropPositionController<'w> {
+    pub fn set_grab_position(&mut self, animal_piece: &dyn AnimalPiece) {
+        self.grab_position.x = DropPosition::new(self.grab_position.x, animal_piece).x;
+    }
+}
+
+/**
+ * ピースを離す
+ */
+pub fn drop_piece(
+    mut commnads: Commands,
+    mut piece_faller: PieceFaller,
+    input: PlayerInput,
+    mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
+) {
+    if !input.is_key_just_released_space() {
+        return;
+    }
+
+    let Ok((entity, piece)) = query.get_single_mut() else {
+        return;
+    };
+
+    commnads.convert_to_physical(entity, piece);
+    piece_faller.make_falling(entity);
+}
 
 #[derive(Component)]
 pub(crate) struct DropPieceIndicator;

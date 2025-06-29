@@ -15,5 +15,3 @@ pub const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 5.0;
 pub const PIECE_POSITION_Y_MARGIN: f32 = 40.0;
 
 pub const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-
-pub const PIECE_SPEED: f32 = 500.0;

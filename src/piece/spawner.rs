@@ -1,7 +1,9 @@
 use bevy::{
     ecs::{
         entity::Entity,
-        system::{Commands, SystemParam},
+        query::{Or, With},
+        schedule::State,
+        system::{Commands, Query, Res, ResMut, Resource, SystemParam},
     },
     transform::{components::Transform, TransformBundle},
 };
@@ -9,17 +11,25 @@ use bevy_rapier2d::prelude::ActiveCollisionTypes;
 
 use crate::{
     consts::consts::{BOX_SIZE_HEIHT, PIECE_POSITION_Y_MARGIN},
+    game::state::game_state::GameState,
     piece::{
         component::{
             active_piece::ActivePiece,
             animal_piece::animal_piece_component::{
                 AnimalPieceComponent, AnimalPieceComponentGenerator,
             },
+            falling::Falling,
         },
-        system::piece_renderer::PieceRenderer,
+        drop::DropPositionController,
+        renderer::PieceRenderer,
     },
-    resource::drop_postion::DropPositionController,
 };
+
+#[derive(Resource, Debug, Copy, Clone, PartialEq)]
+pub enum SpawnPieceState {
+    Wait,
+    ShouldSpawn,
+}
 
 #[derive(SystemParam)]
 pub struct PieceSpawner<'w, 's> {
@@ -94,4 +104,42 @@ impl<'w, 's> PieceSpawner<'w, 's> {
             )))
             .id();
     }
+}
+
+/**
+ * ピース生成
+ */
+pub fn spawn_piece(
+    mut commands: Commands,
+    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
+    spawn_piece_state: Res<SpawnPieceState>,
+    app_state: ResMut<State<GameState>>,
+    mut piece_spawer: PieceSpawner,
+) {
+    if !query.is_empty() {
+        return;
+    };
+
+    if *app_state.get() != GameState::InGame {
+        return;
+    }
+
+    if *spawn_piece_state == SpawnPieceState::Wait {
+        return;
+    }
+
+    piece_spawer.spawn();
+    commands.insert_resource(SpawnPieceState::Wait)
+}
+
+pub fn update_spawn_piece_state(
+    mut spawn_piece_state: ResMut<SpawnPieceState>,
+    query: Query<&AnimalPieceComponent, Or<(With<ActivePiece>, With<Falling>)>>,
+) {
+    // アクティブまたは落下中のピースがない場合のみ
+    if !query.is_empty() {
+        return;
+    }
+
+    *spawn_piece_state = SpawnPieceState::ShouldSpawn;
 }

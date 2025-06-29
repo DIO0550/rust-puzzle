@@ -6,7 +6,7 @@ use bevy::{
 
 use crate::{
     asset::image::{image_assets::ImageAssets, piece_image_assets::PieceImageAssets},
-    piece::component::animal_piece::{animal_piece::Piece, piece_type::PieceType},
+    piece::component::animal_piece::piece_type::PieceType,
 };
 
 use super::game_image_bundle::{GameImageBundle, GameImageBundleWithStyle};
