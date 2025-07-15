@@ -1,5 +1,4 @@
-pub mod component;
+pub mod menu;
+pub mod menu_selection;
 pub mod plugin;
-pub mod resource;
-pub mod system;
-pub mod ui;
+pub mod sensor;

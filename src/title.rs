@@ -1,3 +1,2 @@
-pub mod component;
+pub mod menu;
 pub mod plugin;
-pub mod ui;

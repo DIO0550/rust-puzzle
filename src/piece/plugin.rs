@@ -4,10 +4,7 @@ use bevy::{
 };
 
 use crate::{
-    game::{
-        state::{game_page_state::GamePageState, game_state::GameState},
-        system::despawn::despawn_component,
-    },
+    game::{despawn::despawn_component, screen_state::ScreenState, state::GameState},
     piece::{
         collision::*,
         component::animal_piece::animal_piece_component::AnimalPieceComponent,
@@ -34,7 +31,7 @@ impl Plugin for PiecePlugin {
             .add_systems(
                 Startup,
                 (spawn_piece)
-                    .run_if(in_state(GamePageState::Game))
+                    .run_if(in_state(ScreenState::Game))
                     .run_if(in_state(GameState::InGame)),
             )
             .add_systems(
@@ -51,7 +48,7 @@ impl Plugin for PiecePlugin {
                     update_drop_piece_indicator_position,
                 )
                     .chain()
-                    .run_if(in_state(GamePageState::Game))
+                    .run_if(in_state(ScreenState::Game))
                     .run_if(in_state(GameState::InGame)),
             );
     }

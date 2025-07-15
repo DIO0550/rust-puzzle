@@ -1,3 +1,4 @@
-pub mod score_text_container;
-pub mod score_title_text_container;
-pub mod score_value_text_container;
+pub(crate) mod container;
+pub(crate) mod setup;
+pub(crate) mod title_container;
+pub(crate) mod value_container;

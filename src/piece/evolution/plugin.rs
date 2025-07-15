@@ -4,9 +4,9 @@ use bevy::{
 };
 
 use crate::{
-    game::{state::game_page_state::GamePageState, system::despawn::despawn_component},
+    game::{despawn::despawn_component, screen_state::ScreenState},
     piece::{
-        evolution::{ui::container::PieceEvolveContainer, ui::setup::setup_evolve_piece},
+        evolution::ui::{container::PieceEvolveContainer, setup::setup_evolve_piece},
         next::state::NextPiece,
     },
 };
@@ -15,9 +15,9 @@ pub struct PieceEvolvePlugin;
 impl Plugin for PieceEvolvePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(NextPiece::new())
-            .add_systems(OnEnter(GamePageState::Game), setup_evolve_piece)
+            .add_systems(OnEnter(ScreenState::Game), setup_evolve_piece)
             .add_systems(
-                OnExit(GamePageState::Game),
+                OnExit(ScreenState::Game),
                 despawn_component::<PieceEvolveContainer>,
             );
     }

@@ -6,15 +6,19 @@ use bevy_rapier2d::{
 };
 
 use consts::consts::*;
-use field::game::plugin::game_field_plugin::GameFieldPlugin;
-use game::plugin::game_plugin::GamePlugin;
-use game_over::plugin::game_over_plugin::GameOverPlugin;
-use high_score::plugin::high_score_plugin::HighScorePlugin;
+
 use piece::{
     evolution::plugin::PieceEvolvePlugin, next::plugin::NextPiecePlugin, plugin::PiecePlugin,
 };
-use score::plugin::score_plugin::ScorePlugin;
-use title::plugin::title_menu_plugin::TitlePlugin;
+
+use title::plugin::TitlePlugin;
+
+use crate::{
+    field::game::plugin::GameFieldPlugin,
+    game::plugin::GamePlugin,
+    game_over::plugin::GameOverPlugin,
+    score::{high_score::plugin::HighScorePlugin, plugin::ScorePlugin},
+};
 
 mod asset;
 mod consts;
@@ -22,7 +26,6 @@ mod field;
 mod file;
 mod game;
 mod game_over;
-mod high_score;
 mod parameter;
 mod piece;
 
