@@ -15,7 +15,8 @@ use bevy_rapier2d::{
 };
 
 use crate::{
-    game::{component::game_over_sensor::GameOverSensor, state::game_state::GameState},
+    game::state::GameState,
+    game_over::sensor::GameOverSensor,
     piece::{
         component::{
             active_piece::ActivePiece,
@@ -28,7 +29,7 @@ use crate::{
         sound::PieceSoundPlayer,
         spawner::PieceSpawner,
     },
-    score::resource::score::Score,
+    score::resource::Score,
 };
 
 /**

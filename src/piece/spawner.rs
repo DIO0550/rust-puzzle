@@ -11,7 +11,7 @@ use bevy_rapier2d::prelude::ActiveCollisionTypes;
 
 use crate::{
     consts::consts::{BOX_SIZE_HEIHT, PIECE_POSITION_Y_MARGIN},
-    game::state::game_state::GameState,
+    game::state::GameState,
     piece::{
         component::{
             active_piece::ActivePiece,

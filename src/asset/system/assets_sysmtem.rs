@@ -14,7 +14,7 @@ use crate::{
         sound::piece_sound_assets::PieceSoundAssets,
         state::asset_load_state::AssetLoadState,
     },
-    game::state::game_page_state::GamePageState,
+    game::screen_state::ScreenState,
 };
 
 use super::{
@@ -35,7 +35,7 @@ pub fn check_assets_ready(
     fonts_assets: Option<Res<FontAssets>>,
     sound_assets: Option<Res<PieceSoundAssets>>,
     mut assets_load_state: ResMut<NextState<AssetLoadState>>,
-    mut game_page_state: ResMut<NextState<GamePageState>>,
+    mut game_page_state: ResMut<NextState<ScreenState>>,
 ) {
     let all_loaded = [
         piece_images_assets
@@ -59,5 +59,5 @@ pub fn check_assets_ready(
     }
 
     assets_load_state.set(AssetLoadState::Loaded);
-    game_page_state.set(GamePageState::Title);
+    game_page_state.set(ScreenState::Title);
 }
