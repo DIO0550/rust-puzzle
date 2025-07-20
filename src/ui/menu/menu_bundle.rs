@@ -1,7 +1,8 @@
 use bevy::ecs::entity::Entity;
 use bevy::ecs::system::Commands;
+use bevy::render::color::Color;
 use bevy::ui::node_bundles::NodeBundle;
-use bevy::ui::{Style, Val};
+use bevy::ui::{BackgroundColor, Style, Val};
 
 use bevy::ecs::component::Component;
 
@@ -14,6 +15,7 @@ pub struct MenuEntityBuilder<T: Component> {
     menu: Menu,
     marker: T,
     style: Style,
+    background_color: Color,
 }
 
 impl<T: Component> MenuEntityBuilder<T> {
@@ -24,6 +26,7 @@ impl<T: Component> MenuEntityBuilder<T> {
             style: Style {
                 ..Default::default()
             },
+            background_color: Color::NONE,
         }
     }
 
@@ -32,9 +35,8 @@ impl<T: Component> MenuEntityBuilder<T> {
         self
     }
 
-    pub fn size(mut self, width: f32, height: f32) -> Self {
-        self.style.width = Val::Px(width);
-        self.style.height = Val::Px(height);
+    pub fn background_color(mut self, color: Color) -> Self {
+        self.background_color = color;
         self
     }
 
@@ -42,7 +44,8 @@ impl<T: Component> MenuEntityBuilder<T> {
         let entity = commands
             .spawn((
                 NodeBundle {
-                    style: Default::default(),
+                    style: { self.style },
+                    background_color: BackgroundColor(self.background_color),
                     ..Default::default()
                 },
                 self.menu,

@@ -91,7 +91,7 @@ impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T,
 
     // エンティティを構築
     pub fn build(self, commands: &mut Commands, font_assets: &Res<FontAssets>) -> Entity {
-        let background_color = if self.is_selected {
+        let background_color: BackgroundColor = if self.is_selected {
             BackgroundColor(self.color.selected)
         } else {
             BackgroundColor(self.color.normal)
