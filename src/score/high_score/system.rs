@@ -3,7 +3,7 @@ use chrono::Utc;
 use serde_json::{from_value, json};
 
 use crate::{
-    file::file_reader::{FileReader, FileReaderTrait},
+    file::json_file::JsonFile,
     score::{
         high_score::resource::{HighScore, HighScores},
         resource::Score,
@@ -32,19 +32,14 @@ pub fn save_high_score(
     mut high_scores_res: ResMut<HighScores>,
 ) {
     let score = puzzle_score_res.0;
-    let new_high_score: HighScore = HighScore {
-        score: score,
-        date: Utc::now().format(HIGH_SCORE_DATE_FORMAT).to_string(),
-    };
+    let new_high_score: HighScore = HighScore::new(score);
 
     let high_scores = high_scores_res.as_mut();
     high_scores.push(new_high_score);
 
-    let json_container = json!({
-        "high_scores": high_scores,
-    });
+    let json_container = high_scores.to_value();
 
-    FileReader::save_data(&HIGH_SCORE_FILE_NAME, json_container);
+    JsonFile::save(&HIGH_SCORE_FILE_NAME, json_container);
 }
 
 /**
@@ -52,27 +47,22 @@ pub fn save_high_score(
  */
 pub fn save_now_month_high_score(_: Commands, puzzle_score_res: Res<Score>) {
     let score = puzzle_score_res.0;
-    let new_high_score: HighScore = HighScore {
-        score: score,
-        date: Utc::now().format(HIGH_SCORE_DATE_FORMAT).to_string(),
-    };
+    let new_high_score: HighScore = HighScore::new(score);
 
     let mut high_scores = load_now_month_high_score_file();
     high_scores.push(new_high_score);
 
-    let json_container = json!({
-        "high_scores": high_scores,
-    });
+    let json_container = high_scores.to_value();
     let file_name = now_month_high_score_file_name();
 
-    FileReader::save_data(&file_name, json_container);
+    JsonFile::save(&file_name, json_container);
 }
 
 /**
  * ハイスコアロード
  */
 pub fn load_high_score(mut commnads: Commands) {
-    let load_value = FileReader::load_data(&HIGH_SCORE_FILE_NAME);
+    let load_value = JsonFile::load(&HIGH_SCORE_FILE_NAME);
 
     let Some(mut data_value) = load_value else {
         commnads.insert_resource(HighScores(vec![]));
@@ -99,7 +89,7 @@ pub fn load_high_score(mut commnads: Commands) {
  * 現在の月毎のハイスコアファイルロード
  */
 pub fn load_now_month_high_score_file() -> HighScores {
-    let load_value = FileReader::load_data(&now_month_high_score_file_name());
+    let load_value = JsonFile::load(&now_month_high_score_file_name());
 
     let Some(mut data_value) = load_value else {
         return HighScores(vec![]);

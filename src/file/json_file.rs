@@ -1,18 +1,15 @@
 use serde_json::{from_str, to_string, Value};
+use std::fs::File;
+use std::io::prelude::*;
 
-pub struct FileReader;
-
-pub trait FileReaderTrait {
-    fn save_data(file_name: &str, value: Value);
-    fn load_data(file_name: &str) -> Option<Value>;
-}
-
-impl FileReaderTrait for FileReader {
-    fn save_data(file_name: &str, value: Value) {
-        std::fs::write(file_name, to_string(&value).unwrap()).unwrap();
+pub struct JsonFile;
+impl JsonFile {
+    pub fn save(file_name: &str, value: Value) {
+        let file = File::create(file_name).expect("Unable to create file");
+        serde_json::to_writer(file, &value).expect("Unable to write JSON to file");
     }
 
-    fn load_data(file_name: &str) -> Option<Value> {
+    pub fn load(file_name: &str) -> Option<Value> {
         let read_result = std::fs::read_to_string(file_name);
 
         match read_result {
