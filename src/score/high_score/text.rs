@@ -1,3 +1,5 @@
+// TODO：ここのコード汚いので、リファクタリングする
+
 use crate::{
     asset::{
         asset::AssetTrait,
@@ -5,10 +7,10 @@ use crate::{
         image::image::ImageName,
     },
     game::image_bundle_builder::{ImageBundleBuilder, ImageSize, IntoImageBundle},
-    score::high_score::resource::{HighScores, MAX_HIGH_SCORE_COUNT},
+    score::high_score::resource::{HighScore, HighScores, MAX_HIGH_SCORE_COUNT},
 };
 use ::bevy::prelude::*;
-use bevy::ecs::component::Component;
+use bevy::{ecs::component::Component, log};
 
 #[derive(Component)]
 pub struct HighScoreText;
@@ -21,11 +23,15 @@ pub struct HighScoreTextDate;
 
 const DEFAULT_SCORE_TEXT: &str = "-";
 
-fn high_score_text_score(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+fn high_score_text_score(
+    children_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    score: Option<String>,
+) {
     children_builder.spawn((
         HighScoreTextScore,
         TextBundle::from_sections([TextSection::new(
-            DEFAULT_SCORE_TEXT,
+            score.unwrap_or(DEFAULT_SCORE_TEXT.to_string()),
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
@@ -36,11 +42,15 @@ fn high_score_text_score(children_builder: &mut ChildBuilder, asset_server: &Res
     ));
 }
 
-fn high_score_text_date(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+fn high_score_text_date(
+    children_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    date: Option<&str>,
+) {
     children_builder.spawn((
         HighScoreTextDate,
         TextBundle::from_sections([TextSection::new(
-            DEFAULT_SCORE_TEXT,
+            date.unwrap_or(DEFAULT_SCORE_TEXT),
             TextStyle {
                 font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
                 font_size: 25.,
@@ -51,7 +61,11 @@ fn high_score_text_date(children_builder: &mut ChildBuilder, asset_server: &Res<
     ));
 }
 
-fn high_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<AssetServer>) {
+fn high_score_text(
+    children_builder: &mut ChildBuilder,
+    asset_server: &Res<AssetServer>,
+    high_score: Option<&HighScore>,
+) {
     children_builder
         .spawn((
             NodeBundle {
@@ -72,19 +86,21 @@ fn high_score_text(children_builder: &mut ChildBuilder, asset_server: &Res<Asset
             HighScoreText,
         ))
         .with_children(|parent: &mut ChildBuilder<'_, '_, '_>| {
-            high_score_text_score(parent, asset_server);
-            high_score_text_date(parent, asset_server);
+            high_score_text_score(
+                parent,
+                asset_server,
+                high_score.map(|hs| hs.score.to_string()),
+            );
+            high_score_text_date(parent, asset_server, high_score.map(|hs| hs.date.as_str()));
         });
 }
 
 pub fn setup_high_score_text(
     mut commands: Commands,
-    high_scores_res: Res<HighScores>,
     asset_server: Res<AssetServer>,
+    high_scores_res: Res<HighScores>,
 ) {
-    if !high_scores_res.is_changed() {
-        return;
-    }
+    println!("Setting up high score text.");
 
     let image_size = ImageSize::new(340.0, 300.0);
 
@@ -105,10 +121,13 @@ pub fn setup_high_score_text(
     };
 
     commands.spawn(piece_image_bundle).with_children(|parent| {
-        for _ in 0..MAX_HIGH_SCORE_COUNT {
-            high_score_text(parent, &asset_server)
+        for index in 0..MAX_HIGH_SCORE_COUNT {
+            let high_score = high_scores_res.0.get(index);
+            high_score_text(parent, &asset_server, high_score);
         }
     });
+
+    //
 }
 
 /**
@@ -126,10 +145,28 @@ pub fn update_high_score(
     >,
     high_scores_res: Res<HighScores>,
 ) {
+    if high_scores_res.0.is_empty() {
+        println!("No high scores available to update.");
+        log::warn!("No high scores available to update.");
+        return;
+    }
+
+    println!(
+        "Updating high score text with {} entries.",
+        high_scores_res.0.len()
+    );
+    log::info!(
+        "Updating high score text with {} entries.",
+        high_scores_res.0.len()
+    );
     let mut score_iterator = high_score_text_score_query.iter_mut();
     let mut date_iterator = high_score_text_date_query.iter_mut();
 
     for high_score in high_scores_res.0.iter() {
+        println!(
+            "Updating high score: {} - {}",
+            high_score.score, high_score.date
+        );
         let score_text_option = score_iterator.next();
         match score_text_option {
             Some(mut score_text) => {

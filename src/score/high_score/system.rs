@@ -1,27 +1,26 @@
-use bevy::prelude::{Commands, Res, ResMut};
-use chrono::Utc;
+use bevy::{
+    log,
+    prelude::{Commands, Res, ResMut},
+};
+use chrono::{Month, Utc};
 use serde_json::{from_value, json};
 
 use crate::{
-    file::json_file::JsonFile,
+    date::year_month::YearMonth,
+    file::{json_file::JsonFile, storage::Storage},
+    file_name::traits::FromFileName,
     score::{
-        high_score::resource::{HighScore, HighScores},
+        high_score::{
+            self,
+            monthly::MonthHighScores,
+            resource::{HighScore, HighScores},
+        },
         resource::Score,
     },
 };
 
+const HIGH_SCORE_PROPERTY_NAME: &str = "high_scores";
 const HIGH_SCORE_FILE_NAME: &str = "high_score.json";
-const MONTH_HIGH_SCORE_FILE_NAME_FORMAT: &str = "%Y%m_high_score.json";
-const HIGH_SCORE_DATE_FORMAT: &str = "%Y年%m月%d日";
-
-/**
- * 現在の月毎のハイスコアのファイル名
- */
-pub fn now_month_high_score_file_name() -> String {
-    return Utc::now()
-        .format(MONTH_HIGH_SCORE_FILE_NAME_FORMAT)
-        .to_string();
-}
 
 /**
  * ハイスコア保存
@@ -31,54 +30,41 @@ pub fn save_high_score(
     puzzle_score_res: Res<Score>,
     mut high_scores_res: ResMut<HighScores>,
 ) {
-    let score = puzzle_score_res.0;
-    let new_high_score: HighScore = HighScore::new(score);
-
-    let high_scores = high_scores_res.as_mut();
-    high_scores.push(new_high_score);
-
-    let json_container = high_scores.to_value();
-
-    JsonFile::save(&HIGH_SCORE_FILE_NAME, json_container);
+    high_scores_res.push(*puzzle_score_res);
+    match high_scores_res.save(&HIGH_SCORE_FILE_NAME) {
+        Ok(_) => {
+            log::info!("High scores saved successfully.");
+        }
+        Err(e) => {
+            log::error!("Failed to save high scores: {}", e);
+        }
+    }
 }
 
 /**
  * 現在の月毎のハイスコア保存
  */
-pub fn save_now_month_high_score(_: Commands, puzzle_score_res: Res<Score>) {
-    let score = puzzle_score_res.0;
-    let new_high_score: HighScore = HighScore::new(score);
-
-    let mut high_scores = load_now_month_high_score_file();
-    high_scores.push(new_high_score);
-
-    let json_container = high_scores.to_value();
-    let file_name = now_month_high_score_file_name();
-
-    JsonFile::save(&file_name, json_container);
+pub fn save_current_month_high_score(_: Commands, puzzle_score_res: Res<Score>) {
+    let mut high_scores = MonthHighScores::load_current_month();
+    high_scores.push(*puzzle_score_res);
+    match high_scores.save(high_scores.file_name().as_str()) {
+        Ok(_) => {
+            log::info!("Current month high scores saved successfully.");
+        }
+        Err(e) => {
+            log::error!("Failed to save current month high scores: {}", e);
+        }
+    }
 }
 
 /**
  * ハイスコアロード
  */
 pub fn load_high_score(mut commnads: Commands) {
-    let load_value = JsonFile::load(&HIGH_SCORE_FILE_NAME);
+    let high_scores = HighScores::from_file_name(HIGH_SCORE_FILE_NAME);
 
-    let Some(mut data_value) = load_value else {
+    let Ok(high_scores) = high_scores else {
         commnads.insert_resource(HighScores(vec![]));
-
-        return;
-    };
-
-    let Some(high_scores_value) = data_value.get_mut("high_scores") else {
-        commnads.insert_resource(HighScores(vec![]));
-
-        return;
-    };
-
-    let Ok(high_scores) = from_value::<HighScores>(high_scores_value.take()) else {
-        commnads.insert_resource(HighScores(vec![]));
-
         return;
     };
 
@@ -88,20 +74,7 @@ pub fn load_high_score(mut commnads: Commands) {
 /**
  * 現在の月毎のハイスコアファイルロード
  */
-pub fn load_now_month_high_score_file() -> HighScores {
-    let load_value = JsonFile::load(&now_month_high_score_file_name());
-
-    let Some(mut data_value) = load_value else {
-        return HighScores(vec![]);
-    };
-
-    let Some(high_scores_value) = data_value.get_mut("high_scores") else {
-        return HighScores(vec![]);
-    };
-
-    let Ok(high_scores) = from_value::<HighScores>(high_scores_value.take()) else {
-        return HighScores(vec![]);
-    };
-
-    return high_scores;
+pub fn load_current_month_high_score_file() -> MonthHighScores {
+    let load_value = MonthHighScores::from_file_name(YearMonth::default().file_name().as_str());
+    load_value.unwrap_or_default()
 }

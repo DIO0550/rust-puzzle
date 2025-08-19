@@ -1,6 +1,7 @@
 use bevy::ecs::system::Resource;
+use serde::{Deserialize, Serialize};
 
-#[derive(Resource)]
+#[derive(Resource, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Score(pub u32);
 
 impl ToString for Score {

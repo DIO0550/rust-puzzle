@@ -1,6 +1,5 @@
 use serde_json::{from_str, to_string, Value};
 use std::fs::File;
-use std::io::prelude::*;
 
 pub struct JsonFile;
 impl JsonFile {

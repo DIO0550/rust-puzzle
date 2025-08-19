@@ -3,7 +3,6 @@ use bevy::ecs::system::{Res, ResMut, Resource};
 use bevy::input::keyboard::KeyCode;
 use bevy::input::Input;
 
-use crate::game::screen_state::ScreenState;
 use crate::game::state::GameState;
 use crate::game_over::menu::GameOverMenu;
 
