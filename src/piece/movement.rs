@@ -1,11 +1,4 @@
-use bevy::{
-    ecs::{
-        query::With,
-        system::{Commands, Query, Res},
-    },
-    time::Time,
-    transform::components::Transform,
-};
+use bevy::prelude::*;
 
 use crate::{
     parameter::input::PlayerInput,
@@ -57,11 +50,11 @@ pub fn move_piece(
     mut query: Query<(&mut Transform, &AnimalPieceComponent), With<ActivePiece>>,
     time: Res<Time>,
 ) {
-    let Ok((mut transform, animal_piece_component)) = query.get_single_mut() else {
+    let Ok((mut transform, animal_piece_component)) = query.single_mut() else {
         return;
     };
 
-    let piece_movement = PieceMovement::new(&input, PIECE_SPEED, time.delta_seconds());
+    let piece_movement = PieceMovement::new(&input, PIECE_SPEED, time.delta_secs());
     if !piece_movement.is_moving() {
         return;
     }

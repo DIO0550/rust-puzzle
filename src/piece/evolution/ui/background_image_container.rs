@@ -1,12 +1,4 @@
-use bevy::{
-    ecs::{
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    hierarchy::BuildChildren,
-    ui::{Display, FlexDirection, Style, Val},
-    utils::default,
-};
+use bevy::prelude::*;
 
 use crate::{
     asset::image::{game_image_assets::GameImageAssets, image::ImageName},
@@ -15,8 +7,8 @@ use crate::{
 
 pub(crate) struct PieceEvolveBackgroundImageContainer;
 impl PieceEvolveBackgroundImageContainer {
-    fn style(image_size: f32) -> Style {
-        Style {
+    fn style(image_size: f32) -> Node {
+        Node {
             width: Val::Px(image_size),
             height: Val::Px(image_size),
             flex_direction: FlexDirection::Column,

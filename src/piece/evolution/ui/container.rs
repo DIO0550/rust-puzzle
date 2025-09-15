@@ -1,14 +1,10 @@
-use bevy::{
-    ecs::{component::Component, entity::Entity, system::Commands},
-    ui::{node_bundles::NodeBundle, Display, FlexDirection, PositionType, Style, Val},
-    utils::default,
-};
+use bevy::prelude::*;
 
 #[derive(Component)]
 pub(crate) struct PieceEvolveContainer;
 impl PieceEvolveContainer {
-    fn style() -> Style {
-        Style {
+    fn style() -> Node {
+        Node {
             position_type: PositionType::Absolute,
             right: Val::Px(15.),
             bottom: Val::Px(15.),
@@ -20,13 +16,7 @@ impl PieceEvolveContainer {
 
     pub(crate) fn spawn(commands: &mut Commands) -> Entity {
         return commands
-            .spawn((
-                NodeBundle {
-                    style: Self::style(),
-                    ..default()
-                },
-                PieceEvolveContainer,
-            ))
+            .spawn((Node { ..Self::style() }, PieceEvolveContainer))
             .id();
     }
 }

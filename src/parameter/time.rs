@@ -10,10 +10,10 @@ pub struct TimeParams<'w> {
 
 impl<'w> TimeParams<'w> {
     pub fn delta_seconds(&self) -> f32 {
-        self.time.delta_seconds()
+        self.time.delta_secs()
     }
 
     pub fn elapsed_seconds(&self) -> f32 {
-        self.time.elapsed_seconds()
+        self.time.elapsed_secs()
     }
 }

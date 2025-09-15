@@ -1,7 +1,4 @@
-use bevy::{
-    audio::{AudioBundle, PlaybackSettings},
-    ecs::system::{Commands, Res, SystemParam},
-};
+use bevy::{audio::PlaybackSettings, ecs::system::SystemParam, prelude::*};
 
 use crate::asset::sound::piece_sound_assets::PieceSoundAssets;
 
@@ -13,16 +10,16 @@ pub struct PieceSoundPlayer<'w, 's> {
 
 impl<'w, 's> PieceSoundPlayer<'w, 's> {
     pub fn play_union_sound(&mut self) {
-        self.commands.spawn(AudioBundle {
-            source: self.piece_sound_assets.piece_union.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        self.commands.spawn((
+            AudioPlayer::new(self.piece_sound_assets.piece_union.clone()),
+            PlaybackSettings::DESPAWN,
+        ));
     }
 
     pub fn play_fall_sound(&mut self) {
-        self.commands.spawn(AudioBundle {
-            source: self.piece_sound_assets.piece_fall.clone(),
-            settings: PlaybackSettings::DESPAWN,
-        });
+        self.commands.spawn((
+            AudioPlayer::new(self.piece_sound_assets.piece_fall.clone()),
+            PlaybackSettings::DESPAWN,
+        ));
     }
 }

@@ -1,6 +1,7 @@
 use bevy::{
     app::{App, Plugin, Startup},
-    prelude::{in_state, IntoSystemConfigs, OnEnter},
+    prelude::*,
+    state::app::AppExtStates,
 };
 
 use crate::game::{
@@ -15,11 +16,11 @@ impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
         let game_systems = (desk_background, desk_book_background);
 
-        app.add_state::<GameState>()
-            .add_state::<ScreenState>()
+        app.init_state::<GameState>()
+            .init_state::<ScreenState>()
             .add_systems(
                 OnEnter(GameState::InGame),
-                (restart).run_if(in_state(ScreenState::Game)),
+                restart.run_if(in_state(ScreenState::Game)),
             )
             .add_systems(
                 OnEnter(ScreenState::Game),

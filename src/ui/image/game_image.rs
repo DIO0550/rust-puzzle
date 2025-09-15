@@ -1,8 +1,4 @@
-use bevy::{
-    ecs::system::Res,
-    ui::{node_bundles::ImageBundle, Style, UiImage, Val},
-    utils::default,
-};
+use bevy::prelude::*;
 
 use crate::asset::image::{
     game_image_assets::GameImageAssets, image::ImageName, image_assets::ImageAssets,
@@ -20,19 +16,16 @@ impl GameImageBundle<f32> for GameImage {
         image_name: Self::ImageNameType,
         assets: &Res<Self::AssetType>,
         image_size: &f32,
-    ) -> ImageBundle {
+    ) -> impl Bundle {
         let image = assets.handle_image_from(&image_name);
-        let bundle = ImageBundle {
-            style: Style {
+        (
+            Node {
                 width: Val::Px(*image_size),
                 height: Val::Px(*image_size),
                 ..default()
             },
-            image: UiImage::new(image),
-            ..default()
-        };
-
-        return bundle;
+            ImageNode::new(image),
+        )
     }
 }
 
@@ -43,15 +36,9 @@ impl GameImageBundleWithStyle for GameImage {
     fn image_bundle(
         image_name: Self::ImageNameType,
         assets: &Res<Self::AssetType>,
-        style: Style,
-    ) -> ImageBundle {
+        style: Node,
+    ) -> impl Bundle {
         let image = assets.handle_image_from(&image_name);
-        let bundle = ImageBundle {
-            style,
-            image: UiImage::new(image),
-            ..default()
-        };
-
-        return bundle;
+        (style, ImageNode::new(image))
     }
 }

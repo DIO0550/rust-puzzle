@@ -4,14 +4,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Res},
     },
-    hierarchy::BuildChildren,
-    render::color::Color,
-    text::TextStyle,
-    ui::{
-        node_bundles::{NodeBundle, TextBundle},
-        AlignItems, FlexDirection, JustifyContent, Style, UiRect, Val,
-    },
-    utils::default,
+    prelude::*,
 };
 
 use crate::asset::font::font_assets::FontAssets;
@@ -19,22 +12,19 @@ use crate::asset::font::font_assets::FontAssets;
 #[derive(Component)]
 pub struct ScoreValueText;
 impl ScoreValueText {
-    fn text_style(font_assets: &Res<FontAssets>) -> TextStyle {
-        TextStyle {
-            font: font_assets.hachi_maru_pop_regular.clone(),
-            font_size: 50.,
-            color: Color::WHITE,
-            ..default()
-        }
-    }
-
     fn value() -> String {
         "".to_string()
     }
 
-    fn spawn(font_assets: &Res<FontAssets>) -> (TextBundle, Self) {
+    fn spawn(font_assets: &Res<FontAssets>) -> (Text, TextFont, TextColor, Self) {
         return (
-            TextBundle::from_section(Self::value(), Self::text_style(font_assets)),
+            Text::new(Self::value()),
+            TextFont {
+                font: font_assets.hachi_maru_pop_regular.clone(),
+                font_size: 50.,
+                ..default()
+            },
+            TextColor(Color::WHITE),
             Self,
         );
     }
@@ -42,8 +32,8 @@ impl ScoreValueText {
 
 pub struct ScoreValueTextContainer;
 impl ScoreValueTextContainer {
-    fn style() -> Style {
-        Style {
+    fn style() -> Node {
+        Node {
             margin: UiRect {
                 left: Val::Px(0.0),
                 right: Val::Px(0.0),
@@ -65,13 +55,11 @@ impl ScoreValueTextContainer {
     ) {
         commands.entity(parent_entity).with_children(|parent| {
             parent
-                .spawn((NodeBundle {
-                    style: Self::style(),
-                    ..default()
-                },))
+                .spawn((Node { ..Self::style() },))
                 .with_children(|parent| {
                     // スコアのタイトルテキストを追加
-                    parent.spawn(ScoreValueText::spawn(font_assets));
+                    let (text, font, color, component) = ScoreValueText::spawn(font_assets);
+                    parent.spawn((text, font, color, component));
                 });
         });
     }

@@ -2,19 +2,13 @@ use bevy::{
     log,
     prelude::{Commands, Res, ResMut},
 };
-use chrono::{Month, Utc};
-use serde_json::{from_value, json};
 
 use crate::{
     date::year_month::YearMonth,
-    file::{json_file::JsonFile, storage::Storage},
+    file::storage::Storage,
     file_name::traits::FromFileName,
     score::{
-        high_score::{
-            self,
-            monthly::MonthHighScores,
-            resource::{HighScore, HighScores},
-        },
+        high_score::{monthly::MonthHighScores, resource::HighScores},
         resource::Score,
     },
 };
@@ -36,7 +30,7 @@ pub fn save_high_score(
             log::info!("High scores saved successfully.");
         }
         Err(e) => {
-            log::error!("Failed to save high scores: {}", e);
+            log::error!("Failed to save high scores: {:?}", e);
         }
     }
 }
@@ -52,7 +46,7 @@ pub fn save_current_month_high_score(_: Commands, puzzle_score_res: Res<Score>) 
             log::info!("Current month high scores saved successfully.");
         }
         Err(e) => {
-            log::error!("Failed to save current month high scores: {}", e);
+            log::error!("Failed to save current month high scores: {:?}", e);
         }
     }
 }
@@ -60,15 +54,15 @@ pub fn save_current_month_high_score(_: Commands, puzzle_score_res: Res<Score>) 
 /**
  * ハイスコアロード
  */
-pub fn load_high_score(mut commnads: Commands) {
+pub fn load_high_score(mut commands: Commands) {
     let high_scores = HighScores::from_file_name(HIGH_SCORE_FILE_NAME);
 
     let Ok(high_scores) = high_scores else {
-        commnads.insert_resource(HighScores(vec![]));
+        commands.insert_resource(HighScores(vec![]));
         return;
     };
 
-    commnads.insert_resource(high_scores);
+    commands.insert_resource(high_scores);
 }
 
 /**

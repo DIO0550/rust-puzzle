@@ -1,12 +1,4 @@
-use bevy::{
-    ecs::{
-        component::Component,
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    hierarchy::BuildChildren,
-    ui::{Style, Val},
-};
+use bevy::prelude::*;
 
 use crate::{
     asset::image::piece_image_assets::PieceImageAssets,
@@ -18,10 +10,10 @@ use crate::{
 pub struct NextPieceImage;
 
 impl NextPieceImage {
-    fn style() -> Style {
+    fn style() -> Node {
         let image_size = 100.0;
 
-        let style = Style {
+        let style = Node {
             height: Val::Px(image_size),
             width: Val::Px(image_size),
             ..Default::default()

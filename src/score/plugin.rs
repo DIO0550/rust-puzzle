@@ -15,16 +15,16 @@ impl Plugin for ScorePlugin {
         app.init_resource::<Score>()
             .add_systems(
                 OnEnter(ScreenState::Game),
-                setup_score.run_if(in_state(GameState::InGame)),
+                (setup_score,).run_if(in_state(GameState::InGame)),
             )
             .add_systems(
                 Update,
-                update_text::<ScoreValueText, Score>
-                    .run_if(in_state(ScreenState::Game).and_then(in_state(GameState::InGame))),
+                (update_text::<ScoreValueText, Score>,)
+                    .run_if(in_state(ScreenState::Game).and(in_state(GameState::InGame))),
             )
             .add_systems(
                 OnExit(ScreenState::Game),
-                despawn_component::<ScoreTextContainer>,
+                (despawn_component::<ScoreTextContainer>,),
             );
     }
 }

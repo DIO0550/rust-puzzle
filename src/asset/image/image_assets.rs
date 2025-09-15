@@ -1,7 +1,7 @@
 use bevy::{
     asset::{AssetServer, Handle},
     ecs::system::Res,
-    render::texture::Image,
+    prelude::Image,
 };
 
 pub trait FromAssetServer {

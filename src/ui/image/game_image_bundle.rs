@@ -1,7 +1,6 @@
 use bevy::{
     ecs::system::Res,
-    prelude::Resource,
-    ui::{node_bundles::ImageBundle, Style},
+    prelude::*,
 };
 
 pub trait GameImageBundle<T> {
@@ -12,7 +11,7 @@ pub trait GameImageBundle<T> {
         image_name: Self::ImageNameType,
         assets: &Res<Self::AssetType>,
         image_size: &T,
-    ) -> ImageBundle;
+    ) -> impl Bundle;
 }
 
 pub trait GameImageBundleWithStyle {
@@ -22,6 +21,6 @@ pub trait GameImageBundleWithStyle {
     fn image_bundle(
         image_name: Self::ImageNameType,
         assets: &Res<Self::AssetType>,
-        style: Style,
-    ) -> ImageBundle;
+        style: Node,
+    ) -> impl Bundle;
 }

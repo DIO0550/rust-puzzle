@@ -1,11 +1,4 @@
-use bevy::{
-    ecs::{
-        component::Component,
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    ui::{AlignItems, FlexDirection, PositionType, Style, Val},
-};
+use bevy::prelude::*;
 
 use crate::{
     asset::image::{game_image_assets::GameImageAssets, image::ImageName},
@@ -16,10 +9,10 @@ use crate::{
 pub struct NextPieceContainer;
 
 impl NextPieceContainer {
-    pub fn style() -> Style {
+    pub fn style() -> Node {
         let image_size = 250.0;
 
-        let style = Style {
+        let style = Node {
             position_type: PositionType::Absolute,
             right: Val::Px(50.),
             top: Val::Px(65.),

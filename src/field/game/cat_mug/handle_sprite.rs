@@ -4,8 +4,7 @@ use bevy::{
         system::{Commands, Res},
     },
     math::{Vec2, Vec3},
-    sprite::{Sprite, SpriteBundle},
-    transform::components::Transform,
+    prelude::*,
     utils::default,
 };
 
@@ -39,16 +38,17 @@ impl CatMugHandleSprite {
     pub(crate) fn spawn(commands: &mut Commands, game_image_assets: &Res<GameImageAssets>) {
         let cat_mug_handle_image = game_image_assets.cat_mug_handle.clone();
         let image_width = BOX_SIZE_WIDTH / 4.0;
-        let cat_mug_handle_bundle = SpriteBundle {
-            sprite: Self::sprite(Some(Vec2 {
-                x: image_width,
-                y: BOX_SIZE_HEIHT,
-            })),
-            texture: cat_mug_handle_image,
-            transform: Self::transform(image_width),
-            ..default()
-        };
 
-        commands.spawn((cat_mug_handle_bundle, CatMugHandleSprite));
+        commands
+            .spawn(CatMugHandleSprite)
+            .insert(Self::transform(image_width))
+            .insert(Sprite {
+                custom_size: Some(Vec2 {
+                    x: image_width,
+                    y: BOX_SIZE_HEIHT,
+                }),
+                image: cat_mug_handle_image,
+                ..default()
+            });
     }
 }

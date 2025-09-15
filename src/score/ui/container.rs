@@ -4,7 +4,7 @@ use bevy::{
         entity::Entity,
         system::{Commands, Res},
     },
-    ui::{AlignItems, FlexDirection, PositionType, Style, Val},
+    prelude::{AlignItems, FlexDirection, Node, PositionType, Val},
 };
 
 use crate::{
@@ -16,9 +16,9 @@ use crate::{
 pub struct ScoreTextContainer;
 
 impl ScoreTextContainer {
-    fn style() -> Style {
+    fn style() -> Node {
         let image_size = 250.0;
-        return Style {
+        return Node {
             position_type: PositionType::Absolute,
             left: Val::Px(50.),
             top: Val::Px(50.),

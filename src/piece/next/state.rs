@@ -1,7 +1,7 @@
 use bevy::{
     asset::Handle,
-    ecs::system::{Res, ResMut, Resource, SystemParam},
-    render::texture::Image,
+    ecs::system::SystemParam,
+    prelude::{Image, Res, ResMut, Resource},
 };
 
 use crate::{
@@ -35,7 +35,7 @@ pub struct NextPieceManager<'w> {
 
 impl<'w> NextPieceManager<'w> {
     pub fn update_next_piece(&mut self) {
-        self.next_piece.0 = NextPiece::new().0;
+        *self.next_piece = NextPiece::new();
     }
 
     pub fn get_next_piece(&self) -> &PieceType {

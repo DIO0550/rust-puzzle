@@ -1,4 +1,4 @@
-use bevy::render::color::Color;
+use bevy::color::Color;
 
 pub const UNIT_WIDTH: f32 = 4.5;
 // const UNIT_HEIGHT: f32 = 5.0;
@@ -14,4 +14,4 @@ pub const BOX_THICKNESS: f32 = 5.0;
 pub const BOX_MARGIN_BOTTOM: f32 = BOX_SIZE_HEIHT / 5.0;
 pub const PIECE_POSITION_Y_MARGIN: f32 = 40.0;
 
-pub const BACKGROUND_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
+pub const BACKGROUND_COLOR: Color = Color::srgb(0.9, 0.9, 0.9);

@@ -1,7 +1,5 @@
 use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
-use bevy::render::mesh::shape::Circle;
-use bevy::sprite::MaterialMesh2dBundle;
 
 // MeshとMaterialを一緒に管理するSystemParam
 #[derive(SystemParam)]
@@ -16,11 +14,9 @@ impl<'w> MeshMaterial<'w> {
         &mut self,
         size: f32,
         image: Handle<Image>,
-    ) -> MaterialMesh2dBundle<ColorMaterial> {
-        MaterialMesh2dBundle {
-            mesh: bevy::sprite::Mesh2dHandle(self.meshes.add(Circle::new(size).into())),
-            material: self.materials.add(image.into()),
-            ..default()
-        }
+    ) -> (Mesh2d, MeshMaterial2d<ColorMaterial>) {
+        let mesh = self.meshes.add(Circle::new(size));
+        let material = self.materials.add(ColorMaterial::from(image));
+        (Mesh2d(mesh), MeshMaterial2d(material))
     }
 }

@@ -1,7 +1,4 @@
-use bevy::ecs::schedule::NextState;
-use bevy::ecs::system::{Res, ResMut, Resource};
-use bevy::input::keyboard::KeyCode;
-use bevy::input::Input;
+use bevy::prelude::{ButtonInput, KeyCode, NextState, Res, ResMut, Resource};
 
 use crate::game::state::GameState;
 use crate::game_over::menu::GameOverMenu;
@@ -25,12 +22,8 @@ impl GameOverMenuSelection {
     }
 }
 
-pub fn reset_select_menu(mut game_state: ResMut<NextState<GameState>>) {
-    game_state.set(GameState::InGame);
-}
-
 pub fn change_select_game_over_menu(
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     mut select_menu: ResMut<GameOverMenuSelection>,
 ) {
     if keyboard_input.pressed(KeyCode::Space) {
@@ -38,14 +31,16 @@ pub fn change_select_game_over_menu(
     }
 
     match keyboard_input {
-        keyboard if keyboard.just_pressed(KeyCode::Up) => *select_menu = select_menu.prev(),
-        keyboard if keyboard.just_pressed(KeyCode::Down) => *select_menu = select_menu.next(),
+        keyboard if keyboard.just_pressed(KeyCode::ArrowUp) => select_menu.0 = select_menu.next().0,
+        keyboard if keyboard.just_pressed(KeyCode::ArrowDown) => {
+            select_menu.0 = select_menu.prev().0
+        }
         _ => (),
     };
 }
 
 pub fn select_game_over_menu(
-    keyboard_input: Res<Input<KeyCode>>,
+    keyboard_input: Res<ButtonInput<KeyCode>>,
     select_menu: Res<GameOverMenuSelection>,
     mut game_state: ResMut<NextState<GameState>>,
 ) {
@@ -57,4 +52,8 @@ pub fn select_game_over_menu(
         return;
     }
     game_state.set(GameState::InGame);
+}
+
+pub fn reset_select_menu(mut select_menu: ResMut<GameOverMenuSelection>) {
+    select_menu.0 = GameOverMenu::Restart;
 }

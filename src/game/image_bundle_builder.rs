@@ -1,8 +1,7 @@
 use bevy::{
-    asset::AssetServer,
+    asset::{AssetServer, Handle},
     ecs::system::Res,
-    prelude::default,
-    ui::{node_bundles::ImageBundle, Style, UiImage, Val},
+    prelude::Image,
 };
 
 use crate::asset::{
@@ -19,18 +18,15 @@ pub struct ImageSize {
 
 impl ImageSize {
     pub fn new(height: f32, width: f32) -> Self {
-        Self {
-            height: height,
-            width: width,
-        }
+        Self { height, width }
     }
 
     pub fn get_height(&self) -> &f32 {
-        return &self.height;
+        &self.height
     }
 
     pub fn get_width(&self) -> &f32 {
-        return &self.width;
+        &self.width
     }
 }
 
@@ -39,27 +35,16 @@ pub trait IntoImageBundle<T> {
         image_name: ImageName,
         asset_server: &Res<AssetServer>,
         image_size: &T,
-    ) -> ImageBundle;
+    ) -> Handle<Image>;
 }
 
 impl IntoImageBundle<f32> for ImageBundleBuilder {
     fn into_image_bundle(
         image_name: ImageName,
         asset_server: &Res<AssetServer>,
-        image_size: &f32,
-    ) -> ImageBundle {
-        let image = ImageAsset::asset(asset_server, &image_name);
-        let bundle = ImageBundle {
-            style: Style {
-                width: Val::Px(*image_size),
-                height: Val::Px(*image_size),
-                ..default()
-            },
-            image: UiImage::new(image),
-            ..default()
-        };
-
-        return bundle;
+        _image_size: &f32,
+    ) -> Handle<Image> {
+        ImageAsset::asset(asset_server, &image_name)
     }
 }
 
@@ -67,19 +52,8 @@ impl IntoImageBundle<ImageSize> for ImageBundleBuilder {
     fn into_image_bundle(
         image_name: ImageName,
         asset_server: &Res<AssetServer>,
-        image_size: &ImageSize,
-    ) -> ImageBundle {
-        let image = ImageAsset::asset(asset_server, &image_name);
-        let bundle = ImageBundle {
-            style: Style {
-                width: Val::Px((*image_size).width),
-                height: Val::Px((*image_size).height),
-                ..default()
-            },
-            image: UiImage::new(image),
-            ..default()
-        };
-
-        return bundle;
+        _image_size: &ImageSize,
+    ) -> Handle<Image> {
+        ImageAsset::asset(asset_server, &image_name)
     }
 }

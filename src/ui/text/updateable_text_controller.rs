@@ -1,15 +1,7 @@
-use bevy::{
-    ecs::{
-        change_detection::DetectChanges,
-        component::Component,
-        query::With,
-        system::{Query, Res, Resource},
-    },
-    text::Text,
-};
+use bevy::prelude::*;
 
 pub fn update_text<TextMarker: Component, R: Resource + ToString>(
-    mut text_query: Query<(&mut Text, With<TextMarker>)>,
+    mut text_query: Query<&mut Text, With<TextMarker>>,
     resource: Res<R>,
 ) {
     if !resource.is_changed() {
@@ -17,9 +9,7 @@ pub fn update_text<TextMarker: Component, R: Resource + ToString>(
     }
 
     let current_text_value = resource.to_string();
-    for mut text_iter in text_query.iter_mut() {
-        for section in &mut text_iter.0.sections {
-            section.value = current_text_value.clone();
-        }
+    for mut text in text_query.iter_mut() {
+        **text = current_text_value.clone();
     }
 }

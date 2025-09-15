@@ -10,17 +10,13 @@ use crate::{
     },
     piece::component::animal_piece::animal_piece_component::AnimalPieceComponent,
 };
-use bevy::{
-    app::{App, Plugin, Startup, Update},
-    ecs::schedule::{IntoSystemConfigs, OnEnter, OnExit},
-    prelude::in_state,
-};
+use bevy::prelude::*;
 
 pub struct GameOverPlugin;
 impl Plugin for GameOverPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GameOverMenuSelection(GameOverMenu::Restart))
-            .add_systems(OnEnter(GameState::GameOver), (display_game_over).chain())
+            .add_systems(OnEnter(GameState::GameOver), display_game_over)
             .add_systems(
                 Update,
                 (

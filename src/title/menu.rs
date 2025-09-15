@@ -1,15 +1,9 @@
 pub mod item;
 pub mod item_select_action;
 
-use bevy::a11y::accesskit::Size;
 use bevy::ecs::component::Component;
-use bevy::{
-    prelude::{Commands, Res},
-    ui::*,
-};
+use bevy::prelude::*;
 
-use crate::consts::color_theme::ColorTheme;
-use crate::game_over::menu;
 use crate::title::menu::item::TitleMenuItem;
 use crate::title::menu::item_select_action::TitleMenuItemSelectAction;
 use crate::{
@@ -28,7 +22,7 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
     let menu_height: f32 = (menu_item_height * 2.0) + row_gap + 200.0; // 2つのメニューアイテムと間隔分
     let menu_width: f32 = menu_item_width + 100.0; // メニューアイテムの幅を基準にする
 
-    let style = Style {
+    let node = Node {
         top: Val::Percent(50.0),
         left: Val::Percent(50.0),
         margin: UiRect {
@@ -46,7 +40,7 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
     };
 
     let menu = MenuEntityBuilder::new("title_menu", TitleMenu)
-        .style(style)
+        .style(node)
         .build(&mut commands);
 
     MenuItemEntityBuilder::new(
@@ -55,10 +49,12 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         TitleMenuItem::StartGame,
         TitleMenuItemSelectAction::StartGame,
     )
-    .style(Style {
+    .node(Node {
         width: Val::Px(menu_item_width),
         height: Val::Px(menu_item_height),
         position_type: PositionType::Relative,
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
         ..Default::default()
     })
     .selected(true)
@@ -70,10 +66,12 @@ pub fn setup_title_menu(mut commands: Commands, font_assets: Res<FontAssets>) {
         TitleMenuItem::HighScore,
         TitleMenuItemSelectAction::HighScore,
     )
-    .style(Style {
+    .node(Node {
         width: Val::Px(menu_item_width),
         height: Val::Px(menu_item_height),
         position_type: PositionType::Relative,
+        align_items: AlignItems::Center,
+        justify_content: JustifyContent::Center,
         ..Default::default()
     })
     .build_as_child(&mut commands, menu, &font_assets);

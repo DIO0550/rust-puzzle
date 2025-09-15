@@ -1,18 +1,4 @@
-use bevy::{
-    ecs::{
-        component::Component,
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    hierarchy::BuildChildren,
-    render::color::Color,
-    text::{TextAlignment, TextSection, TextStyle},
-    ui::{
-        node_bundles::{NodeBundle, TextBundle},
-        BackgroundColor, Style, Val,
-    },
-    utils::default,
-};
+use bevy::prelude::*;
 
 use crate::{asset::font::font_assets::FontAssets, consts::color_theme::ColorTheme};
 
@@ -39,7 +25,7 @@ pub struct MenuItemEntityBuilder<T: Component, A: MenuItemSelectAction + Compone
     color: MenuItemColor,
     marker: T,
     action: A,
-    style: Style,
+    node: Node,
 }
 
 impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T, A> {
@@ -55,7 +41,7 @@ impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T,
                 selected: ColorTheme::SPROUT,
             },
             marker,
-            style: Style {
+            node: Node {
                 width: Val::Percent(100.0),
                 height: Val::Percent(100.0),
                 ..Default::default()
@@ -84,8 +70,8 @@ impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T,
     }
 
     // スタイルを設定
-    pub fn style(mut self, style: Style) -> Self {
-        self.style = style;
+    pub fn node(mut self, node: Node) -> Self {
+        self.node = node;
         self
     }
 
@@ -99,18 +85,13 @@ impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T,
 
         let label = self.item.label.clone();
 
-        let button_bundle = NodeBundle {
-            style: self.style,
-            background_color: background_color,
-            ..Default::default()
-        };
-
         // 基本的なエンティティを作成
         let mut entity_commands = commands.spawn((
             self.item,
             self.color,
             self.marker,
-            button_bundle,
+            self.node,
+            background_color,
             self.action,
         ));
 
@@ -121,23 +102,19 @@ impl<T: Component, A: MenuItemSelectAction + Component> MenuItemEntityBuilder<T,
 
         let entity = entity_commands
             .with_children(|parent| {
-                parent
-                    .spawn(NodeBundle {
-                        style: Style { ..default() },
+                parent.spawn((
+                    Text::new(label),
+                    TextFont {
+                        font: font_assets.hachi_maru_pop_regular.clone(),
+                        font_size: 75.,
                         ..default()
-                    })
-                    .with_children(|parent| {
-                        parent.spawn((TextBundle::from_sections([TextSection::new(
-                            label,
-                            TextStyle {
-                                font: font_assets.hachi_maru_pop_regular.clone(),
-                                font_size: 100.,
-                                color: Color::BLACK,
-                                ..default()
-                            },
-                        )])
-                        .with_text_alignment(TextAlignment::Center),));
-                    });
+                    },
+                    TextColor(Color::BLACK),
+                    Node {
+                        position_type: PositionType::Absolute,
+                        ..default()
+                    },
+                ));
             })
             .id();
 

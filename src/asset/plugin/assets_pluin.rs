@@ -1,6 +1,7 @@
 use bevy::{
     app::{App, Plugin, PreStartup, Update},
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs},
+    prelude::*,
+    state::app::AppExtStates,
 };
 
 use crate::asset::{
@@ -12,11 +13,11 @@ pub struct AssetsPlugin;
 
 impl Plugin for AssetsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_state::<AssetLoadState>()
+        app.init_state::<AssetLoadState>()
             .add_systems(PreStartup, load_assets)
             .add_systems(
                 Update,
-                (check_assets_ready).run_if(in_state(AssetLoadState::Loading)),
+                check_assets_ready.run_if(in_state(AssetLoadState::Loading)),
             );
     }
 }

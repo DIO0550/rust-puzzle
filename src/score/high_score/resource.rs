@@ -1,4 +1,4 @@
-use bevy::ecs::system::Resource;
+use bevy::prelude::*;
 use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_value, json, Value};
@@ -17,13 +17,6 @@ pub struct HighScore {
     pub date: String,
     pub score: u32,
 }
-
-// impl HighScore {
-//     pub fn new(score: u32) -> Self {
-//         let date = Utc::now().format(HIGH_SCORE_DATE_FORMAT).to_string();
-//         HighScore { date, score }
-//     }
-// }
 
 impl From<Score> for HighScore {
     fn from(score: Score) -> Self {

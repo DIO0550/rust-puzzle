@@ -1,6 +1,6 @@
 use bevy::{
-    ecs::system::{Res, SystemParam},
-    sprite::{ColorMaterial, MaterialMesh2dBundle},
+    prelude::*,
+    ecs::system::SystemParam,
 };
 
 use crate::{
@@ -22,7 +22,7 @@ impl<'w> PieceRenderer<'w> {
     pub fn create_material_mesh(
         &mut self,
         animal_piece_component: &AnimalPieceComponent,
-    ) -> MaterialMesh2dBundle<ColorMaterial> {
+    ) -> (Mesh2d, MeshMaterial2d<ColorMaterial>) {
         let size = animal_piece_component.get_size().to_f32() * UNIT_WIDTH * 2.0;
         let image = self
             .piece_image_assets

@@ -1,9 +1,7 @@
 use bevy::{
     asset::AssetServer,
-    ecs::{
-        schedule::NextState,
-        system::{Commands, Res, ResMut},
-    },
+    ecs::system::{Commands, Res, ResMut},
+    prelude::NextState,
 };
 
 use crate::{

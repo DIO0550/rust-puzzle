@@ -1,4 +1,4 @@
-use bevy::render::texture::Image;
+use bevy::prelude::Image;
 
 use crate::{
     asset::asset::{AssetNameTrait, AssetTrait},

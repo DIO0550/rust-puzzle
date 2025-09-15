@@ -1,12 +1,4 @@
-use bevy::{
-    ecs::{
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    hierarchy::{BuildChildren, ChildBuilder},
-    ui::{node_bundles::NodeBundle, Display, FlexDirection, JustifyContent, Style, UiRect, Val},
-    utils::default,
-};
+use bevy::prelude::*;
 
 use crate::{
     asset::image::piece_image_assets::PieceImageAssets,
@@ -16,42 +8,21 @@ use crate::{
 
 struct PieceEvolveDescribeImageRow;
 impl PieceEvolveDescribeImageRow {
-    fn style() -> Style {
-        Style {
+    fn style() -> Node {
+        Node {
             width: Val::Percent(100.),
             flex_direction: FlexDirection::Row,
             justify_content: JustifyContent::SpaceBetween,
             ..default()
         }
     }
-
-    fn spawn_as_child(
-        parent: &mut ChildBuilder,
-        piece_image_assets: &Res<PieceImageAssets>,
-        piece_types: Vec<PieceType>,
-        image_size: f32,
-    ) {
-        parent
-            .spawn(NodeBundle {
-                style: Self::style(),
-                ..default()
-            })
-            .with_children(|parent| {
-                for piece_type in piece_types {
-                    let bundle =
-                        PieceImage::image_bundle(piece_type, &piece_image_assets, &image_size);
-
-                    parent.spawn(bundle);
-                }
-            });
-    }
 }
 
 pub(crate) struct PieceEvolveDescribeContainer;
 
 impl PieceEvolveDescribeContainer {
-    fn style() -> Style {
-        Style {
+    fn style() -> Node {
+        Node {
             margin: UiRect {
                 left: (Val::Px(50.0)),
                 right: (Val::Px(42.0)),
@@ -80,19 +51,25 @@ impl PieceEvolveDescribeContainer {
 
         commands.entity(parent_entity).with_children(|parent| {
             parent
-                .spawn(NodeBundle {
-                    style: Self::style(),
-                    ..default()
-                })
+                .spawn(Node { ..Self::style() })
                 .with_children(|parent| {
                     for piece_image_types in piece_type_groups {
                         // 子エンティティを生成
-                        PieceEvolveDescribeImageRow::spawn_as_child(
-                            parent,
-                            piece_image_assets,
-                            piece_image_types,
-                            image_size,
-                        );
+                        parent
+                            .spawn(Node {
+                                ..PieceEvolveDescribeImageRow::style()
+                            })
+                            .with_children(|parent| {
+                                for piece_type in piece_image_types {
+                                    let bundle = PieceImage::image_bundle(
+                                        piece_type,
+                                        &piece_image_assets,
+                                        &image_size,
+                                    );
+
+                                    parent.spawn(bundle);
+                                }
+                            });
                     }
                 });
         });

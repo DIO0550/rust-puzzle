@@ -4,13 +4,11 @@ use crate::{
     asset::{
         asset::AssetTrait,
         font::font::{FontAsset, FontName},
-        image::image::ImageName,
     },
-    game::image_bundle_builder::{ImageBundleBuilder, ImageSize, IntoImageBundle},
-    score::high_score::resource::{HighScore, HighScores, MAX_HIGH_SCORE_COUNT},
+    game::image_bundle_builder::ImageSize,
+    score::high_score::resource::{HighScores, MAX_HIGH_SCORE_COUNT},
 };
-use ::bevy::prelude::*;
-use bevy::{ecs::component::Component, log};
+use bevy::{ecs::component::Component, log, prelude::*};
 
 #[derive(Component)]
 pub struct HighScoreText;
@@ -23,78 +21,6 @@ pub struct HighScoreTextDate;
 
 const DEFAULT_SCORE_TEXT: &str = "-";
 
-fn high_score_text_score(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    score: Option<String>,
-) {
-    children_builder.spawn((
-        HighScoreTextScore,
-        TextBundle::from_sections([TextSection::new(
-            score.unwrap_or(DEFAULT_SCORE_TEXT.to_string()),
-            TextStyle {
-                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                font_size: 25.,
-                color: Color::WHITE,
-                ..default()
-            },
-        )]),
-    ));
-}
-
-fn high_score_text_date(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    date: Option<&str>,
-) {
-    children_builder.spawn((
-        HighScoreTextDate,
-        TextBundle::from_sections([TextSection::new(
-            date.unwrap_or(DEFAULT_SCORE_TEXT),
-            TextStyle {
-                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
-                font_size: 25.,
-                color: Color::WHITE,
-                ..default()
-            },
-        )]),
-    ));
-}
-
-fn high_score_text(
-    children_builder: &mut ChildBuilder,
-    asset_server: &Res<AssetServer>,
-    high_score: Option<&HighScore>,
-) {
-    children_builder
-        .spawn((
-            NodeBundle {
-                style: Style {
-                    margin: UiRect {
-                        left: Val::Px(0.0),
-                        right: Val::Px(0.0),
-                        top: Val::Px(10.0),
-                        bottom: Val::Px(0.0),
-                    },
-                    flex_direction: FlexDirection::Column,
-                    justify_content: JustifyContent::Center,
-                    align_items: AlignItems::Center,
-                    ..default()
-                },
-                ..default()
-            },
-            HighScoreText,
-        ))
-        .with_children(|parent: &mut ChildBuilder<'_, '_, '_>| {
-            high_score_text_score(
-                parent,
-                asset_server,
-                high_score.map(|hs| hs.score.to_string()),
-            );
-            high_score_text_date(parent, asset_server, high_score.map(|hs| hs.date.as_str()));
-        });
-}
-
 pub fn setup_high_score_text(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -104,30 +30,83 @@ pub fn setup_high_score_text(
 
     let image_size = ImageSize::new(340.0, 300.0);
 
-    let mut piece_image_bundle = ImageBundleBuilder::into_image_bundle(
-        ImageName::HighScoreFrame,
-        &asset_server,
-        &image_size,
-    );
-    piece_image_bundle.style = Style {
-        position_type: PositionType::Absolute,
-        left: Val::Px(50.),
-        bottom: Val::Px(50.),
-        height: Val::Px(*image_size.get_height()),
-        width: Val::Px(*image_size.get_width()),
-        flex_direction: FlexDirection::Column,
-        align_items: AlignItems::Center,
-        ..piece_image_bundle.style
-    };
+    commands
+        .spawn((
+            Node {
+                position_type: PositionType::Absolute,
+                left: Val::Px(50.),
+                bottom: Val::Px(50.),
+                height: Val::Px(*image_size.get_height()),
+                width: Val::Px(*image_size.get_width()),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            BackgroundColor(Color::srgba(0.1, 0.1, 0.1, 0.8)), // 半透明の背景
+        ))
+        .with_children(|parent| {
+            for index in 0..MAX_HIGH_SCORE_COUNT {
+                let high_score = high_scores_res.0.get(index);
 
-    commands.spawn(piece_image_bundle).with_children(|parent| {
-        for index in 0..MAX_HIGH_SCORE_COUNT {
-            let high_score = high_scores_res.0.get(index);
-            high_score_text(parent, &asset_server, high_score);
-        }
-    });
+                // high_score_text equivalent - directly inline
+                parent
+                    .spawn((
+                        Node {
+                            margin: UiRect {
+                                left: Val::Px(0.0),
+                                right: Val::Px(0.0),
+                                top: Val::Px(10.0),
+                                bottom: Val::Px(0.0),
+                            },
+                            flex_direction: FlexDirection::Column,
+                            justify_content: JustifyContent::SpaceBetween,
+                            align_items: AlignItems::Center,
+                            ..default()
+                        },
+                        HighScoreText,
+                    ))
+                    .with_children(|parent| {
+                        // high_score_text_date equivalent - directly inline
+                        parent.spawn((
+                            HighScoreTextDate,
+                            Text::new(
+                                high_score
+                                    .map(|hs| hs.date.as_str())
+                                    .unwrap_or(DEFAULT_SCORE_TEXT),
+                            ),
+                            TextFont {
+                                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                                font_size: 25.,
+                                ..default()
+                            },
+                            TextColor(Color::WHITE),
+                            Node {
+                                position_type: PositionType::Relative,
+                                ..Default::default()
+                            },
+                        ));
 
-    //
+                        parent.spawn((
+                            HighScoreTextScore,
+                            Text::new(
+                                high_score
+                                    .map(|hs| hs.score.to_string())
+                                    .unwrap_or(DEFAULT_SCORE_TEXT.to_string()),
+                            ),
+                            TextFont {
+                                font: FontAsset::asset(&asset_server, &FontName::HachiMaruPopReg),
+                                font_size: 25.,
+                                ..default()
+                            },
+                            TextColor(Color::WHITE),
+                            Node {
+                                position_type: PositionType::Relative,
+                                ..Default::default()
+                            },
+                        ));
+                    });
+            }
+        });
 }
 
 /**
@@ -170,7 +149,7 @@ pub fn update_high_score(
         let score_text_option = score_iterator.next();
         match score_text_option {
             Some(mut score_text) => {
-                score_text.sections[0].value = high_score.score.to_string();
+                **score_text = high_score.score.to_string();
             }
 
             None => {
@@ -181,7 +160,7 @@ pub fn update_high_score(
         let date_text_option = date_iterator.next();
         match date_text_option {
             Some(mut date_text) => {
-                date_text.sections[0].value = high_score.date.clone();
+                **date_text = high_score.date.clone();
             }
 
             None => {

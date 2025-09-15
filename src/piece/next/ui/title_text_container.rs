@@ -1,45 +1,27 @@
-use bevy::{
-    ecs::{
-        entity::Entity,
-        system::{Commands, Res},
-    },
-    hierarchy::BuildChildren,
-    render::color::Color,
-    text::TextStyle,
-    ui::{
-        node_bundles::{NodeBundle, TextBundle},
-        FlexDirection, Style, UiRect, Val,
-    },
-    utils::default,
-};
+use bevy::prelude::*;
 
 use crate::asset::font::font_assets::FontAssets;
 
 struct NextPieceTitleText;
 impl NextPieceTitleText {
-    fn text_style(font_assets: &Res<FontAssets>) -> TextStyle {
-        TextStyle {
-            font: font_assets.hachi_maru_pop_regular.clone(),
-            font_size: 50.,
-            color: Color::WHITE,
-            ..default()
-        }
-    }
-
-    fn value() -> String {
-        "Next".to_string()
-    }
-
-    fn spawn(font_assets: &Res<FontAssets>) -> TextBundle {
-        TextBundle::from_section(Self::value(), Self::text_style(font_assets))
+    fn spawn(font_assets: &Res<FontAssets>) -> (Text, TextFont, TextColor) {
+        (
+            Text::new("Next".to_string()),
+            TextFont {
+                font: font_assets.hachi_maru_pop_regular.clone(),
+                font_size: 50.,
+                ..default()
+            },
+            TextColor(Color::WHITE),
+        )
     }
 }
 
 pub struct NextPieceTitleTextContainer;
 
 impl NextPieceTitleTextContainer {
-    fn style() -> Style {
-        Style {
+    fn style() -> Node {
+        Node {
             flex_direction: FlexDirection::Row,
             margin: UiRect {
                 left: Val::Px(0.0),
@@ -58,12 +40,10 @@ impl NextPieceTitleTextContainer {
     ) {
         commands.entity(parent_entity).with_children(|parent| {
             parent
-                .spawn((NodeBundle {
-                    style: Self::style(),
-                    ..default()
-                },))
+                .spawn((Node { ..Self::style() },))
                 .with_children(|parent| {
-                    parent.spawn(NextPieceTitleText::spawn(font_assets));
+                    let (text, font, color) = NextPieceTitleText::spawn(font_assets);
+                    parent.spawn((text, font, color));
                 });
         });
     }

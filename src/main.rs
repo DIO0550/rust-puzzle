@@ -1,5 +1,6 @@
 use asset::plugin::assets_pluin::AssetsPlugin;
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::*;
 use bevy_rapier2d::{
     plugin::{NoUserData, RapierPhysicsPlugin},
     render::RapierDebugRenderPlugin,
@@ -62,9 +63,18 @@ fn main() {
         .add_plugins(TitlePlugin)
         .insert_resource(ClearColor(BACKGROUND_COLOR))
         .add_systems(Startup, setup)
+        .add_systems(Startup, setup_physics)
         .run();
 }
 
 fn setup(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
+}
+
+fn setup_physics(mut rapier_config: Query<&mut RapierConfiguration>) {
+    for mut config in rapier_config.iter_mut() {
+        // 300 pixels/meterの場合の適切な重力値に調整
+        // 以前の挙動に合わせて値を調整
+        config.gravity = Vec2::new(0.0, -245.0); // -2943の1/3程度に調整
+    }
 }

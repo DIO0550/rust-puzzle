@@ -1,16 +1,5 @@
-use bevy::{
-    ecs::{
-        component::Component,
-        entity::Entity,
-        query::With,
-        system::{Commands, Query, Res, ResMut, Resource, SystemParam},
-    },
-    math::Vec2,
-    render::color::Color,
-    sprite::{Sprite, SpriteBundle},
-    transform::components::Transform,
-    utils::default,
-};
+use bevy::prelude::*;
+use bevy::ecs::system::SystemParam;
 
 use crate::{
     parameter::input::PlayerInput,
@@ -60,7 +49,8 @@ pub struct DropPositionController<'w> {
 
 impl<'w> DropPositionController<'w> {
     pub fn set_grab_position(&mut self, animal_piece: &dyn AnimalPiece) {
-        self.grab_position.x = DropPosition::new(self.grab_position.x, animal_piece).x;
+        let new_position = DropPosition::new(self.grab_position.x, animal_piece);
+        self.grab_position.x = new_position.x;
     }
 }
 
@@ -77,7 +67,7 @@ pub fn drop_piece(
         return;
     }
 
-    let Ok((entity, piece)) = query.get_single_mut() else {
+    let Ok((entity, piece)) = query.single_mut() else {
         return;
     };
 
@@ -106,25 +96,12 @@ pub(crate) fn spawn_drop_piece_indicator(
     let position_x = drop_position.x;
 
     commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                // 色を指定
-                color: Color::rgba(1.0, 1.0, 0.0, 0.6),
-                // サイズを指定（幅、高さ）
-                custom_size: Some(Vec2::new(3.0, 600.0)), // 幅3px、高さ600pxの矩形
-                // テクスチャの一部を切り取り（アトラス使用時）
-                rect: None,
-                // 水平/垂直反転
-                flip_x: false,
-                flip_y: false,
-                // アンカーポイント（中心、左上など）
-                anchor: bevy::sprite::Anchor::Center,
-                ..default()
-            },
-            // 位置、回転、スケール
-            transform: Transform::from_xyz(position_x, 0.0, 5.0),
+        Sprite {
+            color: Color::srgba(1.0, 1.0, 0.0, 0.6),
+            custom_size: Some(Vec2::new(3.0, 600.0)),
             ..default()
         },
+        Transform::from_xyz(position_x, 0.0, 5.0),
         DropPieceIndicator,
     ));
 }

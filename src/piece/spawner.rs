@@ -1,12 +1,5 @@
-use bevy::{
-    ecs::{
-        entity::Entity,
-        query::{Or, With},
-        schedule::State,
-        system::{Commands, Query, Res, ResMut, Resource, SystemParam},
-    },
-    transform::{components::Transform, TransformBundle},
-};
+use bevy::ecs::system::SystemParam;
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::ActiveCollisionTypes;
 
 use crate::{
@@ -45,7 +38,7 @@ impl<'w, 's> PieceSpawner<'w, 's> {
         self.grab_position_manager
             .set_grab_position(animal_piece_component.animal_piece.as_ref());
         let new_grab_postion = self.grab_position_manager.grab_position.x;
-        let material_mesh = self
+        let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);
 
@@ -53,13 +46,14 @@ impl<'w, 's> PieceSpawner<'w, 's> {
             .commands
             .spawn(ActivePiece)
             .insert(animal_piece_component)
-            .insert(material_mesh)
+            .insert(mesh)
+            .insert(material)
             .insert(ActiveCollisionTypes::all())
-            .insert(TransformBundle::from(Transform::from_xyz(
+            .insert(Transform::from_xyz(
                 new_grab_postion,
                 BOX_SIZE_HEIHT / 2.0 + PIECE_POSITION_Y_MARGIN,
                 0.0,
-            )))
+            ))
             .id();
     }
 
@@ -67,7 +61,7 @@ impl<'w, 's> PieceSpawner<'w, 's> {
         let animal_piece_component = self.animal_piece_generator.generate();
         self.grab_position_manager
             .set_grab_position(animal_piece_component.animal_piece.as_ref());
-        let material_mesh = self
+        let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);
 
@@ -75,11 +69,10 @@ impl<'w, 's> PieceSpawner<'w, 's> {
             .commands
             .spawn(ActivePiece)
             .insert(animal_piece_component)
-            .insert(material_mesh)
+            .insert(mesh)
+            .insert(material)
             .insert(ActiveCollisionTypes::all())
-            .insert(TransformBundle::from(Transform::from_xyz(
-                position_x, position_y, 0.0,
-            )))
+            .insert(Transform::from_xyz(position_x, position_y, 0.0))
             .id();
     }
 
@@ -91,17 +84,16 @@ impl<'w, 's> PieceSpawner<'w, 's> {
     ) -> Entity {
         self.grab_position_manager
             .set_grab_position(animal_piece_component.animal_piece.as_ref());
-        let material_mesh = self
+        let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);
 
         return self
             .commands
             .spawn(animal_piece_component)
-            .insert(material_mesh)
-            .insert(TransformBundle::from(Transform::from_xyz(
-                position_x, position_y, 0.0,
-            )))
+            .insert(mesh)
+            .insert(material)
+            .insert(Transform::from_xyz(position_x, position_y, 0.0))
             .id();
     }
 }

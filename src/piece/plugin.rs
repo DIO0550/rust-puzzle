@@ -1,7 +1,4 @@
-use bevy::{
-    app::*,
-    ecs::schedule::{common_conditions::in_state, IntoSystemConfigs, OnEnter},
-};
+use bevy::{app::*, prelude::*};
 
 use crate::{
     game::{despawn::despawn_component, screen_state::ScreenState, state::GameState},
@@ -30,9 +27,7 @@ impl Plugin for PiecePlugin {
             )
             .add_systems(
                 Startup,
-                (spawn_piece)
-                    .run_if(in_state(ScreenState::Game))
-                    .run_if(in_state(GameState::InGame)),
+                spawn_piece.run_if(in_state(ScreenState::Game).and(in_state(GameState::InGame))),
             )
             .add_systems(
                 Update,
@@ -47,9 +42,7 @@ impl Plugin for PiecePlugin {
                     despawn_drop_piece_indicator,
                     update_drop_piece_indicator_position,
                 )
-                    .chain()
-                    .run_if(in_state(ScreenState::Game))
-                    .run_if(in_state(GameState::InGame)),
+                    .run_if(in_state(ScreenState::Game).and(in_state(GameState::InGame))),
             );
     }
 }

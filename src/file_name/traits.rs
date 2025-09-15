@@ -1,6 +1,6 @@
-use bevy::utils::thiserror;
+use thiserror::Error;
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Error)]
 pub enum FileNameParseError {
     #[error("File not found: {0}")]
     FileNotFound(String),

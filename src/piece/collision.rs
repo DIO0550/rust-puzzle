@@ -1,18 +1,5 @@
-use bevy::{
-    ecs::{
-        entity::Entity,
-        event::EventReader,
-        query::{With, Without},
-        schedule::NextState,
-        system::{Commands, Query, Res, ResMut},
-    },
-    transform::components::Transform,
-};
-use bevy_rapier2d::{
-    geometry::Sensor,
-    pipeline::CollisionEvent,
-    plugin::{RapierConfiguration, RapierContext},
-};
+use bevy::prelude::*;
+use bevy_rapier2d::{geometry::Sensor, pipeline::CollisionEvent};
 
 use crate::{
     game::state::GameState,
@@ -100,28 +87,32 @@ pub fn handle_piece_collisions(
  */
 pub fn handle_game_over_sensor_collisions(
     _: Commands,
-    rapier_context: Res<RapierContext>,
-    mut config: ResMut<RapierConfiguration>,
+    mut collision_events: EventReader<CollisionEvent>,
     target_piece_query: Query<&AnimalPieceComponent, (Without<ActivePiece>, Without<Falling>)>,
-    mut sensor_query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
+    sensor_query: Query<Entity, (With<GameOverSensor>, With<Sensor>)>,
     mut game_state: ResMut<NextState<GameState>>,
 ) {
-    let Ok(entity) = sensor_query.get_single_mut() else {
+    let Ok(sensor_entity) = sensor_query.single() else {
         return;
     };
 
-    for (collider1, collider2, intersecting) in rapier_context.intersection_pairs_with(entity) {
-        if !intersecting {
-            continue;
+    for collision_event in collision_events.read() {
+        match collision_event {
+            CollisionEvent::Started(entity1, entity2, _flags) => {
+                let collider = if *entity1 == sensor_entity {
+                    *entity2
+                } else if *entity2 == sensor_entity {
+                    *entity1
+                } else {
+                    continue;
+                };
+
+                if target_piece_query.contains(collider) {
+                    game_state.set(GameState::GameOver);
+                    return;
+                }
+            }
+            _ => {}
         }
-
-        if !target_piece_query.contains(collider1) && !target_piece_query.contains(collider2) {
-            continue;
-        }
-
-        config.physics_pipeline_active = false;
-        game_state.set(GameState::GameOver);
-
-        return;
     }
 }

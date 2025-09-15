@@ -1,4 +1,4 @@
-use bevy::utils::thiserror::{self, Error};
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum StorageError {

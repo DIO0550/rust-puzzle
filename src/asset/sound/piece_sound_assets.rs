@@ -3,7 +3,7 @@ use crate::asset::asset::{AssetIdCollection, AssetLoadTrait, AssetNameTrait, Ass
 use bevy::{
     asset::{AssetId, AssetServer, Handle},
     audio::AudioSource,
-    ecs::system::{Res, Resource},
+    prelude::{Res, Resource},
 };
 
 /**
