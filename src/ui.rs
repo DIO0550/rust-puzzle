@@ -1,3 +1,4 @@
 pub mod image;
 pub mod menu;
+pub mod style;
 pub mod text;

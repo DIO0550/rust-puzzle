@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::ecs::system::SystemParam;
+use bevy::prelude::*;
 
 use crate::{
     parameter::input::PlayerInput,
@@ -28,37 +28,31 @@ impl DropPosition {
         let max = range - piece_size;
         let min = piece_size - range;
 
-        if position < min {
-            let new_position = min;
-            return DropPosition { x: new_position };
+        DropPosition {
+            x: position.clamp(min, max),
         }
-
-        if max < position {
-            let new_position = max;
-            return DropPosition { x: new_position };
-        }
-
-        return DropPosition { x: position };
     }
 }
 
 #[derive(SystemParam)]
 pub struct DropPositionController<'w> {
-    pub grab_position: ResMut<'w, DropPosition>,
+    pub drop_position: ResMut<'w, DropPosition>,
 }
 
 impl<'w> DropPositionController<'w> {
-    pub fn set_grab_position(&mut self, animal_piece: &dyn AnimalPiece) {
-        let new_position = DropPosition::new(self.grab_position.x, animal_piece);
-        self.grab_position.x = new_position.x;
+    pub fn set_drop_position(&mut self, animal_piece: &dyn AnimalPiece) {
+        let new_position = DropPosition::new(self.drop_position.x, animal_piece);
+        self.drop_position.x = new_position.x;
     }
+
+
 }
 
 /**
  * ピースを離す
  */
 pub fn drop_piece(
-    mut commnads: Commands,
+    mut commands: Commands,
     mut piece_faller: PieceFaller,
     input: PlayerInput,
     mut query: Query<(Entity, &AnimalPieceComponent), With<ActivePiece>>,
@@ -71,7 +65,7 @@ pub fn drop_piece(
         return;
     };
 
-    commnads.convert_to_physical(entity, piece);
+    commands.convert_to_physical(entity, piece);
     piece_faller.make_falling(entity);
 }
 
@@ -124,10 +118,6 @@ pub(crate) fn update_drop_piece_indicator_position(
     mut transform_query: Query<&mut Transform, With<DropPieceIndicator>>,
     drop_position: Res<DropPosition>,
 ) {
-    if transform_query.is_empty() {
-        return;
-    }
-
     let position_x = drop_position.x;
 
     for mut transform in transform_query.iter_mut() {

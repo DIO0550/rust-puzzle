@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{game::screen_state::ScreenState, ui::menu::menu_item_action::MenuItemSelectAction};
+use crate::{game::screen_state::ScreenState, ui::menu::item_action::MenuItemSelectAction};
 
 #[derive(Debug, Component)]
 pub enum TitleMenuItemSelectAction {

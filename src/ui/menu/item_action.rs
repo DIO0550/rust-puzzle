@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy::state::state::FreelyMutableState;
 
-use super::menu_item_bundle::MenuItemSelected;
+use super::item_builder::MenuItemSelected;
 
 pub trait MenuItemSelectAction: Send + Sync {
     type TargetState: States + FreelyMutableState;

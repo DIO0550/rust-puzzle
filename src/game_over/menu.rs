@@ -51,8 +51,8 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                         },
                         ..default()
                     },
-                    BorderColor(ColorTheme::SPROUT),
-                    BackgroundColor(ColorTheme::CHROME_WHITE),
+                    BorderColor(ColorTheme::BORDER_PRIMARY),
+                    BackgroundColor(ColorTheme::BACKGROUND),
                 ))
                 .with_children(|parent| {
                     // GAME OVER text
@@ -84,8 +84,8 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                                 },
                                 ..default()
                             },
-                            BorderColor(ColorTheme::SPROUT),
-                            BackgroundColor(ColorTheme::CHROME_WHITE),
+                            BorderColor(ColorTheme::BORDER_PRIMARY),
+                            BackgroundColor(ColorTheme::SUB_BACKGROUND),
                         ))
                         .with_children(|parent| {
                             // Restart button
@@ -99,7 +99,8 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                                         height: Val::Px(100.0),
                                         ..default()
                                     },
-                                    BackgroundColor(ColorTheme::SPROUT),
+                                    BorderColor(ColorTheme::BORDER_PRIMARY),
+                                    BackgroundColor(ColorTheme::SUB_BACKGROUND),
                                     GameOverMenu::Restart,
                                 ))
                                 .with_children(|parent| {
@@ -113,7 +114,7 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                                             font_size: 50.,
                                             ..default()
                                         },
-                                        TextColor(Color::BLACK),
+                                        TextColor(ColorTheme::TEXT),
                                         GameOverMenu::Restart,
                                     ));
                                 });
@@ -129,7 +130,8 @@ pub fn display_game_over(mut commands: Commands, asset_server: Res<AssetServer>)
                                         height: Val::Px(100.0),
                                         ..default()
                                     },
-                                    BackgroundColor(ColorTheme::SPROUT),
+                                    BorderColor(ColorTheme::BORDER_PRIMARY),
+                                    BackgroundColor(ColorTheme::SUB_BACKGROUND),
                                     GameOverMenu::GoTitle,
                                 ))
                                 .with_children(|parent| {
@@ -159,8 +161,8 @@ pub fn update_menu(
 ) {
     for (mut style, menu) in menu_query.iter_mut() {
         style.0 = match select_menu_res.0 == *menu {
-            true => ColorTheme::NORWAY,
-            false => ColorTheme::SPROUT,
+            true => ColorTheme::PRIMARY_HOVER,
+            false => ColorTheme::SUB_BACKGROUND,
         };
     }
 

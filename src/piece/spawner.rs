@@ -29,15 +29,15 @@ pub struct PieceSpawner<'w, 's> {
     commands: Commands<'w, 's>,
     piece_renderer: PieceRenderer<'w>,
     animal_piece_generator: AnimalPieceComponentGenerator<'w>,
-    grab_position_manager: DropPositionController<'w>,
+    drop_position_manager: DropPositionController<'w>,
 }
 
 impl<'w, 's> PieceSpawner<'w, 's> {
     pub fn spawn(&mut self) -> Entity {
         let animal_piece_component = self.animal_piece_generator.generate();
-        self.grab_position_manager
-            .set_grab_position(animal_piece_component.animal_piece.as_ref());
-        let new_grab_postion = self.grab_position_manager.grab_position.x;
+        self.drop_position_manager
+            .set_drop_position(animal_piece_component.animal_piece.as_ref());
+        let new_drop_postion = self.drop_position_manager.drop_position.x;
         let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);
@@ -50,7 +50,7 @@ impl<'w, 's> PieceSpawner<'w, 's> {
             .insert(material)
             .insert(ActiveCollisionTypes::all())
             .insert(Transform::from_xyz(
-                new_grab_postion,
+                new_drop_postion,
                 BOX_SIZE_HEIHT / 2.0 + PIECE_POSITION_Y_MARGIN,
                 0.0,
             ))
@@ -59,8 +59,8 @@ impl<'w, 's> PieceSpawner<'w, 's> {
 
     pub fn spawn_with_position(&mut self, position_x: f32, position_y: f32) -> Entity {
         let animal_piece_component = self.animal_piece_generator.generate();
-        self.grab_position_manager
-            .set_grab_position(animal_piece_component.animal_piece.as_ref());
+        self.drop_position_manager
+            .set_drop_position(animal_piece_component.animal_piece.as_ref());
         let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);
@@ -82,8 +82,8 @@ impl<'w, 's> PieceSpawner<'w, 's> {
         position_y: f32,
         animal_piece_component: AnimalPieceComponent,
     ) -> Entity {
-        self.grab_position_manager
-            .set_grab_position(animal_piece_component.animal_piece.as_ref());
+        self.drop_position_manager
+            .set_drop_position(animal_piece_component.animal_piece.as_ref());
         let (mesh, material) = self
             .piece_renderer
             .create_material_mesh(&animal_piece_component);

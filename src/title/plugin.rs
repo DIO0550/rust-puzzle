@@ -7,8 +7,8 @@ use crate::{
         TitleMenu,
     },
     ui::menu::{
-        menu_controller::{menu_navigation, update_menu_item_colors},
-        menu_item_action::select_menu_item_action,
+        item_action::select_menu_item_action,
+        system::{menu_navigation, update_menu_item_colors},
     },
 };
 
@@ -20,9 +20,9 @@ impl Plugin for TitlePlugin {
             .add_systems(
                 Update,
                 (
+                    select_menu_item_action::<TitleMenuItemSelectAction>,
                     menu_navigation::<TitleMenu, TitleMenuItem>,
                     update_menu_item_colors::<TitleMenu, TitleMenuItem>,
-                    select_menu_item_action::<TitleMenuItemSelectAction>,
                 )
                     .run_if(in_state(ScreenState::Title)),
             );
