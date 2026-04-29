@@ -9,5 +9,5 @@ pub struct Background {
 #[derive(Debug, Clone, Copy)]
 pub struct TextStyle {
     pub color: Color,
-    // 必要なら font_size や font_weight などを将来的に追加
+    pub font_size: f32,
 }

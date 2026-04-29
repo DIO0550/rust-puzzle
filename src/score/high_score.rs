@@ -3,3 +3,4 @@ pub mod plugin;
 pub mod resource;
 pub mod system;
 pub mod text;
+pub mod ui;

@@ -40,4 +40,15 @@ impl ColorTheme {
     // トグルスイッチ
     pub const TOGGLE_OFF: Color = Color::srgb(204.0 / 255.0, 204.0 / 255.0, 204.0 / 255.0);
     pub const TOGGLE_ON: Color = Color::srgb(74.0 / 255.0, 144.0 / 255.0, 226.0 / 255.0);
+
+    pub const GOLD: Color = Color::srgb(1.0, 0.843, 0.0);
+    pub const SILVER: Color = Color::srgb(0.75, 0.75, 0.75);
+    pub const BRONZE: Color = Color::srgb(0.804, 0.498, 0.196);
+    pub const GRAY: Color = Color::srgb(0.5, 0.5, 0.5);
+    
+
+    pub const ORANGE: Color = Color::srgb(1.0, 0.647, 0.0);
+    pub const DARK_GRAY: Color = Color::srgb(0.4, 0.4, 0.4);
+    pub const BROWN: Color = Color::srgb(0.545, 0.271, 0.075);
 }
+
